@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { Menu } from './components/menu/menu';
 import { BancoEjerciciosComponent } from './components/banco-ejercicios/banco-ejercicios';
+import { AgregarEjercicio } from './modules/ejercicios/agregar-ejercicio/agregar-ejercicio';
 import { PatientListComponent } from './modules/fisioterapeuta/presentation/pages/patient-list/patient-list';
 import { PatientCreateComponent } from './modules/fisioterapeuta/presentation/pages/patient-create/patient-create';
 import { RegistroFisioComponent } from './modules/fisioterapeuta/presentation/pages/registro-fisio/registro-fisio'; 
@@ -56,6 +57,8 @@ export const routes: Routes = [
     children: [
       { path: 'inicio', component: HomeComponent },
       { path: 'ejercicios', component: BancoEjerciciosComponent },
+      { path: 'ejercicios/nuevo', component: AgregarEjercicio },
+      { path: 'ejercicios/:id/editar', component: AgregarEjercicio },
       { path: 'pacientes', component: PatientListComponent },
       { path: 'nuevo-paciente', component: PatientCreateComponent },
       { path: 'perfil', component: PerfilComponent },

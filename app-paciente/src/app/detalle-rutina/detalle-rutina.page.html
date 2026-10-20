@@ -131,11 +131,15 @@
               allowfullscreen>
             </iframe>
           </div>
-          <a *ngIf="!getExerciseYouTubeEmbedUrl(selectedExercise)" [href]="getExerciseVideoUrl(selectedExercise)" target="_blank" rel="noopener" class="video-link">
+          <video class="exercise-media" *ngIf="getExerciseDirectVideoUrl(selectedExercise) as videoSrc"
+            [src]="videoSrc" controls playsinline loop muted autoplay></video>
+          <img class="exercise-media" *ngIf="getExerciseImageUrl(selectedExercise) as imageSrc"
+            [src]="imageSrc" [alt]="selectedExercise.name" />
+          <a *ngIf="!getExerciseYouTubeEmbedUrl(selectedExercise) && !getExerciseDirectVideoUrl(selectedExercise) && !getExerciseImageUrl(selectedExercise)" [href]="getExerciseVideoUrl(selectedExercise)" target="_blank" rel="noopener" class="video-link">
             <ion-icon name="play-circle-outline"></ion-icon> Ver video
           </a>
           <a *ngIf="getExerciseYouTubeEmbedUrl(selectedExercise)" [href]="getExerciseVideoUrl(selectedExercise)" target="_blank" rel="noopener" class="video-link">
-            <ion-icon name="open-outline"></ion-icon> Abrir en YouTube
+            <ion-icon name="open-outline"></ion-icon> Abrir en otra pestaña
           </a>
         </div>
       </div>

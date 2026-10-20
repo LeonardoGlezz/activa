@@ -77,6 +77,7 @@ import { UpdatePasswordUseCase } from "./application/use-cases/UpdatePassword.uc
 import { CreateExerciseUseCase } from "./application/use-cases/CreateExercise.uc";
 import { ListExercisesUseCase } from "./application/use-cases/ListExercises.uc";
 import { GetExerciseByIdUseCase } from "./application/use-cases/GetExerciseById.uc";
+import { UpdateExerciseUseCase } from "./application/use-cases/UpdateExercise.uc";
 
 // --- Seguimiento (Tracking) ---
 import { RegisterPainLevelUseCase } from "./application/use-cases/RegisterPainLevel.uc";
@@ -92,6 +93,7 @@ import { CreateRoutineTemplateUseCase } from "./application/use-cases/CreateRout
 import { CreateRoutineTemplateDirectUseCase } from "./application/use-cases/CreateRoutineTemplateDirect.uc";
 import { ListRoutineTemplatesUseCase } from "./application/use-cases/ListRoutineTemplates.uc";
 import { GetRoutineTemplateByIdUseCase } from "./application/use-cases/GetRoutineTemplateById.uc";
+import { DeleteRoutineUseCase } from "./application/use-cases/DeleteRoutine.uc";
 
 // 🪄 NUEVO: Caso de uso del Dashboard
 import { GetDashboardStatsUseCase } from "./application/use-cases/GetDashboardStats.uc";
@@ -182,6 +184,7 @@ async function bootstrap() {
     const createExercise = new CreateExerciseUseCase(exerciseRepo);
     const listExercises = new ListExercisesUseCase(exerciseRepo);
     const getExerciseById = new GetExerciseByIdUseCase(exerciseRepo);
+    const updateExercise = new UpdateExerciseUseCase(exerciseRepo);
 
     // Casos de Uso: Rutinas
     const createRoutine = new CreateRoutineUseCase(routineRepo);
@@ -193,6 +196,7 @@ async function bootstrap() {
     const listRoutineTemplates = new ListRoutineTemplatesUseCase(routineRepo);
     const getRoutineTemplateById = new GetRoutineTemplateByIdUseCase(routineRepo);
     const addExercisesToTemplate = new AddExercisesToTemplateUseCase(routineRepo);
+    const deleteRoutine = new DeleteRoutineUseCase(routineRepo);
 
     // Casos de Uso: Auth
     const registerPhysio = new RegisterPhysiotherapistUseCase(authRepo);
@@ -248,7 +252,8 @@ async function bootstrap() {
     const exerciseController = new ExerciseController(
       createExercise,
       listExercises,
-      getExerciseById
+      getExerciseById,
+      updateExercise
     );
 
     const trackingController = new TrackingController(
@@ -268,6 +273,7 @@ async function bootstrap() {
       createRoutineTemplateDirect,
       listRoutineTemplates,
       getRoutineTemplateById,
+      deleteRoutine,
     );
 
     const authController = new AuthController(

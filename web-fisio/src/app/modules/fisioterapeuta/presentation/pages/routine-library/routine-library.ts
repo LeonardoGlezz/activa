@@ -13,6 +13,7 @@ import { MessageService } from 'primeng/api';
 import { ExerciseUseCase } from '../../../../../core/exercises/application/exercise.use-case';
 import { PatientUseCase } from '../../../../../core/patient/application/patient.use-case';
 import { environment } from '../../../../../../environments/environment';
+import { resolveMediaUrl } from '../../../../../core/exercises/domain/exercise-media';
 
 @Component({
   selector: 'app-routine-library',
@@ -123,7 +124,7 @@ export class RoutineLibraryComponent implements OnInit {
           name: exercise.name,
           bodyZone: exercise.bodyZone ?? exercise.body_zone,
           description: exercise.description,
-          videoUrl: exercise.videoUrl ?? exercise.video_url,
+          videoUrl: resolveMediaUrl(exercise.videoUrl ?? exercise.video_url),
         }));
         if (!this.previewExercise && this.exerciseCatalog.length > 0) {
           this.previewExercise = this.exerciseCatalog[0];
@@ -218,7 +219,7 @@ export class RoutineLibraryComponent implements OnInit {
   }
 
   isDirectVideoFile(url: string): boolean {
-    return /\.(mp4|webm|ogg)(\?.*)?$/i.test(url || '');
+    return /\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(url || '');
   }
 
   isEmbeddableVideo(url: string): boolean {

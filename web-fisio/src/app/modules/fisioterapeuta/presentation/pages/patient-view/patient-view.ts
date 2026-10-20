@@ -19,6 +19,7 @@ import { PatientUseCase } from '../../../../../core/patient/application/patient.
 import { AppointmentUseCase } from '../../../../../core/appointment/application/appointment.use-case';
 import { ExerciseUseCase } from '../../../../../core/exercises/application/exercise.use-case';
 import { environment } from '../../../../../../environments/environment';
+import { resolveMediaUrl } from '../../../../../core/exercises/domain/exercise-media';
 
 @Component({
   selector: 'app-patient-view',
@@ -203,7 +204,7 @@ export class PatientViewComponent implements OnInit {
           name: e.name,
           body_zone: e.body_zone || e.bodyZone || 'General',
           description: e.description || '',
-          video_url: e.video_url || e.videoUrl || '',
+          video_url: resolveMediaUrl(e.video_url || e.videoUrl),
         }));
         this.loadingExercises = false;
         this.cdr.detectChanges();
@@ -253,15 +254,17 @@ export class PatientViewComponent implements OnInit {
 
   private mapRoutineCard(r: any): any {
     const exercises = r.exercises || r.Exercises || [];
-    const startDate = r.start_date || r.startDate || '';
-    const endDate = r.end_date || r.endDate || '';
-    const now = new Date();
-    const isExpired = endDate ? new Date(endDate) < now : false;
+    const startDate = String(r.start_date || r.startDate || '').substring(0, 10);
+    const endDate = String(r.end_date || r.endDate || '').substring(0, 10);
+    const today = this.getTodayDate();
+    const status = endDate && endDate < today
+      ? 'Finalizada'
+      : (startDate && startDate > today ? 'Programada' : 'Activa');
 
     return {
       id: r.id_routine || r.id,
       name: r.name,
-      status: isExpired ? 'Finalizada' : 'Activa',
+      status,
       description: `Vigencia: ${this.formatDate(startDate)} - ${this.formatDate(endDate)}`,
       startDate,
       endDate,
@@ -487,12 +490,10 @@ export class PatientViewComponent implements OnInit {
   openNewRoutine(): void {
     this.editingRoutine = null;
     const today = this.getTodayDate();
-    const end = new Date();
-    end.setDate(end.getDate() + 14);
     this.routineForm = {
       name: '',
       startDate: today,
-      endDate: end.toISOString().split('T')[0],
+      endDate: this.getTodayDate(14),
       patientId: this.patientId,
       exerciseIds: []
     };
@@ -582,17 +583,16 @@ export class PatientViewComponent implements OnInit {
     this.http.get<any>(`${environment.webservice.baseUrl}/api/routines/templates/${templateId}`).subscribe({
       next: (resp) => {
         const data = resp?.data;
-        const templateExercises = data?.exercises || [];
+        const orderOf = (e: any) => Number((e.RoutineTemplateExercise || e.routineTemplateExercise || {}).exercise_order ?? Number.MAX_SAFE_INTEGER);
+        const templateExercises = [...(data?.exercises || [])].sort((a: any, b: any) => orderOf(a) - orderOf(b));
         const today = this.getTodayDate();
-        const end = new Date();
-        end.setDate(end.getDate() + 14);
 
         this.editingRoutine = null;
         this.templateSourceLabel = data?.name || fallbackName || '';
         this.routineForm = {
           name: `${data?.name || fallbackName || 'Rutina'} - ${this.patient?.first_name || 'Paciente'}`,
           startDate: today,
-          endDate: end.toISOString().split('T')[0],
+          endDate: this.getTodayDate(14),
           patientId: this.patientId,
           exerciseIds: templateExercises.map((e: any) => e.id_exercise || e.id).filter((id: any) => !!id),
         };
@@ -736,18 +736,66 @@ export class PatientViewComponent implements OnInit {
     });
   }
 
-  deleteRoutine(id: number): void {
+  deleteRoutine(routine: any): void {
     this.confirmationService.confirm({
-      header: 'Confirmar eliminación',
-      message: '¿Deseas eliminar esta rutina? Esta acción no se puede deshacer.',
+      header: 'Eliminar rutina',
+      message: `¿Eliminar "${routine.name}"? El paciente dejará de verla. Esta acción no se puede deshacer.`,
       icon: 'pi pi-exclamation-triangle',
       acceptLabel: 'Sí, eliminar',
       rejectLabel: 'Cancelar',
       acceptButtonStyleClass: 'p-button-danger',
       rejectButtonStyleClass: 'p-button-text',
       accept: () => {
-        this.routines = this.routines.filter(r => r.id !== id);
-        this.messageService.add({ severity: 'info', summary: 'Eliminada', detail: 'Rutina eliminada.' });
+        this.http.delete<any>(`${environment.webservice.baseUrl}/api/routines/${routine.id}`).subscribe({
+          next: () => {
+            this.messageService.add({ severity: 'info', summary: 'Eliminada', detail: 'Rutina eliminada.' });
+            this.loadRoutines();
+          },
+          error: (err) => {
+            if (err.status === 409) {
+              // Ya tiene avances del paciente: se finaliza para conservar su historial
+              setTimeout(() => this.finishRoutine(routine, err.error?.message), 0);
+              return;
+            }
+            const msg = err.error?.message || 'No se pudo eliminar la rutina.';
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: msg });
+          }
+        });
+      }
+    });
+  }
+
+  finishRoutine(routine: any, reason?: string): void {
+    this.confirmationService.confirm({
+      header: 'Finalizar rutina',
+      message: `${reason ? reason + ' ' : ''}¿Marcar "${routine.name}" como terminada hoy? El historial de avances se conserva.`,
+      icon: 'pi pi-flag',
+      acceptLabel: 'Sí, finalizar',
+      rejectLabel: 'Cancelar',
+      rejectButtonStyleClass: 'p-button-text',
+      accept: () => {
+        const today = this.getTodayDate();
+        const exercises = routine.exercisesDetail || [];
+        this.http.put<any>(`${environment.webservice.baseUrl}/api/routines/${routine.id}`, {
+          endDate: today < routine.startDate ? routine.startDate : today,
+          exerciseIds: exercises.map((e: any) => e.id),
+          exerciseItems: exercises.map((e: any, index: number) => ({
+            exerciseId: e.id,
+            repetitions: e.repetitions ?? undefined,
+            sets: e.sets ?? undefined,
+            exerciseOrder: e.exercise_order ?? index + 1,
+            notes: e.notes || undefined,
+          })),
+        }).subscribe({
+          next: () => {
+            this.messageService.add({ severity: 'success', summary: 'Rutina finalizada', detail: 'Se conservó el historial del paciente.' });
+            this.loadRoutines();
+          },
+          error: (err) => {
+            const msg = err.error?.message || 'No se pudo finalizar la rutina.';
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: msg });
+          }
+        });
       }
     });
   }
@@ -766,6 +814,32 @@ export class PatientViewComponent implements OnInit {
         this.exerciseConfigMap[id] = { repetitions: 10, sets: 3, notes: '' };
       }
     }
+  }
+
+  /** Ejercicios elegidos, en el orden en que el paciente los hará. */
+  get selectedExercises(): any[] {
+    const ids: number[] = this.routineForm.exerciseIds || [];
+    return ids.map((id: number) => {
+      const fromCatalog = this.exerciseCatalog.find((e: any) => Number(e.id) === Number(id));
+      const fromRoutine = (this.editingRoutine?.exercisesDetail || []).find((e: any) => Number(e.id) === Number(id));
+      return fromCatalog || fromRoutine || { id, name: `Ejercicio #${id}`, body_zone: '' };
+    });
+  }
+
+  trackById(_: number, item: any): number {
+    return Number(item?.id);
+  }
+
+  moveExercise(index: number, delta: number): void {
+    const ids = [...(this.routineForm.exerciseIds || [])];
+    const target = index + delta;
+    if (target < 0 || target >= ids.length) return;
+    [ids[index], ids[target]] = [ids[target], ids[index]];
+    this.routineForm.exerciseIds = ids;
+  }
+
+  removeExercise(id: number): void {
+    this.routineForm.exerciseIds = (this.routineForm.exerciseIds || []).filter((x: number) => x !== id);
   }
 
   getExerciseConfig(id: number): { repetitions: number; sets: number; notes: string } {
@@ -790,7 +864,7 @@ export class PatientViewComponent implements OnInit {
   }
 
   isDirectVideoFile(url: string): boolean {
-    return /\.(mp4|webm|ogg)(\?.*)?$/i.test(url || '');
+    return /\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(url || '');
   }
 
   isEmbeddableVideo(url: string): boolean {
@@ -817,8 +891,8 @@ export class PatientViewComponent implements OnInit {
       ? this.routineForm.exerciseIds.map((id: any) => Number(id)).filter((id: number) => Number.isFinite(id))
       : [];
 
+    // Se respeta el orden: reordenar ejercicios también cuenta como cambio
     const exerciseConfig = ids
-      .sort((a: number, b: number) => a - b)
       .map((id: number) => {
         const config = this.getExerciseConfig(id);
         return {
@@ -930,8 +1004,11 @@ export class PatientViewComponent implements OnInit {
     }
   }
 
-  private getTodayDate(): string {
-    return new Date().toISOString().split('T')[0];
+  /** Fecha local (no UTC), para que en la noche no salte al día siguiente. */
+  private getTodayDate(offsetDays = 0): string {
+    const d = new Date();
+    d.setDate(d.getDate() + offsetDays);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   }
 
   get logModalTitle(): string {

@@ -1,6 +1,7 @@
 <div class="container">
   <div class="form-card">
-    <h2>Agregar Nuevo Ejercicio</h2>
+    <a routerLink="/dashboard/ejercicios" class="back-link">&larr; Volver al banco de ejercicios</a>
+    <h2>{{ exerciseId ? 'Editar Ejercicio' : 'Agregar Nuevo Ejercicio' }}</h2>
 
     <!-- Mensajes de éxito/error -->
     <div *ngIf="successMessage" class="alert alert-success">
@@ -68,30 +69,49 @@
         </small>
       </div>
 
-      <!-- URL del video -->
+      <!-- Demostración: video, GIF o imagen -->
       <div class="form-group">
-        <label for="videoUrl">URL del Video *</label>
+        <label for="videoUrl">Video o imagen de demostración</label>
+        <p class="hint">
+          Sube un video corto (MP4/MOV, máx. {{ maxUploadMb }} MB), un GIF o una foto,
+          o pega un enlace de YouTube (puede ser "No listado"), Vimeo o un archivo en internet.
+          Es opcional, pero el paciente lo verá al hacer su rutina.
+        </p>
+
+        <div class="media-actions">
+          <label class="btn btn-secondary upload-btn" [class.disabled]="uploading">
+            {{ uploading ? 'Subiendo...' : 'Subir archivo' }}
+            <input type="file" accept="video/mp4,video/webm,video/quicktime,image/gif,image/jpeg,image/png,image/webp"
+              (change)="onFileSelected($event)" [disabled]="uploading" hidden />
+          </label>
+          <button *ngIf="videoUrl?.value" type="button" class="btn btn-link" (click)="clearMedia()">Quitar</button>
+        </div>
+
         <input
           id="videoUrl"
-          type="url"
+          type="text"
           class="form-control"
           formControlName="videoUrl"
-          placeholder="https://ejemplo.com/video"
+          placeholder="https://www.youtube.com/watch?v=..."
           [class.is-invalid]="videoUrl?.invalid && videoUrl?.touched"
         />
-        <small *ngIf="videoUrl?.errors?.['required'] && videoUrl?.touched" class="text-danger">
-          La URL del video es obligatoria
-        </small>
         <small *ngIf="videoUrl?.errors?.['pattern'] && videoUrl?.touched" class="text-danger">
-          Debe ser una URL válida (http:// o https://)
+          Debe ser un enlace que empiece con http:// o https://
         </small>
+
+        <div class="media-preview" *ngIf="mediaUrl">
+          <iframe *ngIf="embedUrl" [src]="embedUrl" title="Vista previa del ejercicio" allowfullscreen></iframe>
+          <video *ngIf="mediaKind === 'video'" [src]="mediaUrl" controls playsinline muted loop></video>
+          <img *ngIf="mediaKind === 'image'" [src]="mediaUrl" alt="Vista previa del ejercicio" />
+          <a *ngIf="mediaKind === 'link'" [href]="mediaUrl" target="_blank" rel="noopener">Abrir enlace para revisarlo</a>
+        </div>
       </div>
 
       <!-- Botón submit -->
       <button
         type="submit"
         class="btn btn-primary"
-        [disabled]="form.invalid || loading"
+        [disabled]="form.invalid || loading || uploading"
       >
         {{ loading ? 'Guardando...' : 'Guardar Ejercicio' }}
       </button>

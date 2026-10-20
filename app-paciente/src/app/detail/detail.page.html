@@ -26,7 +26,11 @@
             allowfullscreen>
           </iframe>
         </div>
-        <div class="video-placeholder" *ngIf="!getExerciseYouTubeEmbedUrl(currentExercise)">
+        <video class="exercise-media" *ngIf="getExerciseDirectVideoUrl(currentExercise) as videoSrc"
+          [src]="videoSrc" controls playsinline loop muted autoplay></video>
+        <img class="exercise-media" *ngIf="getExerciseImageUrl(currentExercise) as imageSrc"
+          [src]="imageSrc" [alt]="currentExercise.name" />
+        <div class="video-placeholder" *ngIf="!getExerciseYouTubeEmbedUrl(currentExercise) && !getExerciseDirectVideoUrl(currentExercise) && !getExerciseImageUrl(currentExercise)">
           <a *ngIf="getExerciseVideoUrl(currentExercise)" [href]="getExerciseVideoUrl(currentExercise)" target="_blank" rel="noopener" class="video-link">
             <ion-fab-button class="play-btn-blur">
               <ion-icon name="play-sharp"></ion-icon>
