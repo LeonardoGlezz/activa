@@ -7,8 +7,8 @@
 
 export const environment = {
   production: false,
-  apiUrl: 'https://impartial-art-production.up.railway.app/api',
-  backendUrl: 'https://impartial-art-production.up.railway.app',
+  apiUrl: 'http://localhost:3000/api',
+  backendUrl: 'http://localhost:3000',
   clinicName: 'ACTIVA Health Center',
   clinicAddress: 'Av. Principal 123, Ciudad',
   clinicMapsUrl: 'https://www.google.com/maps/search/?api=1&query=Clínica+Fisioterapia'
