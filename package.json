@@ -1,0 +1,15 @@
+{
+  "name": "activa",
+  "private": true,
+  "description": "ACTIVA: arranque local de backend, panel del fisio, app del paciente y admin",
+  "scripts": {
+    "setup": "node scripts/setup.js",
+    "db:up": "docker compose up -d --wait mysql",
+    "db:down": "docker compose down",
+    "db:setup": "npm --prefix backend run db:setup",
+    "dev": "concurrently -k -n api,fisio,paciente,admin -c blue,green,magenta,yellow \"npm --prefix backend run dev\" \"npm --prefix web-fisio start -- --port 4200\" \"npm --prefix app-paciente start -- --port 8100\" \"npm --prefix admin run dev -- --port 4300\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

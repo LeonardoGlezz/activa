@@ -1,0 +1,22 @@
+# Base de datos MySQL para desarrollo local.
+# Arranca con:  npm run db:up   (desde la raíz del repo)
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: activa-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: activa
+      MYSQL_DATABASE: activa
+    ports:
+      - "3306:3306"
+    volumes:
+      - activa-mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-pactiva"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  activa-mysql-data:
