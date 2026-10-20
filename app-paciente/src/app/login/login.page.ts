@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ToastController } from '@ionic/angular';
 import { PatientRepository } from '../../core/domain/repositories/patient.repository';
 import { Storage } from '@ionic/storage-angular';
+import { LegalApiService } from '../core/infrastructure/api/legal-api.service';
 
 @Component({
   selector: 'app-login',
@@ -13,6 +14,8 @@ import { Storage } from '@ionic/storage-angular';
 })
 export class LoginPage {
   loginForm: FormGroup;
+  readonly privacyUrl = LegalApiService.privacyUrl;
+  readonly termsUrl = LegalApiService.termsUrl;
 
   constructor(
     private router: Router,

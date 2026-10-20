@@ -68,6 +68,10 @@ Para detener todo: `Ctrl + C` en la terminal. Para apagar MySQL: `npm run db:dow
 - **Pagos (Stripe) y login con Google** no funcionan en local hasta que pongas tus claves en `backend/.env`. Todo lo demás sí.
 - `backend/.env` es solo tuyo: nunca lo subas al repo (ya está en `.gitignore`).
 
+## Aviso de privacidad y términos de uso
+
+Los textos están en `backend/legal/` y el backend los publica en `/legal` (por ejemplo `http://localhost:3000/legal/`). Pacientes y fisios los aceptan la primera vez que entran. Son un borrador: lo que falta llenar y revisar está en [docs/avisos-legales.md](docs/avisos-legales.md).
+
 ## Origen
 
 Basado en el proyecto integrador "ACTIVA" (Universidad Tecnológica de Tehuacán, 2026), desarrollado por el equipo Web & Code Studio. Código copiado de los repositorios originales:

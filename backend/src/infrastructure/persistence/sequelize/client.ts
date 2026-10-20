@@ -197,6 +197,23 @@ export const PatientMedicalDocumentModel = sequelize.define("PatientMedicalDocum
   created_at: { type: DataTypes.DATE, defaultValue: DataTypes.NOW }
 }, { tableName: "patient_medical_document" });
 
+// --- CONSENTIMIENTO DE AVISOS LEGALES ---
+// Registra qué versión del aviso de privacidad y de los términos aceptó cada cuenta.
+// subject_id es el `id` del token: id_patient para pacientes, id_user para fisios.
+export const LegalConsentModel = sequelize.define("LegalConsent", {
+  id_consent: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  role: { type: DataTypes.ENUM("admin", "physio", "patient"), allowNull: false },
+  subject_id: { type: DataTypes.INTEGER, allowNull: false },
+  document: { type: DataTypes.STRING(60), allowNull: false },
+  version: { type: DataTypes.STRING(20), allowNull: false },
+  accepted_at: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
+  ip: { type: DataTypes.STRING(64), allowNull: true },
+  user_agent: { type: DataTypes.STRING(255), allowNull: true }
+}, {
+  tableName: "legal_consent",
+  indexes: [{ unique: true, fields: ["role", "subject_id", "document", "version"] }]
+});
+
 // ============================================================
 // 3. ASOCIACIONES
 // ============================================================

@@ -14,6 +14,7 @@ import { AuthUseCase } from '../../../../../core/auth/application/auth.use-case'
 import { RegisterPhysioDTO } from '../../../../../core/auth/domain/auth.model';
 import { AuthRepository } from '../../../../../core/auth/domain/auth.repository';
 import { AuthHttpRepository } from '../../../../../core/auth/infrastructure/auth-http.repository';
+import { LegalService, LEGAL_URLS } from '../../../../../core/legal/legal.service';
 
 // =================================================================
 // VALIDADOR PERSONALIZADO: Mayor de 18 años
@@ -55,12 +56,14 @@ export function mayorDeEdadValidator(control: AbstractControl): ValidationErrors
 export class RegistroFisioComponent implements OnInit {
   perfilForm!: FormGroup;
   isLoading: boolean = false;
+  readonly legalUrls = LEGAL_URLS;
 
   constructor(
     private fb: FormBuilder, 
     private router: Router,
     private messageService: MessageService,
-    private authUseCase: AuthUseCase
+    private authUseCase: AuthUseCase,
+    private legal: LegalService
   ) {}
 
   ngOnInit(): void {
@@ -79,7 +82,8 @@ export class RegistroFisioComponent implements OnInit {
       password: ['', [Validators.required, Validators.minLength(6)]],
       cedula: ['', [Validators.required, Validators.pattern(cedulaRegex)]],
       curp: ['', [Validators.required, Validators.pattern(curpRegex)]],
-      fechaNacimiento: [null, [Validators.required, mayorDeEdadValidator]]
+      fechaNacimiento: [null, [Validators.required, mayorDeEdadValidator]],
+      aceptaAvisos: [false, Validators.requiredTrue]
     });
   }
 
@@ -149,10 +153,10 @@ export class RegistroFisioComponent implements OnInit {
               this.isLoading = false;
               this.messageService.add({ severity: 'success', summary: '¡Éxito!', detail: 'Cuenta creada. Redirigiendo a subir documentos...' });
               
-              // 3. AHORA SÍ, PASAMOS AL CADENERO Y VAMOS A LOS PDFs
-              setTimeout(() => {
-                this.router.navigate(['/verificar-datos']); 
-              }, 1500);
+              // 3. GUARDAMOS LA ACEPTACIÓN DE LOS AVISOS Y VAMOS A LOS PDFs
+              // Si no se pudo guardar, la pantalla de avisos se la vuelve a pedir.
+              const irADocumentos = () => setTimeout(() => this.router.navigate(['/verificar-datos']), 1500);
+              this.legal.acceptAll().subscribe({ next: irADocumentos, error: irADocumentos });
             },
             error: (err) => {
               // Si por algo falla el auto-login, lo mandamos al login normal

@@ -115,6 +115,17 @@
           </div>
         </div>
 
+        <label class="flex align-items-start gap-2 mt-3 text-sm line-height-3 cursor-pointer">
+          <input type="checkbox" formControlName="aceptaAvisos" class="mt-1" style="width:18px;height:18px;accent-color:#1d9e75;flex-shrink:0">
+          <span>
+            He leído el <a [href]="legalUrls.privacidadFisio" target="_blank" rel="noopener" class="text-activa-primary font-bold">aviso de privacidad</a>
+            y acepto los <a [href]="legalUrls.terminos" target="_blank" rel="noopener" class="text-activa-primary font-bold">términos y reglas de uso</a> de Activa.
+          </span>
+        </label>
+        <small class="p-error block mt-1 text-xs" *ngIf="perfilForm.get('aceptaAvisos')?.invalid && perfilForm.get('aceptaAvisos')?.touched">
+          Debes aceptar el aviso de privacidad y los términos para crear tu cuenta.
+        </small>
+
         <p-button label="Registrarme" icon="pi pi-arrow-right" iconPos="right" type="submit" [disabled]="perfilForm.invalid" [loading]="isLoading" styleClass="w-full p-3 border-round-md mt-4 shadow-2 bg-activa-primary border-none hover:bg-activa-primary-hover"></p-button>
 
       </form>
