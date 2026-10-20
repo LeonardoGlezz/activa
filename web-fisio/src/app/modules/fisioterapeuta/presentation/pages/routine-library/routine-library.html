@@ -1,0 +1,249 @@
+<p-toast position="top-right"></p-toast>
+
+<div class="routine-library-page">
+  <div class="ambient-orb orb-a"></div>
+  <div class="ambient-orb orb-b"></div>
+
+  <div class="library-header">
+    <div>
+      <h1>Biblioteca de Rutinas</h1>
+      <p>&nbsp;</p>
+      <p>Plantillas de tus Mejores Rutinas</p>
+    </div>
+    <input pInputText [(ngModel)]="searchTerm" placeholder="Buscar rutina o etiqueta" class="header-search header-search-compact">
+  </div>
+
+  <div class="library-grid">
+    <section class="builder-card">
+      <h2>Crear Rutina</h2>
+      <div class="field-group">
+        <label>Nombre *</label>
+        <input pInputText [(ngModel)]="form.name" placeholder="Ej. Rutina Lumbar Inicial" class="field-input">
+      </div>
+      <div class="field-group">
+        <label>Etiqueta</label>
+        <input pInputText [(ngModel)]="form.tag" placeholder="Lumbar / Hombro / General" class="field-input">
+      </div>
+
+      <div class="field-group">
+        <label>Buscar ejercicios</label>
+        <input pInputText [(ngModel)]="exerciseSearch" placeholder="Nombre o zona corporal" class="field-input">
+      </div>
+
+      <div class="builder-composer builder-composer-single">
+        <div class="exercise-list">
+          <div class="exercise-item" [class.selected]="selectedExerciseIds.includes(exercise.id)" *ngFor="let exercise of filteredExercises">
+            <div class="exercise-shell">
+              <button class="exercise-media-thumb" type="button" (click)="openExercisePreview(exercise, 'builder')">
+                <img [src]="exercise.videoUrl || placeholderImg" alt="exercise.name" (error)="$any($event.target).src = placeholderImg">
+                <span class="exercise-media-overlay"><i class="pi pi-play-circle"></i></span>
+              </button>
+
+              <div class="exercise-body">
+                <div class="exercise-top">
+                  <label class="exercise-check">
+                    <input type="checkbox" [checked]="selectedExerciseIds.includes(exercise.id)" (change)="toggleExercise(exercise.id)">
+                    <span>{{ exercise.name }}</span>
+                  </label>
+                  <div class="exercise-tools">
+                    <span class="zone-chip">{{ exercise.bodyZone }}</span>
+                    <button class="btn-preview" type="button" (click)="openExercisePreview(exercise, 'builder')">
+                      <i class="pi pi-eye"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <p class="exercise-desc">{{ exercise.description }}</p>
+              </div>
+            </div>
+
+            <div class="exercise-config" *ngIf="selectedExerciseIds.includes(exercise.id)">
+              <input pInputText type="number" [(ngModel)]="getExerciseConfig(exercise.id).sets" placeholder="Series" class="field-input compact">
+              <input pInputText type="number" [(ngModel)]="getExerciseConfig(exercise.id).repetitions" placeholder="Repeticiones" class="field-input compact">
+              <input pInputText [(ngModel)]="getExerciseConfig(exercise.id).notes" placeholder="Notas" class="field-input compact wide">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="save-btn" (click)="saveTemplate()" type="button">Guardar Rutina</button>
+    </section>
+
+    <section class="list-card">
+      <h2>Listar Rutinas</h2>
+      <div class="loading-box" *ngIf="loading">Cargando rutinas...</div>
+      <div class="template-list" *ngIf="!loading">
+        <button class="template-item template-item-button" *ngFor="let template of visibleRoutineTemplates" type="button" (click)="openTemplateEditor(template)">
+          <div>
+            <p class="template-name">{{ template.name }}</p>
+            <p class="template-meta">{{ template.tag }} · {{ template.exercises.length }} ejercicio(s)</p>
+            <p class="template-open-hint">*</p>
+          </div>
+          <span class="template-date">{{ template.created_at | date:'dd/MM/yyyy HH:mm' }}</span>
+        </button>
+
+        <div class="loading-box" *ngIf="visibleRoutineTemplates.length === 0">No hay rutinas registradas.</div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<p-dialog [(visible)]="showExercisePreviewModal" [modal]="true" [closable]="true" [dismissableMask]="true"
+  [style]="{ width: '94vw', maxWidth: '1120px' }" styleClass="routine-preview-modal" [showHeader]="false">
+  <div class="preview-popup" *ngIf="previewExercise">
+    <div class="preview-popup-media">
+      <ng-container *ngIf="previewExercise.videoUrl && isEmbeddableVideo(previewExercise.videoUrl); else previewMediaFileTpl">
+        <iframe class="preview-popup-frame" [src]="getSafeMediaUrl(previewExercise.videoUrl)" title="visualizador-ejercicio"></iframe>
+      </ng-container>
+      <ng-template #previewMediaFileTpl>
+        <ng-container *ngIf="previewExercise.videoUrl && isDirectVideoFile(previewExercise.videoUrl); else previewMediaImageTpl">
+          <video class="preview-popup-video" [src]="previewExercise.videoUrl" controls playsinline></video>
+        </ng-container>
+      </ng-template>
+      <ng-template #previewMediaImageTpl>
+        <img [src]="previewExercise.videoUrl || placeholderImg" alt="previewExercise.name" (error)="$any($event.target).src = placeholderImg">
+      </ng-template>
+    </div>
+    <div class="preview-popup-info">
+      <div class="preview-popup-head">
+        <span class="zone-chip">{{ previewExercise.bodyZone }}</span>
+        <span class="preview-context-chip">{{ previewContext === 'editor' ? 'Edicion de rutina' : 'Constructor de rutina' }}</span>
+      </div>
+      <h2>{{ previewExercise.name }}</h2>
+      <p>{{ previewExercise.description || 'Sin descripción disponible para este ejercicio.' }}</p>
+
+      <div class="preview-edit-grid">
+        <div class="preview-edit-card">
+          <span class="preview-stat-label">Series</span>
+          <input pInputText type="number" [(ngModel)]="getPreviewConfig().sets" min="1" class="field-input preview-input">
+        </div>
+        <div class="preview-edit-card">
+          <span class="preview-stat-label">Repeticiones</span>
+          <input pInputText type="number" [(ngModel)]="getPreviewConfig().repetitions" min="1" class="field-input preview-input">
+        </div>
+      </div>
+
+      <div class="preview-notes-box preview-notes-box-editable">
+        <span class="preview-stat-label">Notas clinicas</span>
+        <textarea [(ngModel)]="getPreviewConfig().notes" rows="5" class="field-input preview-textarea" placeholder="Precauciones, observaciones y pautas del ejercicio"></textarea>
+      </div>
+
+      <button class="save-btn" type="button" (click)="showExercisePreviewModal = false">Guardar y cerrar</button>
+    </div>
+  </div>
+</p-dialog>
+
+<p-dialog [(visible)]="showTemplateEditorModal" [modal]="true" [closable]="false" [dismissableMask]="false"
+  [style]="{ width: '96vw', maxWidth: '1260px' }" styleClass="template-editor-modal" [showHeader]="false">
+  <div class="template-editor-wrap" *ngIf="!loadingTemplateDetail; else loadingTemplateEditorTpl">
+    <div class="template-editor-head">
+      <div>
+        <h2>{{ editingForm.name || 'Rutina' }}</h2>
+        <p></p>
+      </div>
+      <button class="editor-close-btn" type="button" (click)="requestCloseTemplateEditor()" aria-label="Cerrar editor">
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+
+    <div class="template-editor-grid">
+      <section class="editor-left-card">
+        <div class="field-group">
+          <label>Nombre de rutina</label>
+          <input pInputText [(ngModel)]="editingForm.name" class="field-input" placeholder="Nombre de rutina">
+        </div>
+
+        <div class="field-row-2">
+          <div class="field-group">
+            <label>Etiqueta</label>
+            <input pInputText [(ngModel)]="editingForm.tag" class="field-input" placeholder="Etiqueta">
+          </div>
+          <div class="field-group">
+            <label>Buscar ejercicio (global)</label>
+            <input pInputText [(ngModel)]="editingExerciseSearch" class="field-input" placeholder="Filtrar en todo el banco de ejercicios">
+          </div>
+        </div>
+
+        <div class="editor-exercise-list">
+          <div class="editor-exercise-card" [class.selected]="isEditingExerciseSelected(exercise.id)" *ngFor="let exercise of filteredEditingExercises">
+            <div class="exercise-shell exercise-shell-editor">
+              <button class="exercise-media-thumb exercise-media-thumb-editor" type="button" (click)="openExercisePreview(exercise, 'editor')">
+                <img [src]="exercise.videoUrl || placeholderImg" alt="exercise.name" (error)="$any($event.target).src = placeholderImg">
+                <span class="exercise-media-overlay"><i class="pi pi-play-circle"></i></span>
+              </button>
+
+              <div class="exercise-body">
+                <div class="editor-exercise-top">
+                  <label class="exercise-check">
+                    <input type="checkbox" [checked]="isEditingExerciseSelected(exercise.id)" (change)="toggleEditingExercise(exercise.id)">
+                    <p class="template-name">{{ exercise.name }}</p>
+                  </label>
+                  <span class="zone-chip">{{ exercise.bodyZone }}</span>
+                  <button class="btn-preview" type="button" (click)="openExercisePreview(exercise, 'editor')">
+                    <i class="pi pi-eye"></i>
+                  </button>
+                </div>
+                <p class="exercise-desc">{{ exercise.description || 'Sin descripción.' }}</p>
+              </div>
+            </div>
+            <div class="exercise-config" *ngIf="isEditingExerciseSelected(exercise.id)">
+              <input pInputText type="number" [(ngModel)]="getEditingExerciseConfig(exercise.id).sets" placeholder="Series" class="field-input compact">
+              <input pInputText type="number" [(ngModel)]="getEditingExerciseConfig(exercise.id).repetitions" placeholder="Repeticiones" class="field-input compact">
+              <input pInputText [(ngModel)]="getEditingExerciseConfig(exercise.id).notes" placeholder="Notas" class="field-input compact wide">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="editor-right-card">
+        <h3>Asignar a Paciente</h3>
+        
+
+        <input pInputText [(ngModel)]="patientSearch" (input)="filterPatients()" placeholder="Buscar por nombre" class="field-input">
+
+        <div class="patient-list-box">
+          <button class="patient-row" [class.selected]="selectedAssignPatientId === patient.id" *ngFor="let patient of filteredPatients" type="button" (click)="selectAssignPatient(patient.id)">
+            <div>
+              <p class="template-name">{{ patient.name }}</p>
+              <span class="template-meta">{{ patient.email || '***' }}</span>
+            </div>
+            <i class="pi pi-chevron-right"></i>
+          </button>
+        </div>
+
+        <button class="save-btn" type="button" (click)="assignToPatientEditor()">
+          Abrir en expediente del paciente
+        </button>
+
+        <button class="save-btn" type="button" (click)="saveTemplateEditor()">
+          Guardar cambios de rutina
+        </button>
+      </section>
+    </div>
+  </div>
+
+  <ng-template #loadingTemplateEditorTpl>
+    <div class="loading-box">Cargando rutina seleccionada...</div>
+  </ng-template>
+</p-dialog>
+
+<p-dialog [(visible)]="showEditorConfirmModal" [modal]="true" [closable]="false" [dismissableMask]="false"
+  [style]="{ width: '92vw', maxWidth: '520px' }" styleClass="custom-dialog" [showHeader]="false">
+  <div class="editor-confirm-wrap">
+    <span class="editor-confirm-badge">
+      {{ editorConfirmMode === 'close-with-save' ? 'Confirmacion de cambios' : 'Sin cambios detectados' }}
+    </span>
+    <h3>{{ editorConfirmMode === 'close-with-save' ? 'Deseas guardar los cambios?' : 'No tienes cambios' }}</h3>
+    <p>
+      {{ editorConfirmMode === 'close-with-save'
+        ? 'Se detectaron cambios en la rutina. Puedes guardarlos antes de salir.'
+        : 'No tienes cambios en esta rutina. Continuar cerrara el editor.' }}
+    </p>
+    <div class="editor-confirm-actions">
+      <button class="btn-cancel" type="button" (click)="cancelEditorConfirm()">Cancelar</button>
+      <button class="btn-save" type="button" (click)="confirmEditorAction()">
+        {{ editorConfirmMode === 'close-with-save' ? 'Aceptar (Guardar cambios)' : 'Continuar' }}
+      </button>
+    </div>
+  </div>
+</p-dialog>

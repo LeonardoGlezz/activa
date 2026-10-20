@@ -1,0 +1,187 @@
+/* 1. VENCER AL MODO OSCURO (Fondo de pantalla claro) */
+ion-content.documents-content {
+  --background: #f4f7f9 !important;
+  --ion-background-color: #f4f7f9 !important;
+  background: #f4f7f9 !important;
+}
+
+/* === ESTADO VACÍO (Empty State) === */
+.empty-state {
+  padding-top: 3rem;
+  
+  .empty-icon {
+    font-size: 4rem;
+    color: #94a3b8;
+    margin-bottom: 1rem;
+  }
+  
+  h3 {
+    font-weight: 800;
+    color: #0f172a !important;
+    margin-bottom: 0.5rem;
+  }
+  
+  p {
+    color: #64748b !important;
+    font-size: 0.95rem;
+  }
+}
+
+/* VENCER EL FONDO NEGRO DE LA LISTA */
+ion-list.doc-list {
+  background: transparent !important;
+  --background: transparent !important;
+  padding: 0;
+}
+
+/* === CAJAS SOFT UI (TARJETAS DE DOCUMENTOS) === */
+.doc-card {
+  margin: 0 0 16px 0;
+  
+  /* Forzamos el blanco puro y la sombra moderna */
+  --background: #ffffff !important;
+  background: #ffffff !important;
+  border-radius: 20px !important;
+  border: none !important;
+  box-shadow: 0 8px 20px -4px rgba(100, 116, 139, 0.15) !important;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  ion-card-content {
+    padding: 20px;
+  }
+}
+
+.doc-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Ícono del documento con fondo translúcido (Estilo premium) */
+.doc-icon {
+  font-size: 1.8rem;
+  color: #0284c7 !important; // Azul vibrante
+  background: rgba(125, 211, 252, 0.2); // Fondo azulito
+  padding: 10px;
+  border-radius: 14px;
+  flex-shrink: 0;
+}
+
+.doc-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.doc-name {
+  font-weight: 800;
+  font-size: 1.05rem;
+  margin: 0 0 4px 0;
+  color: #0f172a !important; // Obligamos texto oscuro
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.doc-meta {
+  font-size: 0.85rem;
+  color: #64748b !important;
+  margin: 0;
+  font-weight: 600;
+}
+
+.doc-open {
+  font-size: 20px;
+  color: #94a3b8 !important;
+}
+
+/* === FORMULARIO PARA AGREGAR NUEVO DOCUMENTO === */
+.add-form {
+  background: #ffffff !important;
+  border-radius: 24px;
+  margin: 16px 0;
+  box-shadow: 0 10px 25px -4px rgba(100, 116, 139, 0.15);
+  padding-bottom: 20px;
+
+  ion-item {
+    --background: transparent;
+    --border-color: #e2e8f0;
+    
+    ion-label {
+      color: #475569 !important;
+      font-weight: 600;
+    }
+    
+    ion-input, ion-select {
+      color: #0f172a !important;
+      font-weight: 500;
+    }
+  }
+}
+
+.form-hint {
+  font-size: 0.85rem;
+  color: #64748b !important;
+  margin: 16px 0;
+  padding: 0 16px;
+  line-height: 1.4;
+}
+
+/* === BOTONES GENERALES === */
+ion-button {
+  margin-top: 12px;
+  --border-radius: 14px;
+  font-weight: 700;
+
+  &[fill="outline"] {
+    --border-color: #cbd5e1;
+    --border-width: 2px;
+    --color: #475569;
+    /* === ESTILOS PARA SUBIR PDF === */
+.file-upload-section {
+  padding: 0 16px;
+  margin-bottom: 16px;
+
+  .section-label {
+    color: #475569;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+  }
+
+  .upload-btn {
+    --border-color: #0284c7;
+    --color: #0284c7;
+    --border-style: dashed; // Borde punteado para indicar zona de subida
+    margin-top: 0;
+  }
+
+  .selected-file-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f0fdf4; // Fondito verde de éxito
+    color: #166534;
+    padding: 10px 14px;
+    border-radius: 12px;
+    margin-top: 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
+
+    ion-icon {
+      font-size: 1.2rem;
+    }
+    
+    span {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+}
+  }
+}

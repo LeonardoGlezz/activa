@@ -1,0 +1,204 @@
+<div class="dashboard-wrapper">
+  <div class="dashboard-container">
+
+    <!-- Cargando -->
+    <div *ngIf="cargando" class="loading-state">
+      <p>⏳ Cargando datos...</p>
+    </div>
+
+    <!-- Error -->
+    <div *ngIf="error" class="error-state">
+      <p>❌ {{ error }}</p>
+      <button class="btn-small btn-warning" (click)="cargarOverview()">Reintentar</button>
+    </div>
+
+    <!-- Contenido principal -->
+    <ng-container *ngIf="!cargando && !error">
+
+      <!-- Header -->
+      <div class="dashboard-header">
+        <div class="header-content">
+          <h1>Panel de Administración</h1>
+          <p>Bienvenido, Administrador</p>
+        </div>
+      </div>
+
+      <!-- Tarjetas de estadísticas principales -->
+      <div class="stats-grid">
+        <div class="stat-card stat-primary">
+          <div class="stat-icon">👥</div>
+          <div class="stat-content">
+            <h3>Fisios Aprobados</h3>
+            <p class="stat-number">{{ fisiosSuscritos }}</p>
+          </div>
+        </div>
+
+        <div class="stat-card stat-warning">
+          <div class="stat-icon">⏳</div>
+          <div class="stat-content">
+            <h3>Por Validar</h3>
+            <p class="stat-number">{{ fisiosValidar }}</p>
+          </div>
+        </div>
+
+        <div class="stat-card stat-success">
+          <div class="stat-icon">🏥</div>
+          <div class="stat-content">
+            <h3>Pacientes Registrados</h3>
+            <p class="stat-number">{{ totalPacientes }}</p>
+          </div>
+        </div>
+
+        <div class="stat-card stat-info">
+          <div class="stat-icon">📅</div>
+          <div class="stat-content">
+            <h3>Total Citas</h3>
+            <p class="stat-number">{{ totalCitas }}</p>
+          </div>
+        </div>
+
+        <div class="stat-card stat-success">
+          <div class="stat-icon">💰</div>
+          <div class="stat-content">
+            <h3>Ganancias (MXN)</h3>
+            <p class="stat-number">${{ gananciasTotal | number:'1.2-2' }}</p>
+          </div>
+        </div>
+
+        <div class="stat-card stat-danger">
+          <div class="stat-icon">🚫</div>
+          <div class="stat-content">
+            <h3>Rechazados</h3>
+            <p class="stat-number">{{ fisiosRechazados }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paneles de detalle -->
+      <div class="dashboard-content">
+        <div class="content-row">
+
+          <!-- Citas por estado -->
+          <div class="panel-card">
+            <div class="card-header">
+              <h2>Citas por Estado <span class="badge">{{ totalCitas }}</span></h2>
+            </div>
+            <div class="panel-list">
+              <div *ngFor="let item of overview?.appointments?.by_status | keyvalue" class="list-item">
+                <div class="item-info">
+                  <h4>{{ item.key }}</h4>
+                  <p>{{ item.value }} citas</p>
+                </div>
+              </div>
+              <div *ngIf="!overview?.appointments?.by_status || (overview?.appointments?.by_status | keyvalue)?.length === 0" class="list-item">
+                <p>Sin datos de citas aún.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Resumen de fisioterapeutas -->
+          <div class="panel-card">
+            <div class="card-header">
+              <h2>Fisioterapeutas <span class="badge">{{ overview?.physiotherapists?.total }}</span></h2>
+            </div>
+            <div class="panel-list">
+              <div class="list-item">
+                <div class="item-info">
+                  <h4>✅ Aprobados</h4>
+                  <p>{{ overview?.physiotherapists?.approved }}</p>
+                </div>
+              </div>
+              <div class="list-item">
+                <div class="item-info">
+                  <h4>⏳ Pendientes de validar</h4>
+                  <p>{{ overview?.physiotherapists?.pending_approval }}</p>
+                </div>
+                <div class="item-actions">
+                  <a routerLink="/fisioterapeuta" class="btn-small btn-warning">Ver lista</a>
+                </div>
+              </div>
+              <div class="list-item">
+                <div class="item-info">
+                  <h4>📝 Perfil incompleto</h4>
+                  <p>{{ overview?.physiotherapists?.pending_profile }}</p>
+                </div>
+              </div>
+              <div class="list-item">
+                <div class="item-info">
+                  <h4>❌ Rechazados</h4>
+                  <p>{{ overview?.physiotherapists?.rejected }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="content-row">
+
+          <!-- Ganancias detalle -->
+          <div class="panel-card">
+            <div class="card-header">
+              <h2>💰 Ganancias</h2>
+            </div>
+            <div class="panel-list">
+              <div class="list-item">
+                <div class="item-info">
+                  <h4>Total acumulado</h4>
+                  <p class="amount">${{ gananciasTotal | number:'1.2-2' }} MXN</p>
+                </div>
+              </div>
+              <div class="list-item">
+                <div class="item-info">
+                  <h4>Citas completadas</h4>
+                  <p>{{ citasCompletadas }}</p>
+                </div>
+              </div>
+              <div class="list-item">
+                <div class="item-info">
+                  <h4>Tarifa por cita</h4>
+                  <p>${{ overview?.ganancias?.tarifa_por_cita | number:'1.2-2' }} MXN</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cuentas de usuarios -->
+          <div class="panel-card">
+            <div class="card-header">
+              <h2>👤 Cuentas de Usuarios</h2>
+            </div>
+            <div class="panel-list">
+              <div class="list-item">
+                <div class="item-info">
+                  <h4>Pacientes</h4>
+                  <p>{{ overview?.users?.patient_accounts }}</p>
+                </div>
+              </div>
+              <div class="list-item">
+                <div class="item-info">
+                  <h4>Fisioterapeutas</h4>
+                  <p>{{ overview?.users?.physio_accounts }}</p>
+                </div>
+              </div>
+              <div class="list-item">
+                <div class="item-info">
+                  <h4>Administradores</h4>
+                  <p>{{ overview?.users?.admin_accounts }}</p>
+                </div>
+              </div>
+              <div class="list-item">
+                <div class="item-info">
+                  <h4>Pacientes vinculados</h4>
+                  <p>{{ overview?.patients_linked }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </ng-container>
+  </div>
+</div>

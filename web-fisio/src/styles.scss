@@ -1,0 +1,86 @@
+/* 1. Importar tipografía 'Inter' */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import "primeng/resources/themes/lara-light-cyan/theme.css";
+@import "primeng/resources/primeng.min.css";
+
+/* 2. Variables Globales y Sobrescritura de PrimeNG */
+/* 2. Variables Globales y Sobrescritura de PrimeNG (TEMA CLARO ACTIVA) */
+:root {
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  /* Tonos Principales ACTIVA (Basados en el logo) */
+  --activa-primary: #0097A7;
+  /* Cyan/Teal vibrante pero legible para botones */
+  --activa-primary-hover: #006064;
+  /* Cyan oscuro para cuando pasas el mouse */
+  --activa-primary-light: #E0F7FA;
+  /* Cyan súper claro (menta) para fondos de íconos */
+  --activa-brand-dark: #0A192F;
+  /* El azul marino oscuro de la "pata" de la A del logo */
+
+  /* Tonos de Fondo y Superficies (Modo Claro Relajante / Anti-fatiga) */
+  --activa-bg-main: #DFE4EA;
+  /* Gris azulado con más cuerpo para el fondo general */
+  --activa-surface: #F1F5F9;
+  /* Tono perla/pizarra claro (0% blanco puro) para tarjetas y menús */
+  --activa-surface-border: #CBD5E1;
+  /* Bordes en armonía para no verse tan duros */
+
+  /* Tonos de Texto (Para fondos claros) */
+  --activa-text-main: #1E293B;
+  /* Texto principal (Azul marino casi negro) */
+  --activa-text-muted: #64748B;
+  /* Texto secundario (Gris medio) */
+
+  /* Sobrescribir PrimeNG automáticamente */
+  --primary-color: var(--activa-primary);
+  --primary-color-text: #ffffff;
+  --text-color: var(--activa-text-main);
+  --text-color-secondary: var(--activa-text-muted);
+  --surface-ground: var(--activa-bg-main);
+  --surface-card: var(--activa-surface);
+  --surface-border: var(--activa-surface-border);
+}
+
+/* 3. Configuración del Body (Sin scroll general) */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-family);
+  background-color: var(--surface-ground);
+  /* Forzamos el fondo oscuro general */
+  color: var(--text-color);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 4. Clases Utilitarias */
+.bg-activa-primary {
+  background-color: var(--activa-primary) !important;
+}
+
+.text-activa-primary {
+  color: var(--activa-primary) !important;
+}
+
+.border-activa-primary {
+  border-color: var(--activa-primary) !important;
+}
+
+.bg-activa-main {
+  background-color: var(--activa-bg-main) !important;
+}
+
+.bg-activa-surface {
+  background-color: var(--activa-surface) !important;
+}
+
+/* Evitar el blanco puro en PrimeFlex */
+.bg-white {
+  background-color: var(--activa-surface) !important;
+}
+
+.bg-activa-primary-light {
+  background-color: var(--activa-primary-light) !important;
+}

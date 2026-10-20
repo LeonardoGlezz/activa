@@ -1,0 +1,46 @@
+{
+  "name": "web-code-studio-app-backend",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/MiguelAngelGG19/Web-Code-Studio-App-Backend#readme",
+  "bugs": {
+    "url": "https://github.com/MiguelAngelGG19/Web-Code-Studio-App-Backend/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MiguelAngelGG19/Web-Code-Studio-App-Backend.git"
+  },
+  "license": "ISC",
+  "author": "web&code-studio",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only src/main.ts",
+    "build": "tsc",
+    "start": "node dist/main.js"
+  },
+  "dependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/multer": "^2.1.0",
+    "@types/node": "^25.3.3",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "google-auth-library": "^10.6.1",
+    "jsonwebtoken": "^9.0.3",
+    "multer": "^2.1.1",
+    "mysql2": "^3.18.2",
+    "react-router-dom": "^7.13.1",
+    "sequelize": "^6.37.7",
+    "stripe": "^22.0.1",
+    "typescript": "^5.9.3",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "ts-node-dev": "^2.0.0"
+  }
+}

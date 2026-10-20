@@ -1,0 +1,30 @@
+<div class="flex flex-column align-items-center justify-content-center min-h-screen surface-ground p-4">
+  
+  <p-card styleClass="shadow-3 border-round-2xl w-full max-w-30rem text-center overflow-hidden surface-card relative pt-4">
+    <div class="h-1rem bg-activa-primary w-full absolute top-0 left-0"></div>
+
+    <div class="pb-3 px-2">
+      <div class="inline-flex align-items-center justify-content-center surface-ground border-circle mb-4 border-1 surface-border" style="width: 80px; height: 80px;">
+        <i class="pi pi-envelope text-4xl text-activa-primary relative">
+          <span class="absolute top-0 right-0 bg-orange-500 border-circle w-1rem h-1rem border-2 surface-ground"></span>
+        </i>
+      </div>
+
+      <h2 class="text-3xl font-semibold mb-3 text-color">¡Casi listo!</h2>
+      <p class="text-color-secondary mb-2">Hemos enviado un enlace de confirmación a:</p>
+      <p class="font-medium text-color mb-4 text-lg">javier.martinez&#64;activa.pro</p>
+      <p class="text-sm text-color-secondary mb-5 px-4 line-height-3">Por favor, revisa tu bandeja de entrada y haz clic en el enlace para activar tu cuenta de especialista en ACTIVA.</p>
+
+      <p-button label="Abrir mi correo" icon="pi pi-external-link" iconPos="right" routerLink="/fisioterapeuta/cuenta-verificada" styleClass="w-full p-3 mb-4 border-round-md"></p-button>
+
+      <div class="text-sm">
+        <span class="text-color-secondary">¿No recibiste el correo? </span>
+        <a href="#" class="font-medium text-activa-primary no-underline hover:text-color transition-colors">Reenviar enlace</a>
+      </div>
+    </div>
+  </p-card>
+
+  <div class="mt-5 text-color-secondary text-sm flex align-items-center gap-2 cursor-pointer hover:text-color transition-colors">
+    <i class="pi pi-question-circle"></i> ¿Necesitas ayuda?
+  </div>
+</div>

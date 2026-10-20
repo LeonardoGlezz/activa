@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <title>ACTIVA - Fisioterapia</title>
+
+  <base href="/" />
+
+  <meta name="color-scheme" content="light dark" />
+  <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="msapplication-tap-highlight" content="no" />
+
+  <link rel="icon" type="image/png" href="assets/icon/favicon.png" />
+
+  <!-- add to homescreen for ios -->
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+
+  <!-- Polyfill: evita "Cannot read properties of null (reading 'getSelection')" en WebView/Capacitor -->
+  <script>
+    (function() {
+      var safeContainer = (typeof document !== 'undefined' && document) ? (document.body || document.documentElement || {}) : {};
+      var emptyRange = { collapsed: true, commonAncestorContainer: safeContainer };
+      var mockSelection = {
+        anchorNode: null, anchorOffset: 0, focusNode: null, focusOffset: 0,
+        isCollapsed: true, rangeCount: 0, type: 'None',
+        addRange: function(){}, removeAllRanges: function(){}, removeRange: function(){},
+        getRangeAt: function(){ return emptyRange; }, toString: function(){ return ''; }
+      };
+      function safeGetSelection() {
+        try {
+          var sel = (typeof document !== 'undefined' && document.getSelection) ? document.getSelection() : null;
+          return sel || mockSelection;
+        } catch (e) { return mockSelection; }
+      }
+      if (typeof document !== 'undefined' && document) {
+        try {
+          var orig = document.getSelection;
+          document.getSelection = function() {
+            var r = orig ? orig.call(document) : null;
+            return r || mockSelection;
+          };
+        } catch (e) {}
+      }
+      if (typeof window !== 'undefined' && window && !window.getSelection) {
+        window.getSelection = safeGetSelection;
+      }
+    })();
+  </script>
+</head>
+
+<body style="background:#f1f5f9;min-height:100vh">
+  <app-root></app-root>
+</body>
+
+</html>

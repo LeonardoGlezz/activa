@@ -1,0 +1,24 @@
+/* --- TABS REDISEÑADOS --- */
+::ng-deep .custom-tabview .p-tabview .p-tabview-nav { background: transparent; border-bottom: 2px solid var(--surface-border); gap: 1rem; }
+::ng-deep .custom-tabview .p-tabview .p-tabview-nav li .p-tabview-nav-link { background: transparent; border: none; color: var(--text-color-secondary); font-weight: 600; padding: 1rem 0.5rem; transition: all 0.2s; border-bottom: 3px solid transparent; margin-bottom: -2px;}
+::ng-deep .custom-tabview .p-tabview .p-tabview-nav li:not(.p-highlight):not(.p-disabled):hover .p-tabview-nav-link { color: var(--activa-primary); }
+::ng-deep .custom-tabview .p-tabview .p-tabview-nav li.p-highlight .p-tabview-nav-link { background: transparent; color: var(--activa-primary) !important; border-color: var(--activa-primary) !important;}
+::ng-deep .custom-tabview .p-tabview .p-tabview-panels { background: transparent; padding: 0;}
+
+/* --- ESTÉTICA DE CITAS PASADAS --- */
+.past-appointment-card {
+  background-color: #f8fafc !important; /* Un fondo muy sutilmente gris */
+  opacity: 0.7; /* Opacidad bajita */
+  transition: all 0.2s;
+}
+.past-appointment-card:hover {
+  opacity: 1;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+
+/* --- COLORES DE LAS FRANJAS (Nombres corregidos) --- */
+.solid-teal { background-color: var(--activa-primary) !important; }
+.bordered-orange { background-color: #f97316 !important; }
+.bordered-purple { background-color: #a855f7 !important; }
+.bordered-red { background-color: #ef4444 !important; }
+.bg-gray-400 { background-color: #94a3b8 !important; } /* Gris para el historial */

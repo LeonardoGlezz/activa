@@ -1,0 +1,150 @@
+<p-toast></p-toast>
+
+<div class="fadein">
+  
+  <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center mb-4 gap-4">
+    <div>
+      <h1 class="text-3xl font-bold text-color m-0 mb-2">Agenda de Pacientes</h1>
+      <p class="text-color-secondary m-0">Gestiona citas y datos administrativos básicos.</p>
+    </div>
+    <div class="flex gap-3">
+      <p-button label="Agregar Nuevo Paciente" icon="pi pi-plus" routerLink="/dashboard/nuevo-paciente" styleClass="bg-activa-primary border-none shadow-1 hover:bg-activa-primary-hover border-round-xl px-4 py-2 font-bold"></p-button>
+    </div>
+  </div>
+
+ <div class="bg-white border-round-2xl border-1 surface-border p-2 mb-5 flex flex-column xl:flex-row gap-2 align-items-center shadow-none">
+    
+    <span class="p-input-icon-left w-full xl:w-30rem">
+      <i class="pi pi-search text-color-secondary ml-3"></i>
+      <input pInputText type="text" placeholder="Buscar por nombre" 
+             [(ngModel)]="searchQuery" 
+             (input)="filtrarPacientes()" 
+             [pKeyFilter]="regexLetras"
+             class="w-full border-none py-2 shadow-none text-color-secondary font-medium" style="padding-left: 4rem;">
+    </span>
+    
+    <div class="border-left-1 surface-border hidden xl:block" style="height: 2rem;"></div>
+    
+    <div class="flex gap-2 overflow-x-auto w-full pb-2 xl:pb-0 px-3 align-items-center">
+      <button class="flex-shrink-0 p-button p-component bg-activa-primary-light text-activa-primary border-none border-round-xl px-4 py-2 font-bold transition-colors">
+        Todos los Pacientes ({{ filteredPatients.length }})
+      </button>
+    </div>
+  </div>
+
+  <div class="grid formgrid">
+    
+    <div *ngFor="let patient of filteredPatients" class="col-12 md:col-6 xl:col-4 mb-4 p-2">
+      <div (click)="verDetallePaciente(patient.id)" class="bg-white border-round-2xl border-1 surface-border p-4 shadow-none flex flex-column h-full hover:shadow-2 hover:scale-101 transition-all duration-300 cursor-pointer">
+        
+        <div class="flex gap-3 mb-4 align-items-center">
+          <div class="relative flex-shrink-0">
+            <img [src]="patient.avatar" class="border-circle w-4rem h-4rem object-cover shadow-1">
+          </div>
+          <div class="flex flex-column justify-content-center flex-1 overflow-hidden">
+            <span class="font-bold text-lg text-color white-space-nowrap overflow-hidden text-overflow-ellipsis">{{patient.name}}</span>
+            <span class="text-color-secondary text-sm mb-1 text-overflow-ellipsis">{{patient.email}}</span>
+          </div>
+        </div>
+
+        <div class="flex justify-content-between mb-4 gap-2 bg-gray-50 border-round-xl p-3 border-1 surface-border">
+          <div class="flex flex-column align-items-center flex-1">
+            <span class="text-xs font-bold text-color-secondary mb-1 uppercase tracking-wide">Año Nac.</span>
+            <span class="font-bold text-sm text-color">{{patient.birth_year}}</span>
+          </div>
+          <div class="flex flex-column align-items-center flex-1 border-left-1 border-right-1 surface-border px-2">
+            <span class="text-xs font-bold text-color-secondary mb-1 uppercase tracking-wide">Estatura (m)</span>
+            <span class="font-bold text-sm text-color">{{patient.height}}</span>
+          </div>
+          <div class="flex flex-column align-items-center flex-1">
+            <span class="text-xs font-bold text-color-secondary mb-1 uppercase tracking-wide">Peso (Kg)</span>
+            <span class="font-bold text-sm text-color">{{patient.weight}}</span>
+          </div>
+        </div>
+
+        <div class="flex gap-2 mt-auto pt-3 border-top-1 surface-border" (click)="$event.stopPropagation()">
+          <p-button label="Ver Paciente" icon="pi pi-eye" (onClick)="verDetallePaciente(patient.id)" styleClass="ver-paciente-btn border-round-lg w-full font-bold py-2 shadow-none"></p-button>
+          <p-button label="Editar Paciente" (onClick)="abrirModalEditar(patient)" styleClass="bg-white text-color border-1 surface-border hover:surface-hover border-round-lg w-full font-bold py-2 shadow-none"></p-button>
+        </div>
+        
+      </div>
+    </div>
+
+  </div>
+
+  <p-dialog header="Editar Datos Personales" 
+            [(visible)]="displayEditModal" 
+            [modal]="true" 
+            [style]="{ width: '45vw', minWidth: '350px' }" 
+            [draggable]="false" 
+            [resizable]="false"
+            [closable]="false"
+            styleClass="border-round-2xl overflow-hidden shadow-4">
+    
+    <div class="pt-4 pb-2 px-2">
+      <div class="flex flex-column align-items-center mb-5">
+        <div class="relative">
+          <div class="bg-activa-primary text-white border-circle flex align-items-center justify-content-center font-bold text-3xl shadow-2" style="width: 80px; height: 80px;">
+            {{ pacienteEditando.first_name?.charAt(0) || '' }}
+          </div>
+        </div>
+      </div>
+
+      <div class="grid formgrid p-fluid">
+        <div class="col-12 md:col-4 mb-3">
+          <label class="text-sm font-medium text-color-secondary mb-1 block">Nombre(s)</label>
+          <input pInputText [(ngModel)]="pacienteEditando.first_name" [pKeyFilter]="regexLetras" (focus)="$any($event.target).select()" class="p-2 border-round-md">
+        </div>
+        
+        <div class="col-12 md:col-4 mb-3">
+          <label class="text-sm font-medium text-color-secondary mb-1 block">Apellido Paterno</label>
+          <input pInputText [(ngModel)]="pacienteEditando.last_name_p" [pKeyFilter]="regexLetras" (focus)="$any($event.target).select()" class="p-2 border-round-md">
+        </div>
+
+        <div class="col-12 md:col-4 mb-3">
+          <label class="text-sm font-medium text-color-secondary mb-1 block">Apellido Materno</label>
+          <input pInputText [(ngModel)]="pacienteEditando.last_name_m" [pKeyFilter]="regexLetras" (focus)="$any($event.target).select()" class="p-2 border-round-md">
+        </div>
+
+        <div class="col-12 mb-3">
+          <label class="text-sm font-medium text-color-secondary mb-1 block">Correo Electrónico</label>
+          <span class="p-input-icon-left w-full">
+            <i class="pi pi-envelope text-color-secondary"></i>
+            <input pInputText type="email" [(ngModel)]="pacienteEditando.email" (focus)="$any($event.target).select()" class="p-2 border-round-md pl-5">
+          </span>
+        </div>
+
+        <div class="col-12 md:col-4 mb-3">
+          <label class="text-sm font-medium text-color-secondary mb-1 block">Año de Nacimiento</label>
+          <input type="text" 
+                 pInputText 
+                 pKeyFilter="int" 
+                 maxlength="4" 
+                 [ngModel]="pacienteEditando.birth_year" 
+                 (ngModelChange)="pacienteEditando.birth_year = $any($event)"
+                 (focus)="$any($event.target).select()" 
+                 class="w-full border-round-lg p-2 shadow-none">
+        </div>
+
+        <div class="col-12 md:col-4 mb-3">
+          <label class="text-sm font-medium text-color-secondary mb-1 block">Estatura (m)</label>
+          <input pInputText type="number" step="0.01" [(ngModel)]="pacienteEditando.height" (focus)="$any($event.target).select()" class="p-2 border-round-md no-spinners">
+        </div>
+
+        <div class="col-12 md:col-4 mb-3">
+          <label class="text-sm font-medium text-color-secondary mb-1 block">Peso (Kg)</label>
+          <input pInputText type="number" step="0.1" [(ngModel)]="pacienteEditando.weight" (focus)="$any($event.target).select()" class="p-2 border-round-md no-spinners">
+        </div>
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <div class="flex justify-content-between w-full pt-3 border-top-1 surface-border">
+        <p-button label="Cancelar" icon="pi pi-times" (onClick)="cerrarModal()" styleClass="p-button-text text-color-secondary hover:surface-hover"></p-button>
+        <p-button label="Guardar Cambios" icon="pi pi-save" (onClick)="guardarCambios()" styleClass="bg-activa-primary border-none hover:bg-activa-primary-hover border-round-md px-4"></p-button>
+      </div>
+    </ng-template>
+
+  </p-dialog>
+
+</div>

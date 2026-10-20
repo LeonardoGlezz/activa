@@ -1,0 +1,216 @@
+// ── Toolbar
+ion-toolbar.notif-toolbar {
+  --background: #fff;
+  --border-width: 0 0 1px 0;
+  --border-color: var(--activa-border);
+
+  ion-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--activa-text);
+    padding-inline-start: 0;
+  }
+
+  // ── Back button visible
+  ion-back-button {
+    --color: var(--activa-primary);
+    --icon-font-size: 22px;
+    display: block;
+  }
+}
+
+.mark-all-btn {
+  --color: var(--activa-primary);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
+  margin-right: 4px;
+
+  &[disabled] {
+    --color: var(--activa-text-muted);
+    opacity: 0.5;
+  }
+}
+
+// ── Fondo
+.notifications-content {
+  --background: #f4f6fb;
+}
+
+// ── Loading
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px;
+
+  ion-spinner { margin-bottom: 16px; }
+  p { color: var(--activa-text-muted); font-size: 15px; }
+}
+
+// ── Empty
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 64px 32px;
+
+  h3 {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--activa-text);
+    margin: 16px 0 8px;
+  }
+
+  p {
+    font-size: 14px;
+    color: var(--activa-text-muted);
+    line-height: 1.55;
+    max-width: 26ch;
+  }
+}
+
+.empty-icon-wrap {
+  width: 72px;
+  height: 72px;
+  border-radius: 24px;
+  background: #e8eef8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  ion-icon {
+    font-size: 36px;
+    color: var(--activa-text-muted);
+  }
+}
+
+// ── Contador no leídas
+.unread-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 20px 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--activa-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.unread-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--activa-primary);
+  flex-shrink: 0;
+}
+
+// ── Lista
+.notif-list {
+  padding: 8px 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+// ── Card
+.notif-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background: #fff;
+  border-radius: 18px;
+  padding: 14px 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.15s ease, opacity 0.2s ease;
+  border: 1.5px solid transparent;
+
+  &.unread {
+    background: #fff;
+    border-color: var(--activa-primary);
+    box-shadow: 0 3px 14px rgba(0,160,110,0.10);
+  }
+
+  // Las leídas se ven un poco más apagadas
+  &:not(.unread) {
+    opacity: 0.75;
+  }
+
+  &:active { transform: scale(0.985); }
+}
+
+// ── Ícono tipo con colores por tipo
+.notif-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  ion-icon { font-size: 22px; }
+
+  &.type-rutina       { background: #e6f9ef; ion-icon { color: #00a86b; } }
+  &.type-recordatorio { background: #fff5e0; ion-icon { color: #e09000; } }
+  &.type-mensaje      { background: #eef3ff; ion-icon { color: #4b72e8; } }
+  &.type-progreso     { background: #e6f9ef; ion-icon { color: #00a86b; } }
+  &.type-consejo      { background: #fff5e0; ion-icon { color: #e09000; } }
+  &.type-cita         { background: #fce8f4; ion-icon { color: #c0348c; } }
+}
+
+// ── Contenido
+.notif-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.notif-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+
+.notif-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--activa-text);
+  margin: 0;
+  line-height: 1.3;
+
+  &.bold { font-weight: 800; }
+}
+
+.notif-time {
+  font-size: 11px;
+  color: var(--activa-text-muted);
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.notif-body {
+  font-size: 13px;
+  color: var(--activa-text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+// ── Punto verde "no leída"
+.unread-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--activa-primary);
+  flex-shrink: 0;
+  margin-top: 4px;
+}

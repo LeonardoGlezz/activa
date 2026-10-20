@@ -1,0 +1,51 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/profile"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Historial de sesiones</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding content-light historial-content">
+  <div *ngIf="loading" class="ion-text-center ion-padding">
+    <ion-spinner name="crescent" color="primary"></ion-spinner>
+    <p>Cargando historial...</p>
+  </div>
+
+  <div *ngIf="!loading && trackings.length === 0" class="empty-state ion-text-center ion-padding">
+    <ion-icon name="fitness-outline" class="empty-icon"></ion-icon>
+    <h3>¡Todo listo para empezar!</h3>
+    <p>Tus reportes de progreso y esfuerzo aparecerán aquí cuando completes tus rutinas.</p>
+  </div>
+
+  <div *ngIf="!loading && trackings.length > 0" class="historial-container">
+    <p class="historial-summary">{{ trackings.length }} {{ trackings.length === 1 ? 'sesión completada' : 'sesiones completadas' }}</p>
+    
+    <ion-list lines="none" class="historial-list">
+      <ion-card *ngFor="let t of trackings; let i = index" class="historial-card" [class]="'pain-level-' + getPainColor(t.painLevel)" mode="ios">
+        <ion-card-content>
+          
+          <div class="card-accent" [attr.data-level]="getPainColor(t.painLevel)"></div>
+          
+          <div class="card-header">
+            <div class="pain-icon-wrap" [attr.data-level]="getPainColor(t.painLevel)">
+              <ion-icon [name]="t.painLevel <= 3 ? 'star-outline' : (t.painLevel <= 6 ? 'pulse-outline' : 'flame-outline')" class="pain-icon"></ion-icon>
+            </div>
+            
+            <div class="card-title">
+              <h2>Sesión {{ trackings.length - i }}</h2>
+              <p *ngIf="t.startTime" class="card-time">{{ formatTime(t.startTime) }}</p>
+            </div>
+            
+            <ion-badge [color]="getPainColor(t.painLevel)" class="pain-badge">Nivel {{ t.painLevel }}</ion-badge>
+          </div>
+          
+          <p class="pain-label">{{ getPainLabel(t.painLevel) }}</p>
+          <p *ngIf="t.postObservations" class="obs">{{ t.postObservations }}</p>
+          
+        </ion-card-content>
+      </ion-card>
+    </ion-list>
+  </div>
+</ion-content>

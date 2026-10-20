@@ -1,0 +1,93 @@
+<div class="fadein surface-ground p-3 md:p-5 min-h-screen flex flex-column align-items-center">
+  
+  <div class="w-full" style="max-width: 1000px;">
+    
+    <div class="flex flex-column md:flex-row justify-content-between align-items-start md:align-items-center mb-4 gap-3">
+      <div class="flex align-items-center gap-3">
+         <p-button icon="pi pi-arrow-left" routerLink="/dashboard/citas" styleClass="p-button-rounded p-button-text text-color-secondary bg-white shadow-1"></p-button>
+         <div>
+           <h1 class="text-2xl md:text-3xl font-bold text-color m-0 mb-1">Historial de Citas</h1>
+           <p class="text-color-secondary m-0 text-sm">Visualiza todas las consultas programadas, pasadas y canceladas.</p>
+         </div>
+      </div>
+      
+      <div class="search-container w-full md:w-20rem mt-2 md:mt-0 relative">
+        <i class="pi pi-search absolute text-color-secondary" style="top: 50%; transform: translateY(-50%); left: 1rem; z-index: 2;"></i>
+        <input pInputText type="text" [(ngModel)]="searchString" placeholder="Buscar pacientes o servicios..." class="w-full border-round-full py-2 shadow-none pl-5 bg-white border-none text-sm border-1 surface-border" style="padding-left: 2.5rem !important;">
+      </div>
+    </div>
+
+    <div class="bg-white border-round-2xl shadow-1 border-1 surface-border p-2 md:p-3 overflow-hidden custom-tabview">
+      <p-tabView>
+        
+        <p-tabPanel header="Próximas">
+          <div class="flex flex-column gap-3 pt-3">
+            
+            <div *ngIf="filteredUpcoming.length === 0" class="text-center p-5 text-color-secondary">
+              <i class="pi pi-search text-4xl mb-2 block opacity-50"></i>
+              No se encontraron próximas citas para "{{ searchString }}".
+            </div>
+
+            <div *ngFor="let app of filteredUpcoming" 
+                 class="flex align-items-center p-3 border-round-xl cursor-pointer hover:shadow-2 transition-all relative overflow-hidden bg-white shadow-1 border-1 surface-border"
+                 [routerLink]="['/dashboard/detalle-cita']" 
+                 [queryParams]="{ referrer: 'list', id: app.id }">
+               
+               <div class="absolute left-0 top-0 bottom-0" [ngClass]="app.type" style="width: 6px;"></div>
+
+               <div class="grid w-full m-0 align-items-center pl-2">
+                  <div class="col-12 md:col-3 text-sm md:text-base font-bold text-color">
+                    <i class="pi pi-calendar text-activa-primary mr-2"></i>{{ app.date }}
+                  </div>
+                  <div class="col-6 md:col-2 text-sm text-color-secondary font-medium">
+                    {{ app.time }}
+                  </div>
+                  <div class="col-6 md:col-4 font-bold text-color text-base md:text-lg">
+                    {{ app.patient }}
+                  </div>
+                  <div class="col-12 md:col-3 text-sm text-color-secondary overflow-hidden text-overflow-ellipsis white-space-nowrap">
+                    {{ app.service }}
+                  </div>
+               </div>
+            </div>
+          </div>
+        </p-tabPanel>
+
+        <p-tabPanel header="Pasadas">
+          <div class="flex flex-column gap-3 pt-3">
+             
+             <div *ngIf="filteredPast.length === 0" class="text-center p-5 text-color-secondary">
+              <i class="pi pi-search text-4xl mb-2 block opacity-50"></i>
+              No se encontraron citas pasadas para "{{ searchString }}".
+            </div>
+
+            <div *ngFor="let app of filteredPast" 
+                 class="flex align-items-center p-3 border-round-xl cursor-pointer relative overflow-hidden border-1 surface-border past-appointment-card"
+                 [routerLink]="['/dashboard/detalle-cita']"
+                 [queryParams]="{ referrer: 'list', id: app.id }">
+               
+               <div class="absolute left-0 top-0 bottom-0 bg-gray-400" style="width: 6px;"></div>
+
+               <div class="grid w-full m-0 align-items-center pl-2">
+                  <div class="col-12 md:col-3 text-sm font-medium text-color-secondary">
+                    {{ app.date }}
+                  </div>
+                  <div class="col-6 md:col-2 text-sm text-color-secondary">
+                    {{ app.time }}
+                  </div>
+                  <div class="col-6 md:col-4 font-semibold text-color-secondary text-base">
+                    {{ app.patient }}
+                  </div>
+                  <div class="col-12 md:col-3 text-sm text-color-secondary text-overflow-ellipsis white-space-nowrap">
+                    {{ app.service }}
+                  </div>
+               </div>
+            </div>
+          </div>
+        </p-tabPanel>
+
+      </p-tabView>
+    </div>
+
+  </div>
+</div>

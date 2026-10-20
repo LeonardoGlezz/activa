@@ -1,0 +1,7 @@
+# Favicon Placeholder
+
+Para agregar tu favicon personalizado:
+
+1. Reemplaza este archivo con tu .ico
+2. O crea uno en: https://favicon-generator.org/
+3. Guárdalo como `favicon.ico` en esta carpeta

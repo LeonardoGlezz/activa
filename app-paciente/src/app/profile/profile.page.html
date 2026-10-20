@@ -1,0 +1,79 @@
+<ion-content [fullscreen]="true" class="profile-content">
+
+  <!-- CABECERA -->
+  <div class="profile-header">
+    <div class="avatar-circle">
+      <ion-icon name="person" class="avatar-icon"></ion-icon>
+    </div>
+    <h2 class="user-name">{{ userName }}</h2>
+    <p class="user-subtitle">Paciente desde {{ pacienteDesde }}</p>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <span class="stat-value">{{ edad }}</span>
+      <span class="stat-label">EDAD</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-value">{{ peso }}</span>
+      <span class="stat-label">PESO</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-value">{{ altura }}</span>
+      <span class="stat-label">ALTURA</span>
+    </div>
+  </div>
+
+  <!-- IMC -->
+  <div class="imc-card" *ngIf="imc !== null">
+    <div class="imc-left">
+      <span class="imc-value">{{ imc | number:'1.1-1' }}</span>
+      <span class="imc-title">IMC</span>
+    </div>
+    <div class="imc-right">
+      <span class="imc-badge" [ngClass]="'badge-' + imcColor">{{ imcLabel }}</span>
+      <p class="imc-desc">Índice de masa corporal</p>
+    </div>
+  </div>
+
+  <!-- MI PLAN -->
+  <p class="section-title">MI PLAN</p>
+
+  <div class="plan-card" (click)="goToPhysioProfile()">
+    <div class="plan-icon-wrap">
+      <ion-icon name="business"></ion-icon>
+    </div>
+    <div class="plan-info">
+      <span class="plan-name">{{ clinicName }}</span>
+      <span class="plan-sub">Fisioterapeuta: {{ physio?.fullName || '—' }}</span>
+      <span class="plan-link" *ngIf="physio">Ver información general</span>
+    </div>
+    <ion-icon name="chevron-forward" class="plan-chevron"></ion-icon>
+  </div>
+
+  <!-- MENÚ -->
+  <p class="section-title">OPCIONES</p>
+
+  <div class="menu-list">
+    <div class="menu-item" (click)="goToHistorial()">
+      <ion-icon name="time-outline" class="menu-icon"></ion-icon>
+      <span>Historial de sesiones</span>
+      <ion-icon name="chevron-forward" class="menu-chevron"></ion-icon>
+    </div>
+    <div class="menu-item" (click)="goToNotifications()">
+      <ion-icon name="notifications-outline" class="menu-icon"></ion-icon>
+      <span>Notificaciones</span>
+      <ion-icon name="chevron-forward" class="menu-chevron"></ion-icon>
+    </div>
+  </div>
+
+  <!-- CERRAR SESIÓN -->
+  <div class="logout-wrap">
+    <button class="logout-btn" (click)="cerrarSesion()">
+      <ion-icon name="log-out-outline"></ion-icon>
+      CERRAR SESIÓN
+    </button>
+  </div>
+
+</ion-content>

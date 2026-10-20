@@ -1,0 +1,40 @@
+<div class="container">
+  <div class="listado-card"> <div class="header-section">
+      <h2>Banco de Ejercicios</h2>
+      
+      <div class="search-box">
+        <input 
+          type="text" 
+          [(ngModel)]="searchTerm" 
+          (input)="onSearch()" 
+          placeholder="Buscar por nombre, zona..."
+          class="form-control search-input"
+        >
+      </div>
+    </div>
+
+    <div *ngIf="loading" class="spinner">
+      <p>Cargando ejercicios...</p>
+    </div>
+
+    <div *ngIf="!loading && filteredExercises.length > 0" class="table-wrapper">
+      <table class="table">
+        <thead> <tr>
+            <th>Nombre del Ejercicio</th>
+            <th>Zona del Cuerpo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let exercise of filteredExercises">
+            <td class="font-weight-bold">{{ exercise.name }}</td>
+            <td>{{ exercise.bodyZone || 'N/A' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <div *ngIf="!loading && filteredExercises.length === 0 && searchTerm" class="no-data">
+      <p>No se encontraron ejercicios que coincidan con "{{ searchTerm }}"</p>
+    </div>
+  </div>
+</div>

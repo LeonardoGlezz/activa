@@ -1,0 +1,114 @@
+<p-toast position="top-right"></p-toast>
+<p-confirmDialog [style]="{width: '450px'}"></p-confirmDialog>
+
+<div class="flex flex-column h-full fadein">
+  
+  <div class="mb-2">
+    <h1 class="text-3xl font-bold text-color m-0">Configuración de Cuenta</h1>
+  </div>
+
+  <div class="grid">
+    
+    <div class="col-12 lg:col-6 p-2">
+      <div class="bg-activa-surface border-round-xl shadow-2 p-4 h-full flex flex-column" style="background-color: #ffffff;">
+        
+        <div class="flex align-items-center mb-4 gap-3">
+          <div class="border-circle bg-blue-50 flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
+            <i class="pi pi-user text-xl text-blue-500"></i>
+          </div>
+          <h2 class="text-xl font-bold text-color m-0">Datos Personales</h2>
+        </div>
+
+        <div class="field mb-3">
+          <label class="block font-medium text-color-secondary mb-2">Nombre Completo</label>
+          <div class="p-inputgroup">
+            <span class="p-inputgroup-addon bg-gray-50"><i class="pi pi-id-card text-gray-500"></i></span>
+            <input type="text" pInputText [value]="nombreCompleto" [disabled]="true" class="w-full bg-gray-50 text-gray-600 font-medium" />
+          </div>
+        </div>
+
+        <div class="field mb-3">
+          <label class="block font-medium text-color-secondary mb-2">Cédula Profesional</label>
+          <div class="p-inputgroup">
+            <span class="p-inputgroup-addon bg-gray-50"><i class="pi pi-verified text-green-500"></i></span>
+            <input type="text" pInputText [value]="cedula" [disabled]="true" class="w-full bg-gray-50 text-green-600 font-bold" />
+          </div>
+        </div>
+
+        <p-divider styleClass="my-3 border-gray-200"></p-divider>
+
+        <div class="field mb-3">
+          <label class="block font-bold text-color mb-2">Correo Electrónico de Acceso</label>
+          <div class="p-inputgroup">
+            <span class="p-inputgroup-addon"><i class="pi pi-envelope text-activa-primary"></i></span>
+            <input type="email" pInputText [(ngModel)]="correoEditable" 
+                   placeholder="ejemplo@correo.com" class="w-full" 
+                   (keyup.enter)="confirmarActualizarCorreo()" /> </div>
+        </div>
+
+        <div class="flex justify-content-end mt-auto pt-2">
+          <button pButton label="Actualizar Correo" icon="pi pi-save" 
+                  [loading]="isSavingEmail"
+                  (click)="confirmarActualizarCorreo()"
+                  class="p-button-primary font-bold shadow-1 border-none transition-colors"
+                  style="background-color: #009688;">
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="col-12 lg:col-6 p-2">
+      <div class="bg-activa-surface border-round-xl shadow-2 p-4 h-full flex flex-column" style="background-color: #ffffff;">
+        
+        <div class="flex align-items-center mb-3 gap-3">
+          <div class="border-circle bg-orange-50 flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
+            <i class="pi pi-lock text-xl text-orange-500"></i>
+          </div>
+          <h2 class="text-xl font-bold text-color m-0">Seguridad</h2>
+        </div>
+
+        <div class="field mb-3 mt-2">
+          <label class="block font-medium text-color mb-2">Contraseña Actual</label>
+          <p-password [(ngModel)]="passwordActual" 
+                      inputId="passActual" 
+                      [toggleMask]="true" [feedback]="false" 
+                      placeholder="Ingresa tu contraseña actual" 
+                      styleClass="w-full block" inputStyleClass="w-full"
+                      (keyup.enter)="enfocarSiguiente('passNueva')"> </p-password>
+        </div>
+
+        <div class="field mb-3">
+          <label class="block font-medium text-color mb-2">Nueva Contraseña</label>
+          <p-password [(ngModel)]="passwordNueva" 
+                      inputId="passNueva" 
+                      [toggleMask]="true" [feedback]="false" 
+                      placeholder="Crea una contraseña segura" 
+                      styleClass="w-full block" inputStyleClass="w-full"
+                      (keyup.enter)="enfocarSiguiente('passConfirmar')"> </p-password>
+        </div>
+
+        <div class="field mb-3">
+          <label class="block font-medium text-color mb-2">Confirmar Nueva Contraseña</label>
+          <p-password [(ngModel)]="passwordConfirmar" 
+                      inputId="passConfirmar" 
+                      [toggleMask]="true" [feedback]="false" 
+                      placeholder="Repite la nueva contraseña" 
+                      styleClass="w-full block" inputStyleClass="w-full"
+                      (keyup.enter)="confirmarCambiarPassword()"> </p-password>
+        </div>
+
+        <div class="flex justify-content-end mt-auto pt-2">
+          <button pButton label="Cambiar Contraseña" icon="pi pi-shield" 
+                  [loading]="isSavingPass"
+                  (click)="confirmarCambiarPassword()"
+                  class="font-bold shadow-1 border-none transition-colors"
+                  style="background-color: #1e293b; color: white;">
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>

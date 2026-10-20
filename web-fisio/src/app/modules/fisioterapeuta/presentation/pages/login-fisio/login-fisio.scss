@@ -1,0 +1,14 @@
+/* Ajustes para los iconos dentro de los inputs de PrimeNG */
+::ng-deep .custom-input-icon > i {
+    left: 1rem !important;
+    z-index: 10;
+}
+
+::ng-deep .custom-input-icon > input {
+    padding-left: 3rem !important; 
+}
+
+/* Ajuste específico para el p-password de PrimeNG */
+::ng-deep .custom-input-icon .p-password input {
+    padding-left: 3rem !important;
+}

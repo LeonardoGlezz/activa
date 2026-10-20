@@ -1,0 +1,192 @@
+<p-toast position="top-right"></p-toast>
+
+<div class="subscription-page">
+  <header class="hero-card">
+    <div>
+      <h1>Suscripcion</h1>
+      <p>Administra tu plan y desbloquea la capacidad de tu clinica.</p>
+    </div>
+    <div class="hero-actions">
+      <div class="status-chip" [ngClass]="statusClass(current?.subscription_status || 'none')">
+        {{ headerStatusLabel }}
+      </div>
+      <button
+        pButton
+        type="button"
+        class="portal-btn"
+        label="Gestionar suscripcion"
+        [loading]="openingPortal"
+        (click)="openBillingPortal()">
+      </button>
+    </div>
+  </header>
+
+
+  <div class="empty-state" *ngIf="syncingCheckout">Confirmando pago y actualizando tu plan...</div>
+
+  <section class="current-card" *ngIf="shouldShowCurrentCard">
+    <h2>Plan actual</h2>
+    <div class="current-grid" *ngIf="current?.plan; else noPlanTpl">
+      <div class="current-item">
+        <label>Nombre</label>
+        <strong>{{ current.plan.name }}</strong>
+      </div>
+      <div class="current-item">
+        <label>Pacientes</label>
+        <strong>{{ formatLimit(current.plan.patient_limit) }}</strong>
+      </div>
+      <div class="current-item">
+        <label>Citas</label>
+        <strong>{{ formatLimit(current.plan.appointment_limit_mo, true) }}</strong>
+      </div>
+      <div class="current-item">
+        <label>Rutinas</label>
+        <strong>{{ formatLimit(current.plan.routine_limit) }}</strong>
+      </div>
+      <div class="current-item">
+        <label>Seguimiento</label>
+        <strong>{{ formatLimit(current.plan.tracking_limit_mo, true) }}</strong>
+      </div>
+      <div class="current-item">
+        <label>Bitacora</label>
+        <strong>{{ formatLimit(current.plan.logbook_limit_mo, true) }}</strong>
+      </div>
+    </div>
+
+    <ng-template #noPlanTpl>
+      <div class="empty-state">Aun no tienes una suscripcion activa.</div>
+    </ng-template>
+  </section>
+
+  <!-- Pending change banner -->
+  <div class="pending-change-banner" *ngIf="pendingChange">
+    <span class="pending-icon">⚠</span>
+    <div class="pending-text">
+      <strong>Cambio programado:</strong> Tu plan cambiará a
+      <strong>{{ pendingChange.plan?.name }}</strong>
+      <span *ngIf="pendingChange.date"> el {{ formatDate(pendingChange.date) }}</span>.
+      Tu plan actual se mantiene hasta entonces.
+    </div>
+    <button
+      pButton
+      type="button"
+      class="cancel-pending-btn"
+      label="Cancelar cambio"
+      [loading]="cancellingPending"
+      (click)="cancelPendingChange()">
+    </button>
+  </div>
+
+  <section class="plans-grid">
+    <article class="plan-card" [ngClass]="getPlanCardClass(plan)" *ngFor="let plan of visiblePlans">
+      <div class="plan-badge" *ngIf="isCurrentPlan(plan)">Tu plan actual</div>
+      <div class="plan-badge plan-badge-pending" *ngIf="isPendingPlan(plan)">Cambio programado</div>
+      <h3>{{ plan.name }}</h3>
+      <ul>
+        <li>Pacientes: {{ formatLimit(plan.patient_limit) }}</li>
+        <li>Citas: {{ formatLimit(plan.appointment_limit_mo, true) }}</li>
+        <li>Rutinas: {{ formatLimit(plan.routine_limit) }}</li>
+        <li>Seguimiento: {{ formatLimit(plan.tracking_limit_mo, true) }}</li>
+        <li>Bitacora: {{ formatLimit(plan.logbook_limit_mo, true) }}</li>
+      </ul>
+
+      <div class="plan-current-tag" *ngIf="isCurrentPlan(plan)">Plan activo</div>
+      <div class="plan-pending-tag" *ngIf="isPendingPlan(plan)">Desde {{ formatDate(pendingChange?.date) }}</div>
+
+      <button
+        *ngIf="!isCurrentPlan(plan) && !isPendingPlan(plan)"
+        pButton
+        type="button"
+        class="plan-btn"
+        [ngClass]="{'plan-btn-upgrade': isUpgradeDirection(plan), 'plan-btn-downgrade': !isUpgradeDirection(plan)}"
+        [disabled]="isPlanDisabled(plan)"
+        [loading]="processingPlanId === plan.id_plan"
+        [label]="getPlanButtonLabel(plan)"
+        (click)="selectPlanChange(plan)">
+      </button>
+    </article>
+  </section>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="modal-backdrop" *ngIf="showConfirmModal" (click)="closeModal()">
+  <div class="confirm-modal" (click)="$event.stopPropagation()">
+
+    <!-- UPGRADE -->
+    <ng-container *ngIf="confirmModalType === 'upgrade'">
+      <div class="modal-header upgrade">
+        <span class="modal-icon">↑</span>
+        <h3>Mejorar a {{ selectedPlanForChange?.name }}</h3>
+      </div>
+      <p class="modal-desc">
+        Estás a un paso de obtener más funciones. Se te cobrará la <strong>diferencia proporcional</strong>
+        por el resto de tu ciclo de facturación actual, y los nuevos límites se activarán de inmediato.
+      </p>
+      <ul class="feature-gain-list" *ngIf="selectedPlanForChange">
+        <li *ngIf="selectedPlanForChange.patient_limit === null">✓ Pacientes: Ilimitados</li>
+        <li *ngIf="selectedPlanForChange.appointment_limit_mo === null">✓ Citas: Ilimitadas</li>
+        <li *ngIf="selectedPlanForChange.routine_limit === null">✓ Rutinas: Ilimitadas</li>
+        <li *ngIf="selectedPlanForChange.patient_limit !== null && current?.plan?.patient_limit !== null && selectedPlanForChange.patient_limit > current?.plan?.patient_limit">
+          ✓ Pacientes: hasta {{ selectedPlanForChange.patient_limit }}
+        </li>
+      </ul>
+      <div class="modal-actions">
+        <button
+          pButton type="button"
+          class="confirm-upgrade-btn"
+          label="Confirmar y pagar"
+          [loading]="processingChange"
+          (click)="confirmChange()">
+        </button>
+        <button
+          pButton type="button"
+          class="modal-cancel-btn"
+          label="Cancelar"
+          [disabled]="processingChange"
+          (click)="closeModal()">
+        </button>
+      </div>
+    </ng-container>
+
+    <!-- DOWNGRADE -->
+    <ng-container *ngIf="confirmModalType === 'downgrade'">
+      <div class="modal-header downgrade">
+        <span class="modal-icon">↓</span>
+        <h3>Cambiar a {{ selectedPlanForChange?.name }}</h3>
+      </div>
+      <p class="modal-desc">
+        Tu <strong>plan actual se mantendrá activo hasta el final de tu período</strong>.
+        El cambio ocurrirá automáticamente al vencerse tu ciclo actual.
+      </p>
+      <div class="feature-loss-list" *ngIf="getFeatureLosses(current?.plan, selectedPlanForChange) as losses">
+        <strong>Cambios que aplicarán:</strong>
+        <ul>
+          <li *ngFor="let item of losses">⚠ {{ item }}</li>
+          <li *ngIf="losses.length === 0" class="no-losses">No perderás funciones activas.</li>
+        </ul>
+      </div>
+      <div class="data-warning" *ngIf="hasPatientLimitWarning(selectedPlanForChange)">
+        Tus datos existentes no se borrarán, pero solo podrás gestionar los primeros
+        <strong>{{ selectedPlanForChange?.patient_limit }} pacientes</strong> hasta que liberes espacio
+        o vuelvas a subir de nivel.
+      </div>
+      <div class="modal-actions">
+        <button
+          pButton type="button"
+          class="confirm-downgrade-btn"
+          label="Confirmar cambio"
+          [loading]="processingChange"
+          (click)="confirmChange()">
+        </button>
+        <button
+          pButton type="button"
+          class="modal-cancel-btn"
+          label="Cancelar"
+          [disabled]="processingChange"
+          (click)="closeModal()">
+        </button>
+      </div>
+    </ng-container>
+
+  </div>
+</div>

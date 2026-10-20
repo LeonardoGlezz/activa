@@ -1,0 +1,11 @@
+/* Suavizamos los bordes de los inputs de PrimeNG */
+::ng-deep .p-dropdown, ::ng-deep .p-calendar .p-inputtext, ::ng-deep .p-inputtextarea {
+  border-radius: 8px;
+}
+
+::ng-deep .p-dropdown:not(.p-disabled).p-focus, 
+::ng-deep .p-calendar .p-inputtext:enabled:focus, 
+::ng-deep .p-inputtextarea:enabled:focus {
+  box-shadow: 0 0 0 0.2rem rgba(13, 139, 151, 0.2);
+  border-color: var(--activa-primary);
+}

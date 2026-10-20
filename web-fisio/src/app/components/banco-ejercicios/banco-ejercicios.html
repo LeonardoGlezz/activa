@@ -1,0 +1,148 @@
+<p-toast position="top-right"></p-toast>
+
+<div class="exercises-page fadein">
+  <div class="page-header">
+    <h1>Banco de Ejercicios</h1>
+    <div class="search-wrapper">
+      <input pInputText type="text" [(ngModel)]="searchTerm" (input)="onSearch()"
+        (keypress)="($any($event).charCode >= 65 && $any($event).charCode <= 90) || ($any($event).charCode >= 97 && $any($event).charCode <= 122) || $any($event).charCode === 32"
+        placeholder="Buscar..." class="search-input-simple">
+    </div>
+  </div>
+
+  <div class="filters-section">
+    <div class="filters-track">
+      <button *ngFor="let cat of categories" (click)="filterByZone(cat)" [class.active]="selectedCategory === cat.label" class="filter-badge">
+        {{ cat.label }}
+      </button>
+    </div>
+  </div>
+
+  <div class="exercises-container">
+    <div class="exercises-grid" *ngIf="!loading && filteredExercises.length > 0">
+      <div class="exercise-item" *ngFor="let exercise of filteredExercises">
+        <div class="exercise-image-wrapper" (click)="openPreview(exercise)">
+          <img [src]="exercise.videoUrl || placeholderImg" (error)="$any($event.target).src = placeholderImg" alt="{{ exercise.name }}">
+          <div class="image-overlay"></div>
+          <div class="badge-zone">{{ exercise.bodyZone }}</div>
+          <button class="quick-preview-btn" type="button"><i class="pi pi-eye"></i></button>
+        </div>
+        <div class="exercise-content">
+          <h3>{{ exercise.name }}</h3>
+          <p>{{ exercise.description }}</p>
+          <button class="assign-button" (click)="openAssignModal(exercise)" type="button">
+            <i class="pi pi-user-plus"></i> Asignar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="empty-state" *ngIf="!loading && filteredExercises.length === 0">
+      <i class="pi pi-inbox"></i>
+      <h2>Sin resultados</h2>
+      <p>No encontramos ejercicios con esos criterios</p>
+    </div>
+
+    <div class="loading-grid" *ngIf="loading">
+      <div class="skeleton-card" *ngFor="let s of [1,2,3,4,5,6,7,8]"></div>
+    </div>
+  </div>
+</div>
+
+<p-dialog [(visible)]="showPreviewModal" [modal]="true" [closable]="true" [dismissableMask]="true"
+  [style]="{ width: '90vw', maxWidth: '1000px', padding: '0' }" styleClass="exercise-preview-modal" [showHeader]="false">
+  <div *ngIf="previewExercise" class="preview-content">
+    <div class="preview-image">
+      <img [src]="previewExercise.videoUrl || placeholderImg" (error)="$any($event.target).src = placeholderImg" alt="{{ previewExercise.name }}">
+      <button class="modal-close-btn" (click)="showPreviewModal = false" type="button"><i class="pi pi-times"></i></button>
+    </div>
+    <div class="preview-details">
+      <div class="zone-badge-large">{{ previewExercise.bodyZone | uppercase }}</div>
+      <h2>{{ previewExercise.name }}</h2>
+      <div class="divider"></div>
+      <p class="description">{{ previewExercise.description }}</p>
+      <button class="primary-btn" (click)="showPreviewModal = false; openAssignModal(previewExercise)" type="button">
+        <i class="pi pi-user-plus"></i> Asignar a Paciente
+      </button>
+    </div>
+  </div>
+</p-dialog>
+
+<p-dialog [(visible)]="showAssignModal" [modal]="true" [closable]="true" [dismissableMask]="true"
+  [style]="{ width: '92vw', maxWidth: '980px' }" styleClass="assign-modal" [showHeader]="false">
+  <div *ngIf="selectedExercise" class="assign-content">
+    <div class="assign-header">
+      <h3>{{ selectedExercise.name }}</h3>
+      <p class="zone-info">{{ selectedExercise.bodyZone }}</p>
+    </div>
+    <div class="assign-body">
+      <div class="routine-manager-header">
+        <label class="label-field">Rutinas / Plantillas sin paciente:</label>
+        <div class="routine-actions-row">
+          <input pInputText type="text" [(ngModel)]="routineSearchTerm" (input)="onRoutineSearch()" placeholder="Buscar rutina por nombre o etiqueta" class="routine-search-input">
+          <button class="btn-create-routine" (click)="openCreateRoutineTemplate()" type="button">
+            <i class="pi pi-plus"></i> Crear Rutina
+          </button>
+        </div>
+      </div>
+
+      <div class="create-routine-box" *ngIf="showCreateRoutineBox">
+        <div class="create-routine-box__header">
+          <h4>Nueva rutina vacía</h4>
+          <button class="box-close-btn" (click)="showCreateRoutineBox = false" type="button">
+            <i class="pi pi-times"></i>
+          </button>
+        </div>
+
+        <label class="label-field">Nombre de rutina *</label>
+        <input pInputText [(ngModel)]="newRoutineTemplate.name" class="routine-search-input" placeholder="Ej. Rutina Hombro Postural">
+
+        <label class="label-field">Etiqueta</label>
+        <input pInputText [(ngModel)]="newRoutineTemplate.tag" class="routine-search-input" placeholder="General / Hombro / Core...">
+
+        <div class="create-routine-actions">
+          <button class="btn-cancel" (click)="showCreateRoutineBox = false" type="button">Cancelar</button>
+          <button class="btn-confirm" (click)="createRoutineTemplate()" [disabled]="creatingRoutine || !newRoutineTemplate.name" type="button">
+            <i class="pi pi-check"></i> {{ creatingRoutine ? 'Guardando...' : 'Crear rutina' }}
+          </button>
+        </div>
+      </div>
+
+      <div class="routines-list" *ngIf="!loadingRoutineTemplates; else loadingRoutinesTpl">
+        <button
+          class="routine-row"
+          [class.selected]="selectedRoutineTemplateId === routine.id_template"
+          [class.disabled]="isRoutineDisabledForSelectedExercise(routine)"
+          [disabled]="isRoutineDisabledForSelectedExercise(routine)"
+          *ngFor="let routine of filteredRoutineTemplates"
+          (click)="selectRoutineTemplate(routine.id_template)"
+          type="button"
+        >
+          <div class="routine-main">
+            <span class="routine-name">{{ routine.name }}</span>
+            <span class="routine-meta">{{ routine.tag }} · {{ routine.exercisesCount }} ejercicio(s)</span>
+            <span class="routine-locked-badge" *ngIf="isRoutineDisabledForSelectedExercise(routine)">
+              Ya contiene este ejercicio
+            </span>
+          </div>
+          <span class="routine-date">{{ routine.created_at | date:'dd/MM/yyyy HH:mm' }}</span>
+        </button>
+
+        <div class="empty-routines" *ngIf="filteredRoutineTemplates.length === 0">
+          <i class="pi pi-inbox"></i>
+          <p>No hay rutinas para mostrar.</p>
+        </div>
+      </div>
+
+      <ng-template #loadingRoutinesTpl>
+        <div class="empty-routines"><i class="pi pi-spin pi-spinner"></i><p>Cargando rutinas...</p></div>
+      </ng-template>
+    </div>
+    <div class="assign-footer">
+      <button class="btn-cancel" (click)="showAssignModal = false" type="button">Cancelar</button>
+      <button class="btn-confirm" (click)="saveExerciseInRoutineTemplate()" [disabled]="savingToRoutine || !selectedRoutineTemplateId" type="button">
+        <i class="pi pi-save"></i> {{ savingToRoutine ? 'Guardando...' : 'Guardar' }}
+      </button>
+    </div>
+  </div>
+</p-dialog>

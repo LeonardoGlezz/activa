@@ -1,0 +1,61 @@
+<nav class="navbar">
+  <div class="navbar-container">
+    <!-- Logo y nombre de la aplicación -->
+    <div class="navbar-brand" [routerLink]="isLoggedIn ? '/dashboard' : '/'">
+      <div class="brand-logo">A</div>
+      <span class="brand-name">{{ applicationName }}</span>
+    </div>
+
+    <!-- Links públicos (cuando no está logueado) -->
+    <div class="navbar-links" [class.active]="isMenuOpen" *ngIf="!isLoggedIn">
+      <a routerLink="/" (click)="closeMenu()" routerLinkActive="active" class="nav-link">Inicio</a>
+      <a href="#caracteristicas" (click)="closeMenu()" class="nav-link">Características</a>
+      <a href="#perfiles" (click)="closeMenu()" class="nav-link">Perfiles</a>
+      <a href="#contacto" (click)="closeMenu()" class="nav-link">Contacto</a>
+    </div>
+
+    <!-- Links administrativos (cuando está logueado) -->
+    <div class="navbar-links" [class.active]="isMenuOpen" *ngIf="isLoggedIn">
+      <a routerLink="/dashboard" (click)="closeMenu()" routerLinkActive="active" class="nav-link">Panel</a>
+      <a href="#" (click)="closeMenu()" class="nav-link">Gestión de Fisios</a>
+      <a href="#" (click)="closeMenu()" class="nav-link">Reportes</a>
+      <a href="#" (click)="closeMenu()" class="nav-link">Suscripciones</a>
+      <a href="#" (click)="closeMenu()" class="nav-link">Pagos</a>
+      <a href="#" (click)="closeMenu()" class="nav-link">Configuración</a>
+    </div>
+
+    <!-- Botones públicos (cuando no está logueado) -->
+    <div class="navbar-auth" *ngIf="!isLoggedIn">
+      <a routerLink="/login" class="btn btn-login">Iniciar Sesión</a>
+    </div>
+
+    <!-- Acciones administrativas (cuando está logueado) -->
+    <div class="navbar-actions" *ngIf="isLoggedIn">
+      <div class="search-box">
+        <input type="text" placeholder="Buscar..." class="search-input">
+        <span class="search-icon">🔍</span>
+      </div>
+      
+      <div class="admin-menu">
+        <div class="notifications">
+          <span class="notification-icon">🔔</span>
+          <span class="notification-count">7</span>
+        </div>
+        
+        <div class="user-menu" (click)="toggleMenu()">
+          <div class="user-avatar">👤</div>
+          <span class="user-name">Admin</span>
+        </div>
+        
+        <button (click)="logout()" class="btn-logout">Salir</button>
+      </div>
+    </div>
+
+    <!-- Hamburger menu para móvil -->
+    <button class="hamburger" [class.active]="isMenuOpen" (click)="toggleMenu()">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </div>
+</nav>

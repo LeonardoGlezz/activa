@@ -1,0 +1,218 @@
+// Variables del tema
+$teal:       #01696f;
+$teal-light: #e6f4f4;
+$text-dark:  #1a1a1a;
+$text-muted: #888888;
+$bg:         #f4f6f8;
+$white:      #ffffff;
+$red:        #d32f2f;
+
+.profile-content {
+  --background: #{$bg};
+}
+
+// ── HEADER ────────────────────────────────────────
+.profile-header {
+  background: $white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 36px 16px 20px;
+  border-bottom-left-radius: 24px;
+  border-bottom-right-radius: 24px;
+  margin-bottom: 16px;
+
+  .avatar-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: $teal-light;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+    .avatar-icon { font-size: 44px; color: $teal; }
+  }
+
+  .user-name {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: $text-dark;
+    margin: 0 0 4px;
+  }
+
+  .user-subtitle {
+    font-size: 0.82rem;
+    color: $text-muted;
+    margin: 0;
+  }
+}
+
+// ── STATS ROW ──────────────────────────────────────
+.stats-row {
+  display: flex;
+  gap: 10px;
+  padding: 0 16px;
+  margin-bottom: 12px;
+
+  .stat-card {
+    flex: 1;
+    background: $white;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 14px 4px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+
+    .stat-value {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: $text-dark;
+      white-space: nowrap;
+    }
+
+    .stat-label {
+      font-size: 0.62rem;
+      color: $text-muted;
+      letter-spacing: 0.05em;
+      margin-top: 3px;
+      text-transform: uppercase;
+    }
+  }
+}
+
+// ── IMC CARD ───────────────────────────────────────
+.imc-card {
+  background: $white;
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+  margin: 0 16px 16px;
+
+  .imc-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 56px;
+    .imc-value { font-size: 1.7rem; font-weight: 800; color: $teal; }
+    .imc-title { font-size: 0.68rem; color: $text-muted; letter-spacing: 0.06em; }
+  }
+
+  .imc-right {
+    flex: 1;
+    .imc-badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      border-radius: 20px;
+      padding: 2px 10px;
+      margin-bottom: 4px;
+      &.badge-success { background: #e6f4e6; color: #2e7d32; }
+      &.badge-warning { background: #fff8e1; color: #f57f17; }
+      &.badge-danger  { background: #fce4ec; color: #c62828; }
+      &.badge-medium  { background: #f5f5f5; color: #555;    }
+    }
+    .imc-desc { font-size: 0.76rem; color: $text-muted; margin: 0; }
+  }
+}
+
+// ── SECTION TITLE ──────────────────────────────────
+.section-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: $text-muted;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 0 16px;
+  margin: 0 0 8px;
+}
+
+// ── PLAN CARD ──────────────────────────────────────
+.plan-card {
+  background: $white;
+  border-radius: 12px;
+  margin: 0 16px 16px;
+  padding: 14px 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+  cursor: pointer;
+
+  .plan-icon-wrap {
+    width: 40px;
+    height: 40px;
+    background: $teal-light;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    ion-icon { font-size: 1.3rem; color: $teal; }
+  }
+
+  .plan-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    .plan-name { font-size: 0.95rem; font-weight: 700; color: $text-dark; }
+    .plan-sub  { font-size: 0.8rem;  color: $text-muted; margin-top: 2px; }
+    .plan-link { font-size: 0.78rem; color: $teal; margin-top: 2px; }
+  }
+
+  .plan-chevron { font-size: 1rem; color: $text-muted; }
+}
+
+// ── MENU LIST ──────────────────────────────────────
+.menu-list {
+  padding: 0 16px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  .menu-item {
+    background: $white;
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+    cursor: pointer;
+    color: $text-dark;
+
+    span { flex: 1; font-size: 0.93rem; font-weight: 500; }
+    .menu-icon    { font-size: 1.2rem; color: $teal; }
+    .menu-chevron { font-size: 0.95rem; color: $text-muted; }
+
+    &:active { background: darken($white, 3%); }
+  }
+}
+
+// ── LOGOUT ─────────────────────────────────────────
+.logout-wrap {
+  padding: 0 16px 32px;
+
+  .logout-btn {
+    width: 100%;
+    background: $red;
+    color: $white;
+    border: none;
+    border-radius: 12px;
+    padding: 15px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    ion-icon { font-size: 1.1rem; }
+    &:active { background: darken($red, 8%); }
+  }
+}

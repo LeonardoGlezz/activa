@@ -1,0 +1,88 @@
+<div class="fadein">
+
+  <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center mb-5 gap-4">
+    <div>
+      <h1 class="text-3xl font-bold text-color m-0 mb-1">Registrar Paciente</h1>
+      <p class="text-color-secondary m-0">Crea un nuevo expediente clínico.</p>
+    </div>
+
+    <div class="flex gap-3">
+      <p-button label="Cancelar" routerLink="/dashboard/pacientes"
+        styleClass="bg-white text-color border-1 surface-border hover:surface-hover border-round-xl px-4 py-2 font-bold shadow-none"></p-button>
+      <p-button label="Guardar Paciente" icon="pi pi-check" (onClick)="guardarPaciente()"
+        styleClass="bg-activa-primary border-none shadow-1 hover:bg-activa-primary-hover border-round-xl px-4 py-2 font-bold"></p-button>
+    </div>
+  </div>
+  <p-toast></p-toast>
+
+  <div class="fadein">
+    <div class="grid">
+      <div class="col-12 lg:col-10 lg:col-offset-1 p-3">
+        <div class="bg-white border-round-2xl border-1 surface-border p-4 md:p-5 shadow-none">
+          <h2 class="text-xl font-bold text-color mt-0 mb-4 border-bottom-1 surface-border pb-3">Información Personal
+          </h2>
+
+          <div class="formgrid grid">
+            <div class="field col-12 md:col-4 mb-4">
+              <label class="block font-bold text-color-secondary mb-2 text-sm">Nombre(s) *</label>
+              <input type="text" pInputText [pKeyFilter]="regexLetras" [ngModel]="nuevoPaciente.first_name"
+                (ngModelChange)="nuevoPaciente.first_name = $any($event)"
+                class="w-full border-round-lg py-2 shadow-none" placeholder="Ej. Gabriel">
+            </div>
+
+            <div class="field col-12 md:col-4 mb-4">
+              <label class="block font-bold text-color-secondary mb-2 text-sm">Apellido Paterno *</label>
+              <input type="text" pInputText [pKeyFilter]="regexLetras" [ngModel]="nuevoPaciente.last_name_p"
+                (ngModelChange)="nuevoPaciente.last_name_p = $any($event)"
+                class="w-full border-round-lg py-2 shadow-none" placeholder="Ej. Domínguez">
+            </div>
+
+            <div class="field col-12 md:col-4 mb-4">
+              <label class="block font-bold text-color-secondary mb-2 text-sm">Apellido Materno</label>
+              <input type="text" pInputText [pKeyFilter]="regexLetras" [ngModel]="nuevoPaciente.last_name_m"
+                (ngModelChange)="nuevoPaciente.last_name_m = $any($event)"
+                class="w-full border-round-lg py-2 shadow-none" placeholder="Ej. Ortiz">
+            </div>
+
+            <div class="field col-12 md:col-6 mb-4">
+              <label class="block font-bold text-color-secondary mb-2 text-sm">Correo Electrónico (Único)</label>
+              <span class="p-input-icon-left w-full">
+                <i class="pi pi-envelope text-color-secondary"></i>
+                <input type="email" pInputText [(ngModel)]="nuevoPaciente.email"
+                  class="w-full border-round-lg py-2 shadow-none" placeholder="correo@ejemplo.com">
+              </span>
+            </div>
+
+            <div class="field col-12 md:col-6 mb-4">
+              <label class="block font-bold text-color-secondary mb-2 text-sm">Año de Nacimiento</label>
+              <input type="text" pInputText pKeyFilter="int" maxlength="4" [ngModel]="nuevoPaciente.birth_year"
+                (ngModelChange)="nuevoPaciente.birth_year = $any($event)"
+                class="w-full border-round-lg py-2 shadow-none" placeholder="Ej. 1995">
+            </div>
+
+            <div class="field col-12 md:col-4 mb-4">
+              <label class="block font-bold text-color-secondary mb-2 text-sm">Género</label>
+              <p-dropdown [options]="generos" [(ngModel)]="nuevoPaciente.sex" optionLabel="label" optionValue="value"
+                placeholder="Selecciona" styleClass="w-full border-round-lg shadow-none"></p-dropdown>
+            </div>
+
+            <div class="field col-12 md:col-4 mb-4">
+              <label class="block font-bold text-color-secondary mb-2 text-sm">Estatura (Metros)</label>
+              <p-inputNumber [(ngModel)]="nuevoPaciente.height" mode="decimal" locale="en-US" [minFractionDigits]="2"
+                [maxFractionDigits]="2" [min]="0.40" [max]="2.50" styleClass="w-full"
+                inputStyleClass="w-full border-round-lg py-2 shadow-none" placeholder="Ej. 1.75">
+              </p-inputNumber>
+            </div>
+
+            <div class="field col-12 md:col-4 mb-4">
+              <label class="block font-bold text-color-secondary mb-2 text-sm">Peso (Kg)</label>
+              <p-inputNumber [(ngModel)]="nuevoPaciente.weight" mode="decimal" locale="en-US" [minFractionDigits]="1"
+                [maxFractionDigits]="2" [min]="1" [max]="700" styleClass="w-full"
+                inputStyleClass="w-full border-round-lg py-2 shadow-none" placeholder="Ej. 60">
+              </p-inputNumber>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>

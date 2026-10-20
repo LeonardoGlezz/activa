@@ -1,0 +1,72 @@
+<p-toast></p-toast>
+
+<div class="min-h-screen bg-activa-main flex flex-column">
+  
+  <div class="w-full bg-activa-surface flex align-items-center p-3 px-5 border-bottom-1 surface-border shadow-1">
+    <div class="flex align-items-center gap-2">
+      <div class="bg-activa-primary text-white border-round-sm p-1 flex align-items-center justify-content-center" style="width: 28px; height: 28px;">
+        <span class="font-bold text-sm">A</span>
+      </div>
+      <span class="font-bold text-xl text-color">ACTIVA</span>
+    </div>
+  </div>
+
+  <div class="flex-1 flex justify-content-center align-items-center p-4">
+    <div class="bg-activa-surface border-round-2xl shadow-2 p-5 w-full" style="max-width: 30rem;">
+      
+      <div class="text-center mb-5">
+        <div class="bg-activa-primary-light text-activa-primary border-circle w-4rem h-4rem flex align-items-center justify-content-center mx-auto mb-3 shadow-1">
+          <i class="pi pi-user text-2xl"></i>
+        </div>
+        <h2 class="text-3xl font-bold text-color m-0 mb-2">Bienvenido de vuelta</h2>
+        <p class="text-color-secondary m-0 text-sm">Ingresa tus credenciales de fisioterapeuta para acceder a tu panel.</p>
+      </div>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="p-fluid">
+        
+        <div class="mb-4">
+          <label class="text-color font-medium text-sm block mb-2">Correo Electrónico</label>
+          <span class="p-input-icon-left w-full custom-input-icon">
+            <i class="pi pi-envelope text-color-secondary"></i>
+            <input pInputText type="email" formControlName="email" 
+                   placeholder="ejemplo@correo.com" 
+                   class="p-3 border-round-lg w-full"
+                   (keydown.enter)="enfocarSiguiente('passInput', $event)">
+          </span>
+        </div>
+
+        <div class="mb-2">
+          <div class="flex justify-content-between align-items-center mb-2">
+            <label class="text-color font-medium text-sm m-0">Contraseña</label>
+          </div>
+          <span class="p-input-icon-left w-full custom-input-icon">
+            <i class="pi pi-lock text-color-secondary z-2"></i>
+            <p-password formControlName="password" 
+                        inputId="passInput" 
+                        [toggleMask]="true" 
+                        [feedback]="false" 
+                        placeholder="Ingresa tu contraseña" 
+                        styleClass="w-full" 
+                        inputStyleClass="p-3 border-round-lg w-full" 
+                        class="w-full">
+            </p-password>
+          </span>
+        </div>
+        <a href="#" class="text-xs text-activa-primary no-underline hover:underline">¿Olvidaste tu contraseña?</a>
+
+        <p-button label="Iniciar Sesión" 
+                  type="submit" 
+                  [disabled]="loginForm.invalid || isLoading" 
+                  [loading]="isLoading"
+                  styleClass="w-full bg-activa-primary border-none hover:bg-activa-primary-hover text-white border-round-lg p-3 font-bold shadow-2 mt-5 text-lg"></p-button>
+
+        <div class="text-center mt-4 pt-3 border-top-1 surface-border">
+          <span class="text-color-secondary text-sm block md:inline">¿Eres nuevo en Activa? </span>
+          <a routerLink="/registro-fisio" class="text-activa-primary font-bold no-underline hover:underline text-sm cursor-pointer transition-colors block md:inline mt-1 md:mt-0">Crea tu cuenta aquí</a>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+</div>

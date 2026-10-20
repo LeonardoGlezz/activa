@@ -1,0 +1,103 @@
+<div class="flex flex-column h-full fadein">
+  
+  <div *ngIf="isLoading" class="flex justify-content-center align-items-center p-5 mt-8">
+    <i class="pi pi-spin pi-spinner text-4xl text-activa-primary"></i>
+  </div>
+
+  <div *ngIf="!isLoading" class="grid pt-3">
+    
+    <div class="col-12 md:col-4 p-2">
+      <div class="bg-activa-surface border-round-xl shadow-2 p-4 flex justify-content-between align-items-center h-full" style="background-color: #ffffff;">
+        <div>
+          <span class="block text-color-secondary font-medium mb-3">Pacientes Activos</span>
+          <div class="text-900 font-bold text-4xl">{{ kpis.pacientesActivos }}</div>
+        </div>
+        <div class="flex align-items-center justify-content-center bg-blue-100 border-round" style="width: 2.5rem; height: 2.5rem">
+          <i class="pi pi-users text-blue-500 text-xl"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 md:col-4 p-2">
+      <div class="bg-activa-surface border-round-xl shadow-2 p-4 flex justify-content-between align-items-center h-full" style="background-color: #ffffff;">
+        <div>
+          <span class="block text-color-secondary font-medium mb-3">Citas del Mes</span>
+          <div class="text-900 font-bold text-4xl">{{ kpis.citasMesActual }}</div>
+        </div>
+        <div class="flex align-items-center justify-content-center bg-cyan-100 border-round" style="width: 2.5rem; height: 2.5rem">
+          <i class="pi pi-calendar text-cyan-500 text-xl"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 md:col-4 p-2">
+      <div class="bg-activa-surface border-round-xl shadow-2 p-4 flex justify-content-between align-items-center h-full" style="background-color: #ffffff;">
+        <div>
+          <span class="block text-color-secondary font-medium mb-3">Dolor Promedio General</span>
+          <div class="text-900 font-bold text-4xl">{{ kpis.nivelDolorPromedio }} / 10</div>
+        </div>
+        <div class="flex align-items-center justify-content-center bg-red-100 border-round" style="width: 2.5rem; height: 2.5rem">
+          <i class="pi pi-heart text-red-500 text-xl"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 lg:col-8 p-2">
+      <div class="bg-activa-surface border-round-xl shadow-2 p-4 h-full" style="background-color: #ffffff;">
+        <h5 class="text-xl font-bold mb-4 text-color m-0">Evolución del Dolor Semanal</h5>
+        <div *ngIf="lineData.datasets.length === 0" class="flex align-items-center justify-content-center h-full text-color-secondary" style="min-height: 250px;">
+          Aún no hay registros de evolución de pacientes.
+        </div>
+        <p-chart *ngIf="lineData.datasets.length > 0" type="line" [data]="lineData" [options]="lineOptions" height="250px"></p-chart>
+      </div>
+    </div>
+
+    <div class="col-12 lg:col-4 p-2">
+      <div class="bg-activa-surface border-round-xl shadow-2 p-4 h-full flex flex-column justify-content-center" style="background-color: #ffffff;">
+        <h5 class="text-xl font-bold mb-4 text-color m-0 text-center">Estado de Citas</h5>
+        <div class="flex justify-content-center w-full">
+          <p-chart type="doughnut" [data]="donaData" [options]="donaOptions" height="200px" class="w-full"></p-chart>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 lg:col-5 p-2">
+      <div class="bg-activa-surface border-round-xl shadow-2 p-4 h-full" style="background-color: #ffffff;">
+        <h5 class="text-xl font-bold mb-4 text-color m-0">Citas de la Semana</h5>
+        <p-chart type="bar" [data]="barData" [options]="barOptions" height="250px"></p-chart>
+      </div>
+    </div>
+
+    <div class="col-12 lg:col-7 p-2">
+      <div class="bg-activa-surface border-round-xl shadow-2 p-4 h-full" style="background-color: #ffffff;">
+        <div class="flex justify-content-between align-items-center mb-4">
+          <h5 class="text-xl font-bold text-color m-0">Agenda de HOY</h5>
+          <span class="bg-green-100 text-green-700 font-bold px-2 py-1 border-round-md text-sm">{{ citasHoy.length }} citas pendientes</span>
+        </div>
+        
+        <p-table [value]="citasHoy" responsiveLayout="scroll" [rows]="4" [paginator]="citasHoy.length > 4">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Hora</th>
+              <th>Paciente</th>
+              <th>Motivo / Notas</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-cita>
+            <tr>
+              <td class="font-bold text-activa-primary"><i class="pi pi-clock mr-2 text-sm"></i>{{ cita.hora }}</td>
+              <td class="font-medium text-color">{{ cita.paciente }}</td>
+              <td class="text-color-secondary text-sm">{{ cita.motivo }}</td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="3" class="text-center p-4 text-color-secondary">No tienes citas agendadas para el día de hoy. ¡Tómate un respiro!</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </div>
+
+  </div>
+</div>

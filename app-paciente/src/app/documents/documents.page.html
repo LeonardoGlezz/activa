@@ -1,0 +1,85 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/profile"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Documentos médicos</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding content-light documents-content">
+  <div *ngIf="loading" class="ion-text-center ion-padding">
+    <ion-spinner name="crescent" color="primary"></ion-spinner>
+    <p>Cargando...</p>
+  </div>
+
+  <div *ngIf="!loading && documents.length === 0 && !showAddForm" class="empty-state ion-text-center ion-padding">
+    <ion-icon name="document-text-outline" class="empty-icon"></ion-icon>
+    <h3>Sin documentos</h3>
+    <p>Aquí puedes guardar informes, radiografías o análisis en formato PDF. Añade el primero abajo.</p>
+  </div>
+
+  <ion-list *ngIf="!loading && documents.length > 0" lines="none" class="doc-list">
+    <ion-card *ngFor="let doc of documents" class="doc-card" mode="ios" button (click)="openDoc(doc)">
+      <ion-card-content>
+        <div class="doc-row">
+          <ion-icon name="document-outline" class="doc-icon"></ion-icon>
+          <div class="doc-body">
+            <h2 class="doc-name">{{ doc.name }}</h2>
+            <p class="doc-meta">{{ getTypeLabel(doc.type) }} · {{ formatDate(doc.createdAt) }}</p>
+          </div>
+          <ion-icon name="open-outline" class="doc-open"></ion-icon>
+          <ion-button fill="clear" size="small" color="danger" (click)="deleteDoc(doc); $event.stopPropagation()">
+            <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </ion-list>
+
+  <div *ngIf="!loading && showAddForm" class="add-form ion-padding">
+    <ion-item lines="full">
+      <ion-label position="stacked">Nombre del documento</ion-label>
+      <ion-input [(ngModel)]="newName" placeholder="Ej. Radiografía hombro"></ion-input>
+    </ion-item>
+    
+    <ion-item lines="full" class="ion-margin-bottom">
+      <ion-label position="stacked">Tipo</ion-label>
+      <ion-select [(ngModel)]="newType" interface="action-sheet">
+        <ion-select-option value="informe">Informe</ion-select-option>
+        <ion-select-option value="radiografia">Radiografía</ion-select-option>
+        <ion-select-option value="analisis">Análisis</ion-select-option>
+        <ion-select-option value="receta">Receta</ion-select-option>
+        <ion-select-option value="otro">Otro</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <div class="file-upload-section">
+      <p class="section-label">Archivo PDF</p>
+      
+      <input type="file" #fileInput accept="application/pdf" (change)="onFileSelected($event)" style="display: none;">
+      
+      <ion-button expand="block" fill="outline" class="upload-btn" (click)="fileInput.click()">
+        <ion-icon name="cloud-upload-outline" slot="start"></ion-icon>
+        {{ selectedFile ? 'Cambiar documento' : 'Seleccionar PDF' }}
+      </ion-button>
+
+      <div *ngIf="selectedFile" class="selected-file-badge">
+        <ion-icon name="document-text"></ion-icon>
+        <span>{{ selectedFile.name }}</span>
+      </div>
+    </div>
+
+    <ion-button expand="block" (click)="addDocument()" [disabled]="saving">
+      {{ saving ? 'Guardando...' : 'Guardar documento' }}
+    </ion-button>
+    <ion-button expand="block" fill="outline" (click)="toggleAddForm()">Cancelar</ion-button>
+  </div>
+
+  <div *ngIf="!loading && !showAddForm" class="ion-padding">
+    <ion-button expand="block" fill="outline" (click)="toggleAddForm()">
+      <ion-icon name="add-outline" slot="start"></ion-icon>
+      Añadir documento
+    </ion-button>
+  </div>
+</ion-content>

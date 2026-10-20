@@ -1,0 +1,618 @@
+<p-toast position="top-right"></p-toast>
+<p-confirmDialog header="Confirmación" icon="pi pi-exclamation-triangle" styleClass="delete-confirm-dialog"></p-confirmDialog>
+
+<!-- ===== LOADING STATE ===== -->
+<div class="loading-page" *ngIf="loading">
+  <div class="loading-spinner">
+    <i class="pi pi-spin pi-spinner"></i>
+  </div>
+  <p>Cargando expediente del paciente...</p>
+</div>
+
+<!-- ===== VISTA PRINCIPAL ===== -->
+<div class="patient-view-page fadein" *ngIf="!loading && patient">
+
+  <!-- TOP BAR -->
+  <div class="top-bar">
+    <button class="back-btn" (click)="goBack()" type="button">
+      <i class="pi pi-arrow-left"></i>
+      Pacientes
+    </button>
+    <div class="top-bar-title">
+      <h1>{{ patient.name }}</h1>
+      <span class="patient-label">Expediente del Paciente</span>
+    </div>
+  </div>
+
+  <!-- 4-QUADRANT GRID -->
+  <div class="quadrant-grid">
+
+    <!-- ===== Q1 TOP-LEFT: DATOS DEL PACIENTE ===== -->
+    <div class="quadrant q-patient">
+      <div class="quadrant-header">
+        <span class="quadrant-title">
+          <i class="pi pi-user"></i>
+          Datos del Paciente
+        </span>
+        <button class="icon-action-btn" (click)="openEditPatient()" type="button" title="Editar paciente">
+          <i class="pi pi-pencil"></i>
+          Editar
+        </button>
+      </div>
+
+      <div class="patient-profile">
+        <img [src]="patient.avatar" alt="{{ patient.name }}" class="patient-avatar">
+        <div class="patient-info-text">
+          <h2>{{ patient.name }}</h2>
+          <p class="patient-email">
+            <i class="pi pi-envelope"></i>
+            {{ patient.email || '—' }}
+          </p>
+        </div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-chip">
+          <span class="stat-label">Año de Nac.</span>
+          <span class="stat-value">{{ patient.birth_year || '—' }}</span>
+        </div>
+        <div class="stat-chip">
+          <span class="stat-label">Estatura</span>
+          <span class="stat-value">{{ patient.height ? patient.height + ' m' : '—' }}</span>
+        </div>
+        <div class="stat-chip">
+          <span class="stat-label">Peso</span>
+          <span class="stat-value">{{ patient.weight ? patient.weight + ' Kg' : '—' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Q2 TOP-RIGHT: BITÁCORAS ===== -->
+    <div class="quadrant q-logs">
+      <div class="quadrant-header">
+        <span class="quadrant-title">
+          <i class="pi pi-book"></i>
+          Bitácoras
+          <span class="count-badge">{{ logbooks.length }}</span>
+        </span>
+        <button class="icon-action-btn primary" (click)="openNewLog()" type="button">
+          <i class="pi pi-plus"></i>
+          Nueva
+        </button>
+      </div>
+
+      <div class="scroll-list">
+        <ng-container *ngIf="logbooks.length > 0; else emptyLogs">
+          <div class="log-card" *ngFor="let log of logbooks">
+            <div class="card-row">
+              <span class="type-tag teal">{{ log.type || 'General' }}</span>
+              <span class="date-text">{{ formatDate(log.date) }}</span>
+            </div>
+            <p class="card-title">{{ log.title }}</p>
+            <p class="card-body">{{ log.content }}</p>
+            <div class="card-actions">
+              <button class="link-btn" (click)="openEditLog(log)" type="button">
+                <i class="pi pi-pencil"></i> Editar
+              </button>
+              <button class="link-btn danger" (click)="deleteLog(log.id)" type="button">
+                <i class="pi pi-trash"></i>
+              </button>
+            </div>
+          </div>
+        </ng-container>
+        <ng-template #emptyLogs>
+          <div class="empty-card">
+            <i class="pi pi-book"></i>
+            <p>Sin bitácoras registradas</p>
+            <button class="empty-create-btn" (click)="openNewLog()" type="button">Crear primera bitácora</button>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+
+    <!-- ===== Q3 BOTTOM-LEFT: CITAS ===== -->
+    <div class="quadrant q-appointments">
+      <div class="quadrant-header">
+        <span class="quadrant-title">
+          <i class="pi pi-calendar"></i>
+          Citas Programadas
+          <span class="count-badge" *ngIf="!loadingAppointments">{{ appointments.length }}</span>
+        </span>
+        <button class="icon-action-btn primary" (click)="openNewAppointment()" type="button">
+          <i class="pi pi-plus"></i>
+          Nueva
+        </button>
+      </div>
+
+      <div class="scroll-list" *ngIf="!loadingAppointments; else loadingApt">
+        <ng-container *ngIf="appointments.length > 0; else emptyApt">
+          <div class="apt-card" *ngFor="let apt of appointments">
+            <div class="card-row">
+              <span [class]="'status-tag ' + getStatusClass(apt.status)">{{ apt.status || 'Programada' }}</span>
+              <span class="date-text">{{ formatDate(apt.date) }}</span>
+            </div>
+            <p class="card-title">{{ apt.reason }}</p>
+            <p class="card-body" *ngIf="apt.notes">{{ apt.notes }}</p>
+            <div class="card-actions">
+              <button class="link-btn" (click)="openEditAppointment(apt)" type="button">
+                <i class="pi pi-pencil"></i> Editar
+              </button>
+            </div>
+          </div>
+        </ng-container>
+        <ng-template #emptyApt>
+          <div class="empty-card">
+            <i class="pi pi-calendar"></i>
+            <p>Sin citas programadas</p>
+            <button class="empty-create-btn" (click)="openNewAppointment()" type="button">Agendar primera cita</button>
+          </div>
+        </ng-template>
+      </div>
+      <ng-template #loadingApt>
+        <div class="inline-loading"><i class="pi pi-spin pi-spinner"></i></div>
+      </ng-template>
+    </div>
+
+    <!-- ===== Q4 BOTTOM-RIGHT: RUTINAS ===== -->
+    <div class="quadrant q-routines">
+      <div class="quadrant-header">
+        <span class="quadrant-title">
+          <i class="pi pi-bolt"></i>
+          Rutinas
+          <span class="count-badge">{{ routines.length }}</span>
+        </span>
+        <button class="icon-action-btn primary" (click)="openNewRoutine()" type="button">
+          <i class="pi pi-plus"></i>
+          Nueva
+        </button>
+      </div>
+
+      <div class="scroll-list">
+        <ng-container *ngIf="routines.length > 0; else emptyRoutines">
+          <div class="routine-card" *ngFor="let routine of routines">
+            <div class="card-row">
+              <span class="type-tag green">{{ routine.status }}</span>
+              <div class="card-actions card-actions-inline">
+                <button class="link-btn" (click)="openEditRoutine(routine)" type="button">
+                  <i class="pi pi-pencil"></i>
+                </button>
+                <button class="link-btn danger" (click)="deleteRoutine(routine.id)" type="button">
+                  <i class="pi pi-trash"></i>
+                </button>
+              </div>
+            </div>
+            <p class="card-title">{{ routine.name }}</p>
+            <p class="card-body" *ngIf="routine.description">{{ routine.description }}</p>
+            <div class="routine-meta">
+              <span><i class="pi pi-list"></i> {{ routine.exercisesCount }} ejercicios</span>
+              <span><i class="pi pi-calendar"></i> {{ formatDate(routine.startDate) }} - {{ formatDate(routine.endDate) }}</span>
+            </div>
+          </div>
+        </ng-container>
+        <ng-template #emptyRoutines>
+          <div class="empty-card">
+            <i class="pi pi-bolt"></i>
+            <p>Sin rutinas asignadas</p>
+            <button class="empty-create-btn" (click)="openNewRoutine()" type="button">Crear primera rutina</button>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===================================================
+     MODALES
+=================================================== -->
+
+<!-- MODAL: Editar Paciente -->
+<p-dialog [(visible)]="showEditPatientModal" [modal]="true" [closable]="false"
+  [style]="{ width: '90vw', maxWidth: '520px' }" styleClass="custom-dialog">
+  <ng-template pTemplate="header">
+    <div class="dialog-header-content">
+      <div class="dialog-icon-wrap"><i class="pi pi-user-edit"></i></div>
+      <div>
+        <h3>Editar Paciente</h3>
+        <p>Modifica los datos del expediente</p>
+      </div>
+    </div>
+  </ng-template>
+  <div class="dialog-body">
+    <div class="field-row">
+      <div class="field-group">
+        <label>Nombre(s)</label>
+        <input pInputText [(ngModel)]="editingPatient.first_name" [pKeyFilter]="regexLetras" placeholder="Nombre" class="field-input">
+      </div>
+      <div class="field-group">
+        <label>Apellido Paterno</label>
+        <input pInputText [(ngModel)]="editingPatient.last_name_p" [pKeyFilter]="regexLetras" placeholder="Apellido paterno" class="field-input">
+      </div>
+    </div>
+    <div class="field-group">
+      <label>Apellido Materno</label>
+      <input pInputText [(ngModel)]="editingPatient.last_name_m" [pKeyFilter]="regexLetras" placeholder="Apellido materno (opcional)" class="field-input">
+    </div>
+    <div class="field-group">
+      <label>Correo Electrónico</label>
+      <input pInputText type="email" [(ngModel)]="editingPatient.email" placeholder="correo@ejemplo.com" class="field-input">
+    </div>
+    <div class="field-row">
+      <div class="field-group">
+        <label>Año de Nacimiento</label>
+        <input pInputText maxlength="4" [(ngModel)]="editingPatient.birth_year" placeholder="Ej: 1990" class="field-input">
+      </div>
+      <div class="field-group">
+        <label>Estatura (m)</label>
+        <input pInputText type="number" step="0.01" [(ngModel)]="editingPatient.height" placeholder="1.75" class="field-input">
+      </div>
+      <div class="field-group">
+        <label>Peso (Kg)</label>
+        <input pInputText type="number" step="0.1" [(ngModel)]="editingPatient.weight" placeholder="70" class="field-input">
+      </div>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <div class="dialog-footer">
+      <button class="btn-cancel" (click)="showEditPatientModal = false" type="button">Cancelar</button>
+      <button class="btn-save" (click)="savePatient()" type="button">
+        <i class="pi pi-check"></i> Guardar Cambios
+      </button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- MODAL: Nueva Cita -->
+<p-dialog [(visible)]="showNewAppointmentModal" [modal]="true" [closable]="false"
+  [style]="{ width: '90vw', maxWidth: '480px' }" styleClass="custom-dialog">
+  <ng-template pTemplate="header">
+    <div class="dialog-header-content">
+      <div class="dialog-icon-wrap teal"><i class="pi pi-calendar-plus"></i></div>
+      <div>
+        <h3>Nueva Cita</h3>
+        <p>Agenda una cita para {{ patient?.name }}</p>
+      </div>
+    </div>
+  </ng-template>
+  <div class="dialog-body">
+    <div class="field-group">
+      <label>Tipo de Servicio *</label>
+      <p-dropdown [options]="serviceOptions" [(ngModel)]="newAppointment.serviceType"
+        placeholder="Selecciona un servicio" styleClass="w-full field-dropdown" optionLabel="label" optionValue="value">
+      </p-dropdown>
+    </div>
+    <div class="field-row">
+      <div class="field-group">
+        <label>Fecha *</label>
+        <input pInputText type="date" [(ngModel)]="newAppointment.date" class="field-input">
+      </div>
+      <div class="field-group">
+        <label>Hora de inicio *</label>
+        <input pInputText type="time" [(ngModel)]="newAppointment.start_time" class="field-input">
+      </div>
+    </div>
+    <div class="field-group">
+      <label>Duración de la cita</label>
+      <p-dropdown [options]="durationOptions" [(ngModel)]="newAppointment.duration"
+        styleClass="w-full field-dropdown" optionLabel="label" optionValue="value">
+      </p-dropdown>
+    </div>
+    <div class="field-group">
+      <label>Notas adicionales</label>
+      <textarea pInputTextarea [(ngModel)]="newAppointment.notes" rows="2"
+        placeholder="Indicaciones previas, observaciones..." class="field-input"></textarea>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <div class="dialog-footer">
+      <button class="btn-cancel" (click)="showNewAppointmentModal = false" type="button">Cancelar</button>
+      <button class="btn-save" (click)="saveNewAppointment()" type="button">
+        <i class="pi pi-calendar-plus"></i> Agendar Cita
+      </button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- MODAL: Editar Cita -->
+<p-dialog [(visible)]="showEditAppointmentModal" [modal]="true" [closable]="false"
+  [style]="{ width: '90vw', maxWidth: '480px' }" styleClass="custom-dialog">
+  <ng-template pTemplate="header">
+    <div class="dialog-header-content">
+      <div class="dialog-icon-wrap teal"><i class="pi pi-calendar"></i></div>
+      <div>
+        <h3>Editar Cita</h3>
+        <p>Modifica los datos de la cita</p>
+      </div>
+    </div>
+  </ng-template>
+  <div class="dialog-body">
+    <div class="field-group">
+      <label>Motivo / Servicio</label>
+      <input pInputText [(ngModel)]="editingAppointment.reason" placeholder="Motivo" class="field-input">
+    </div>
+    <div class="field-row">
+      <div class="field-group">
+        <label>Fecha</label>
+        <input pInputText type="date" [(ngModel)]="editingAppointment.date" class="field-input">
+      </div>
+      <div class="field-group">
+        <label>Estado</label>
+        <p-dropdown [options]="[{label:'Programada',value:'programada'},{label:'Completada',value:'completada'},{label:'Cancelada',value:'cancelada'}]"
+          [(ngModel)]="editingAppointment.status" styleClass="w-full field-dropdown" optionLabel="label" optionValue="value">
+        </p-dropdown>
+      </div>
+    </div>
+    <div class="field-group">
+      <label>Notas</label>
+      <textarea pInputTextarea [(ngModel)]="editingAppointment.notes" rows="3" class="field-input"></textarea>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <div class="dialog-footer">
+      <button class="btn-cancel" (click)="showEditAppointmentModal = false" type="button">Cancelar</button>
+      <button class="btn-save" (click)="saveEditAppointment()" type="button">
+        <i class="pi pi-check"></i> Guardar Cambios
+      </button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- MODAL: Bitácora -->
+<p-dialog [(visible)]="showLogModal" [modal]="true" [closable]="false"
+  [style]="{ width: '90vw', maxWidth: '520px' }" styleClass="custom-dialog">
+  <ng-template pTemplate="header">
+    <div class="dialog-header-content">
+      <div class="dialog-icon-wrap"><i class="pi pi-book"></i></div>
+      <div>
+        <h3>{{ logModalTitle }}</h3>
+        <p>Registro clínico del paciente</p>
+      </div>
+    </div>
+  </ng-template>
+  <div class="dialog-body">
+    <div class="field-row">
+      <div class="field-group flex-2">
+        <label>Título *</label>
+        <input pInputText [(ngModel)]="logForm.title" placeholder="Ej: Evaluación inicial" class="field-input">
+      </div>
+      <div class="field-group">
+        <label>Tipo</label>
+        <p-dropdown [options]="logTypes" [(ngModel)]="logForm.type"
+          placeholder="Tipo" styleClass="w-full field-dropdown" optionLabel="label" optionValue="value">
+        </p-dropdown>
+      </div>
+    </div>
+    <div class="field-group">
+      <label>Fecha</label>
+      <input pInputText type="date" [(ngModel)]="logForm.date" class="field-input">
+    </div>
+    <div class="field-group">
+      <label>Contenido *</label>
+      <textarea pInputTextarea [(ngModel)]="logForm.content" rows="5"
+        placeholder="Describa los hallazgos, evolución del paciente, indicaciones..." class="field-input"></textarea>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <div class="dialog-footer">
+      <button class="btn-cancel" (click)="showLogModal = false" type="button">Cancelar</button>
+      <button class="btn-save" (click)="saveLog()" type="button">
+        <i class="pi pi-check"></i> Guardar Bitácora
+      </button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- MODAL: Rutina -->
+<p-dialog [(visible)]="showRoutineModal" [modal]="true" [closable]="false"
+  [style]="{ width: '95vw', maxWidth: '1080px' }" styleClass="custom-dialog routine-dialog">
+  <ng-template pTemplate="header">
+    <div class="dialog-header-content">
+      <div class="dialog-icon-wrap green"><i class="pi pi-bolt"></i></div>
+      <div>
+        <h3>{{ routineModalTitle }} - Vista Previa</h3>
+        <p>Configura la rutina con fechas y selecciona ejercicios reales del banco</p>
+      </div>
+    </div>
+  </ng-template>
+
+  <div class="dialog-body routine-builder-body">
+    <div class="routine-builder-grid">
+      <div class="routine-left">
+        <div class="template-import-box">
+          <div class="template-import-head">
+            <p class="template-title">Plantillas Base</p>
+            <span class="template-caption">Copia editable para este paciente</span>
+          </div>
+          <input pInputText [(ngModel)]="routineTemplateSearch" (input)="filterRoutineTemplates()"
+            placeholder="Buscar rutina base por nombre o etiqueta" class="field-input search-input">
+
+          <div class="template-list" *ngIf="!loadingRoutineTemplates; else loadingTemplateListTpl">
+            <div class="template-row" *ngFor="let template of filteredRoutineTemplates">
+              <div class="template-main">
+                <span class="template-name">{{ template.name }}</span>
+                <span class="template-meta">{{ template.tag }} · {{ template.exercises.length }} ejercicio(s)</span>
+              </div>
+              <button class="link-btn" type="button" (click)="applyTemplateToRoutine(template)">
+                <i class="pi pi-pencil"></i> Editar
+              </button>
+            </div>
+            <div class="empty-template" *ngIf="filteredRoutineTemplates.length === 0">Sin plantillas para mostrar.</div>
+          </div>
+          <ng-template #loadingTemplateListTpl>
+            <div class="empty-template"><i class="pi pi-spin pi-spinner"></i> Cargando plantillas...</div>
+          </ng-template>
+        </div>
+
+        <div class="template-source" *ngIf="templateSourceLabel">
+          <i class="pi pi-clone"></i>
+          Editando copia desde plantilla: <strong>{{ templateSourceLabel }}</strong>
+        </div>
+
+        <div class="field-group">
+          <label>Nombre de la Rutina *</label>
+          <input pInputText [(ngModel)]="routineForm.name" placeholder="Ej: Rutina Post-Operatoria Rodilla" class="field-input">
+        </div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label>Fecha Inicio *</label>
+            <input pInputText type="date" [(ngModel)]="routineForm.startDate" class="field-input">
+          </div>
+          <div class="field-group">
+            <label>Fecha Fin *</label>
+            <input pInputText type="date" [(ngModel)]="routineForm.endDate" class="field-input">
+          </div>
+        </div>
+
+        <div class="selection-counter">
+          <i class="pi pi-check-circle"></i>
+          {{ routineForm.exerciseIds.length }} ejercicio(s) seleccionado(s)
+        </div>
+      </div>
+
+      <div class="routine-right">
+        <div class="exercise-header">
+          <p class="exercise-title">Lista de Ejercicios</p>
+          <input pInputText [(ngModel)]="exerciseSearch" placeholder="Buscar por nombre o zona corporal" class="field-input search-input">
+        </div>
+
+        <div class="exercise-catalog" *ngIf="!loadingExercises; else loadingExercisesTpl">
+          <ng-container *ngIf="filteredExercises.length > 0; else emptyExercisesTpl">
+            <div
+              class="exercise-item"
+              [class.selected]="isExerciseSelected(exercise.id)"
+              *ngFor="let exercise of filteredExercises"
+            >
+              <div class="exercise-shell">
+                <button class="exercise-thumb" type="button" (click)="openExercisePreview(exercise)">
+                  <img [src]="exercise.video_url || placeholderImg" alt="exercise.name" (error)="$any($event.target).src = placeholderImg">
+                  <span class="exercise-thumb-overlay"><i class="pi pi-play-circle"></i></span>
+                </button>
+
+                <div class="exercise-body-copy">
+                  <div class="exercise-main">
+                    <label class="exercise-checkbox-wrap">
+                      <input type="checkbox" [checked]="isExerciseSelected(exercise.id)" (change)="toggleExerciseSelection(exercise.id)">
+                      <span class="exercise-name">{{ exercise.name }}</span>
+                    </label>
+                    <div class="exercise-tools">
+                      <span class="type-tag teal">{{ exercise.body_zone }}</span>
+                      <button class="preview-btn" type="button" (click)="openExercisePreview(exercise)">
+                        <i class="pi pi-eye"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <p class="exercise-desc" *ngIf="exercise.description">{{ exercise.description }}</p>
+                </div>
+              </div>
+
+              <div class="exercise-config" *ngIf="isExerciseSelected(exercise.id)">
+                <div class="field-row compact-3">
+                  <div class="field-group">
+                    <label>Series</label>
+                    <input pInputText type="number" min="1" [(ngModel)]="getExerciseConfig(exercise.id).sets" class="field-input">
+                  </div>
+                  <div class="field-group">
+                    <label>Repeticiones</label>
+                    <input pInputText type="number" min="1" [(ngModel)]="getExerciseConfig(exercise.id).repetitions" class="field-input">
+                  </div>
+                  <div class="field-group">
+                    <label>Notas</label>
+                    <input pInputText [(ngModel)]="getExerciseConfig(exercise.id).notes" placeholder="Precauciones" class="field-input">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+
+        <ng-template #loadingExercisesTpl>
+          <div class="inline-loading"><i class="pi pi-spin pi-spinner"></i></div>
+        </ng-template>
+
+        <ng-template #emptyExercisesTpl>
+          <div class="empty-card compact">
+            <i class="pi pi-ban"></i>
+            <p>No se encontraron ejercicios.</p>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="dialog-footer">
+      <button class="btn-cancel" (click)="showRoutineModal = false" type="button">Cancelar</button>
+      <button class="btn-save green" (click)="saveRoutine()" type="button">
+        <i class="pi pi-check"></i> Guardar Rutina
+      </button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- MODAL: Vista previa ejercicio -->
+<p-dialog [(visible)]="showExercisePreviewModal" [modal]="true" [closable]="true"
+  [style]="{ width: '92vw', maxWidth: '920px' }" styleClass="custom-dialog">
+  <ng-template pTemplate="header">
+    <div class="dialog-header-content">
+      <div class="dialog-icon-wrap teal"><i class="pi pi-play-circle"></i></div>
+      <div>
+        <h3>{{ previewExercise?.name || 'Ejercicio' }}</h3>
+        <p>Vista previa detallada del ejercicio seleccionado</p>
+      </div>
+    </div>
+  </ng-template>
+
+  <div class="dialog-body exercise-preview-body" *ngIf="previewExercise">
+    <div class="preview-grid">
+      <div class="preview-video-wrap">
+        <ng-container *ngIf="previewExercise.video_url && isEmbeddableVideo(previewExercise.video_url); else previewMediaFileTpl">
+          <iframe class="exercise-video" [src]="getSafeVideoUrl(previewExercise.video_url)" title="video-ejercicio"></iframe>
+        </ng-container>
+        <ng-template #previewMediaFileTpl>
+          <ng-container *ngIf="previewExercise.video_url && isDirectVideoFile(previewExercise.video_url); else previewImageTpl">
+            <video class="exercise-video" [src]="previewExercise.video_url" controls playsinline></video>
+          </ng-container>
+        </ng-template>
+        <ng-template #previewImageTpl>
+          <ng-container *ngIf="previewExercise.video_url; else noVideoTpl">
+            <img class="exercise-image" [src]="previewExercise.video_url" alt="previewExercise.name" (error)="$any($event.target).src = placeholderImg">
+          </ng-container>
+        </ng-template>
+        <ng-template #noVideoTpl>
+          <div class="video-placeholder">
+            <i class="pi pi-video"></i>
+            <p>Este ejercicio no tiene video cargado.</p>
+          </div>
+        </ng-template>
+      </div>
+      <div class="preview-info">
+        <span class="type-tag teal">{{ previewExercise.body_zone }}</span>
+        <p class="preview-title">{{ previewExercise.name }}</p>
+        <p class="preview-description">{{ previewExercise.description || 'Sin descripción registrada.' }}</p>
+
+        <div class="preview-stats-grid">
+          <div class="preview-stat-box">
+            <span class="preview-stat-label">Series</span>
+            <strong>{{ getPreviewExerciseConfig().sets || 3 }}</strong>
+          </div>
+          <div class="preview-stat-box">
+            <span class="preview-stat-label">Repeticiones</span>
+            <strong>{{ getPreviewExerciseConfig().repetitions || 10 }}</strong>
+          </div>
+        </div>
+
+        <div class="preview-notes-card">
+          <span class="preview-stat-label">Notas y precauciones</span>
+          <p>{{ getPreviewExerciseConfig().notes || 'Aun no se agregaron notas para este ejercicio.' }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="dialog-footer">
+      <button class="btn-save" (click)="showExercisePreviewModal = false" type="button">Cerrar Vista</button>
+    </div>
+  </ng-template>
+</p-dialog>

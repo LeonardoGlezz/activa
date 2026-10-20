@@ -1,0 +1,26 @@
+ion-tab-bar {
+  --background: #fff;
+  --border: 1px solid var(--activa-border);
+  padding: 10px 0 16px;
+  height: 72px;
+  box-shadow: 0 -2px 16px rgba(15, 23, 42, 0.06);
+}
+
+ion-tab-button {
+  --color: var(--activa-text-muted);
+  --color-selected: var(--activa-primary);
+  font-size: 11px;
+  font-weight: 700;
+  transition: color 0.2s ease;
+
+  ion-icon {
+    font-size: 26px;
+    margin-bottom: 4px;
+  }
+}
+
+/* Pestaña activa: más visible */
+ion-tab-button.tab-selected {
+  --color: var(--activa-primary);
+  font-weight: 800;
+}

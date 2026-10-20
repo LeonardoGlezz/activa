@@ -1,0 +1,144 @@
+/* 1. PALETA DE COLORES */
+$color-bajo: #7dd3fc; // Azul claro
+$color-medio: #fde047; // Amarillo
+$color-alto: #fdba74;  // Naranja 
+
+/* 2. VENCER AL MODO OSCURO DE IONIC (Fondo de pantalla) */
+ion-content {
+  --background: #f4f7f9 !important;
+  --ion-background-color: #f4f7f9 !important;
+  background: #f4f7f9 !important;
+}
+
+.empty-state {
+  padding-top: 3rem;
+  .empty-icon { font-size: 4rem; color: #94a3b8; margin-bottom: 1rem; }
+  h3 { font-weight: 800; color: #0f172a; margin-bottom: 0.5rem; }
+  p { color: #64748b; font-size: 0.95rem; }
+}
+
+.historial-container {
+  padding-bottom: 1.5rem;
+}
+
+.historial-summary {
+  font-size: 0.95rem;
+  color: #64748b;
+  font-weight: 700;
+  margin: 0 0 1.25rem 0;
+  padding-left: 5px;
+}
+
+/* VENCER EL FONDO NEGRO DE LA LISTA */
+ion-list.historial-list {
+  background: transparent !important;
+  --background: transparent !important;
+  padding: 0;
+}
+
+/* === DISEÑO SOFT UI: DOMINANDO A IONIC === */
+.historial-card {
+  margin: 0 0 18px 0;
+  
+  /* TRUCO MAGICO: Engañamos a Ionic cambiando sus colores oficiales 
+     solo dentro de estas tarjetas. Así el badge tomará estos colores. */
+  --ion-color-success: #7dd3fc;
+  --ion-color-success-contrast: #0c4a6e;
+  --ion-color-warning: #fde047;
+  --ion-color-warning-contrast: #713f12;
+  --ion-color-danger: #fdba74; /* ¡Adiós rojo nativo, hola naranja! */
+  --ion-color-danger-contrast: #7c2d12;
+
+  /* Forzamos el diseño de la caja */
+  --background: #ffffff !important;
+  background: #ffffff !important;
+  border-radius: 24px !important;
+  border: none !important;
+  box-shadow: 0 10px 25px -4px rgba(100, 116, 139, 0.25) !important;
+  overflow: hidden;
+  transition: transform 0.2s ease;
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  ion-card-content {
+    padding: 20px 24px;
+    position: relative;
+  }
+}
+
+.card-accent {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px; 
+  border-radius: 24px 0 0 24px;
+
+  &[data-level="success"] { background: $color-bajo; }
+  &[data-level="warning"] { background: $color-medio; }
+  &[data-level="danger"]  { background: $color-alto; } 
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 12px;
+
+  .pain-icon-wrap {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    &[data-level="success"] { background: rgba(125, 211, 252, 0.2); color: #0284c7; }
+    &[data-level="warning"] { background: rgba(253, 224, 71, 0.3); color: #ca8a04; }
+    &[data-level="danger"]  { background: rgba(253, 186, 116, 0.25); color: #ea580c; }
+  }
+
+  .pain-icon { font-size: 1.6rem; }
+
+  .card-title {
+    flex: 1;
+    min-width: 0;
+
+    h2 {
+      font-size: 1.1rem;
+      font-weight: 800;
+      margin: 0 0 4px 0;
+      color: #0f172a;
+    }
+
+    .card-time { font-size: 0.85rem; color: #64748b; font-weight: 600; margin: 0; }
+  }
+
+  /* El badge ahora obedece al truco mágico de arriba */
+  ion-badge.pain-badge {
+    font-weight: 800;
+    font-size: 0.8rem;
+    padding: 8px 12px;
+    border-radius: 20px;
+  }
+}
+
+.pain-label {
+  font-size: 0.95rem;
+  color: #334155;
+  font-weight: 800;
+  margin: 0 0 8px 0;
+}
+
+.obs {
+  font-size: 0.9rem;
+  color: #475569;
+  line-height: 1.5;
+  margin: 0;
+  background: #f8fafc;
+  padding: 10px 12px;
+  border-radius: 10px;
+}

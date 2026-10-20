@@ -1,0 +1,74 @@
+<ion-header>
+  <ion-toolbar class="notif-toolbar">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/your-progress" text="" icon="arrow-back-outline"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Notificaciones</ion-title>
+    <ion-buttons slot="end">
+      <ion-button
+        fill="clear"
+        class="mark-all-btn"
+        [disabled]="!hasUnread"
+        (click)="markAllAsRead()">
+        Marcar todas
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="notifications-content">
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-state">
+    <ion-spinner name="crescent" color="primary"></ion-spinner>
+    <p>Cargando notificaciones...</p>
+  </div>
+
+  <!-- Sin notificaciones -->
+  <div *ngIf="!loading && notifications.length === 0" class="empty-state">
+    <div class="empty-icon-wrap">
+      <ion-icon name="notifications-off-outline"></ion-icon>
+    </div>
+    <h3>Todo al día</h3>
+    <p>Aquí aparecerán mensajes de tu fisioterapeuta, recordatorios y consejos.</p>
+  </div>
+
+  <!-- Lista -->
+  <ng-container *ngIf="!loading && notifications.length > 0">
+
+    <!-- Contador no leídas -->
+    <div class="unread-summary" *ngIf="unreadCount > 0">
+      <span class="unread-dot"></span>
+      {{ unreadCount }} sin leer
+    </div>
+
+    <div class="notif-list">
+      <div
+        *ngFor="let n of notifications"
+        class="notif-card"
+        [class.unread]="!n.isRead"
+        (click)="markAsRead(n)">
+
+        <!-- Ícono tipo -->
+        <div class="notif-icon-wrap" [ngClass]="'type-' + n.type">
+          <ion-icon [name]="getIcon(n.type)"></ion-icon>
+        </div>
+
+        <!-- Contenido -->
+        <div class="notif-content">
+          <div class="notif-top">
+            <h3 class="notif-title" [class.bold]="!n.isRead">{{ n.title }}</h3>
+            <span class="notif-time">{{ formatDate(n.createdAt) }}</span>
+          </div>
+          <p *ngIf="n.body" class="notif-body">{{ n.body }}</p>
+        </div>
+
+        <!-- Indicador no leída -->
+        <div class="unread-indicator" *ngIf="!n.isRead"></div>
+
+      </div>
+    </div>
+
+  </ng-container>
+
+</ion-content>

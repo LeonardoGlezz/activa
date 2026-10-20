@@ -1,0 +1,101 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/detail" text="" icon="close-outline"></ion-back-button>
+    </ion-buttons>
+    <ion-title class="ion-text-center">Reportar Molestia</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding report-content">
+  <form [formGroup]="reportForm" (ngSubmit)="sendReport()">
+  <ion-text color="dark" class="ion-text-center">
+    <h1 class="report-title">¿Cómo te sientes?</h1>
+    <p class="report-subtitle">Por favor, indica tu nivel de dolor actual en la escala EVA para ajustar tu rutina.</p>
+  </ion-text>
+
+  <ion-grid class="ion-margin-vertical">
+    <ion-row class="ion-justify-content-center">
+      <ion-col size="2.4" class="ion-text-center">
+        <ion-button 
+          fill="clear" 
+          class="emoji-btn" 
+          [class.selected]="selectedPainLevel === 1"
+          (click)="selectPainLevel(1)">
+          <ion-label>😊<br><small>0-2<br>Sin dolor</small></ion-label>
+        </ion-button>
+      </ion-col>
+      <ion-col size="2.4" class="ion-text-center">
+        <ion-button 
+          fill="clear" 
+          class="emoji-btn" 
+          [class.selected]="selectedPainLevel === 3"
+          (click)="selectPainLevel(3)">
+          <ion-label>🙂<br><small>3-4<br>Leve</small></ion-label>
+        </ion-button>
+      </ion-col>
+      <ion-col size="2.4" class="ion-text-center">
+        <ion-button 
+          fill="clear" 
+          class="emoji-btn" 
+          [class.selected]="selectedPainLevel === 5"
+          (click)="selectPainLevel(5)">
+          <ion-label>😐<br><small>5-6<br>Mod.</small></ion-label>
+        </ion-button>
+      </ion-col>
+      <ion-col size="2.4" class="ion-text-center">
+        <ion-button 
+          fill="clear" 
+          class="emoji-btn" 
+          [class.selected]="selectedPainLevel === 7"
+          (click)="selectPainLevel(7)">
+          <ion-label>☹️<br><small>7-8<br>Severo</small></ion-label>
+        </ion-button>
+      </ion-col>
+      <ion-col size="2.4" class="ion-text-center">
+        <ion-button 
+          fill="clear" 
+          class="emoji-btn" 
+          [class.selected]="selectedPainLevel === 9"
+          (click)="selectPainLevel(9)">
+          <ion-label>😭<br><small>9-10<br>Insop.</small></ion-label>
+        </ion-button>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <ion-card class="comment-card ion-no-margin" mode="ios">
+    <ion-card-header>
+      <ion-card-subtitle class="ion-text-capitalize">Comentarios adicionales</ion-card-subtitle>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-textarea 
+        placeholder="Cuéntanos más sobre el dolor o por qué decidiste detener el ejercicio..." 
+        rows="5"
+        auto-grow="true"
+        class="custom-textarea"
+        formControlName="observations">
+      </ion-textarea>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-item lines="none" class="info-note ion-margin-vertical">
+    <ion-icon name="medkit-outline" slot="start" color="success"></ion-icon>
+    <ion-label class="ion-text-wrap">
+      <p>Tus respuestas nos ayudan a que tu fisioterapeuta revise tu caso y ajuste el plan de tratamiento.</p>
+    </ion-label>
+  </ion-item>
+
+  <ion-button 
+    expand="block" 
+    color="success" 
+    shape="round" 
+    class="send-btn ion-margin-top" 
+    type="submit"
+    [disabled]="isLoading">
+    <ion-icon slot="start" name="send-outline" *ngIf="!isLoading"></ion-icon>
+    <ion-spinner slot="start" name="crescent" *ngIf="isLoading"></ion-spinner>
+    {{ isLoading ? 'Enviando...' : 'Enviar reporte' }}
+  </ion-button>
+</form>
+</ion-content>

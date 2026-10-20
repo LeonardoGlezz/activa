@@ -1,0 +1,114 @@
+<div class="home-container">
+  <!-- SECCIÓN HERO -->
+  <section class="hero-section">
+    <div class="hero-wrapper">
+      <div class="hero-content">
+        <div class="badge">Bienvenido al Panel</div>
+        <h1 class="hero-title">{{ appName }}</h1>
+        <p class="hero-subtitle">{{ tagline }}</p>
+        <p class="hero-description">{{ description }}</p>
+        
+        <div class="hero-cta">
+          <a routerLink="/login" class="btn btn-hero-primary">Iniciar Sesión</a>
+        </div>
+      </div>
+
+      <!-- IMAGEN HERO -->
+      <div class="hero-image-placeholder">
+        <div class="placeholder-box">
+          <p>Panel de Administración</p>
+          <p style="font-size: 0.9rem; opacity: 0.7;">Coloca aquí: screenshot del dashboard</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN DE CARACTERÍSTICAS DEL ADMINISTRADOR -->
+  <section class="admin-features-section" id="caracteristicas">
+    <div class="section-container">
+      <div class="section-header">
+        <h2>El Panel Administrativo</h2>
+        <p>Herramientas completas para gestionar la plataforma de fisioterapia de manera eficiente</p>
+      </div>
+
+      <div class="admin-features-grid">
+        <div class="admin-feature-card" *ngFor="let feature of adminFeatures">
+          <div class="feature-icon">{{ feature.icon }}</div>
+          <h3>{{ feature.title }}</h3>
+          <p>{{ feature.description }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN DE RESPONSABILIDADES -->
+  <section class="responsibilities-section" id="responsabilidades">
+    <div class="section-container">
+      <div class="section-header">
+        <h2>Tus Responsabilidades</h2>
+        <p>Como administrador, eres clave para mantener la calidad y seguridad de la plataforma</p>
+      </div>
+
+      <div class="responsibilities-grid">
+        <div class="responsibility-card" *ngFor="let resp of responsibilities">
+          <h3>{{ resp.title }}</h3>
+          <p class="resp-description">{{ resp.description }}</p>
+          
+          <!-- IMAGEN PARA CADA RESPONSABILIDAD -->
+          <!-- Comentario Supervisión: Imagen de estadísticas/análisis (400x300px) -->
+          <!-- Comentario Soporte: Imagen de equipo de soporte/atención (400x300px) -->
+          <div class="resp-image-placeholder">
+            <p>Imagen: {{ resp.title }}</p>
+          </div>
+
+          <ul class="details-list">
+            <li *ngFor="let detail of resp.details">{{ detail }}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN DE CARACTERÍSTICAS PROFESIONALES -->
+  <section class="features-section">
+    <div class="section-container">
+      <div class="section-header">
+        <h2>Características del Control Administrativo</h2>
+      </div>
+
+      <div class="features-showcase">
+        <div class="feature-showcase-item">
+          <div class="feature-number">01</div>
+          <h4>Validación Profesional</h4>
+          <p>Verifica credenciales académicas y certificaciones de todos los fisioterapeutas antes de activarlos.</p>
+        </div>
+        <div class="feature-showcase-item">
+          <div class="feature-number">02</div>
+          <h4>Control de Acceso</h4>
+          <p>Administra permisos, roles y niveles de acceso de todos los usuarios en la plataforma.</p>
+        </div>
+        <div class="feature-showcase-item">
+          <div class="feature-number">03</div>
+          <h4>Análisis en Tiempo Real</h4>
+          <p>Visualiza métricas, estadísticas y reportes detallados del desempeño de la plataforma.</p>
+        </div>
+        <div class="feature-showcase-item">
+          <div class="feature-number">04</div>
+          <h4>Auditoría Completa</h4>
+          <p>Registros detallados de todas las actividades para cumplimiento normativo y seguridad.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN INFORMATIVA FINAL -->
+  <section class="cta-final-section" id="inicio">
+    <div class="cta-content">
+      <h2>Comienza a Administrar Activa</h2>
+      <p>Accede al panel administrativo para gestionar la plataforma de fisioterapia</p>
+      <div class="cta-buttons">
+        <a routerLink="/login" class="btn btn-cta-primary">Iniciar Sesión Ahora</a>
+      </div>
+    </div>
+  </section>
+</div>

@@ -1,0 +1,85 @@
+<p-toast></p-toast>
+
+<div class="fadein surface-ground p-3 md:p-5 min-h-screen flex flex-column align-items-center">
+  
+  <div class="w-full" style="max-width: 800px;">
+    
+    <div class="flex align-items-center mb-4 gap-3">
+      <p-button icon="pi pi-arrow-left" 
+                [routerLink]="referrer === 'list' ? '/dashboard/historial-citas' : '/dashboard/citas'"
+                styleClass="p-button-rounded p-button-text text-color-secondary bg-white shadow-1"></p-button>
+      <div>
+        <h1 class="text-2xl md:text-3xl font-bold text-color m-0 mb-1">Detalles de la Cita</h1>
+        <p class="text-color-secondary m-0 text-sm">Información y expediente de la sesión programada.</p>
+      </div>
+    </div>
+
+    <div *ngIf="appointmentData" class="bg-white border-round-2xl shadow-1 border-1 surface-border p-4 md:p-5 relative overflow-hidden">
+      
+      <div class="absolute top-0 left-0 w-full h-1rem bg-activa-primary"></div>
+
+      <div class="flex flex-column md:flex-row justify-content-between align-items-start md:align-items-center border-bottom-1 surface-border pb-4 mb-4 mt-2 gap-3">
+         <div class="flex align-items-center gap-3">
+            <div class="bg-activa-primary-light text-activa-primary font-bold text-2xl border-circle w-4rem h-4rem flex align-items-center justify-content-center shadow-1">
+              {{ appointmentData.patient.name.charAt(0) }}
+            </div>
+            <div>
+              <h2 class="m-0 text-2xl font-bold text-color mb-1 line-height-2">{{ appointmentData.patient.name }}</h2>
+              <span class="text-600 block mb-1 text-sm font-medium">
+                <i class="pi pi-envelope mr-2 text-xs text-activa-primary"></i>{{ appointmentData.patient.email }}
+              </span>
+            </div>
+         </div>
+         
+         <span class="status-tag font-bold px-3 py-1 border-round-xl border-1 text-xs uppercase tracking-wide"
+               [ngClass]="appointmentData.statusColor">
+            {{ appointmentData.status }}
+         </span>
+      </div>
+
+      <div class="grid">
+         <div class="col-12 md:col-4 mb-3">
+            <span class="text-xs text-color-secondary font-bold block mb-2 uppercase tracking-wide">Fecha y Hora</span>
+            <span class="text-base text-color font-semibold block mb-1"><i class="pi pi-calendar text-activa-primary mr-2"></i>{{ appointmentData.dateStr }}</span>
+            <span class="text-base text-color font-semibold block"><i class="pi pi-clock text-activa-primary mr-2"></i>{{ appointmentData.time }} ({{ appointmentData.duration }})</span>
+         </div>
+         <div class="col-12 md:col-8 mb-3">
+            <span class="text-xs text-color-secondary font-bold block mb-2 uppercase tracking-wide">Servicio Agendado</span>
+            <span class="text-lg text-color font-bold block"><i class="pi pi-briefcase text-activa-primary mr-2"></i>{{ appointmentData.service }}</span>
+         </div>
+      </div>
+
+      <div class="mt-4 bg-gray-50 p-4 border-round-xl border-1 surface-border">
+        <h3 class="m-0 text-xs font-bold text-color-secondary mb-2 uppercase tracking-wide">Motivo de la consulta / Notas</h3>
+        <p class="m-0 text-color line-height-3 font-medium text-sm md:text-base">{{ appointmentData.notes }}</p>
+      </div>
+
+      <div class="flex flex-column md:flex-row justify-content-end gap-3 pt-4 border-top-1 surface-border mt-4">
+        
+        <p-button *ngIf="!appointmentData.isPast"
+                  label="Cancelar Cita" icon="pi pi-times" 
+                  (onClick)="cancelarCita()"
+                  styleClass="p-button-outlined p-button-danger border-round-lg px-4 py-2 font-bold w-full md:w-auto"></p-button>
+        
+        <p-button *ngIf="!appointmentData.isPast"
+                  label="Reprogramar" icon="pi pi-calendar-plus" 
+                  [routerLink]="['/dashboard/nueva-cita']"
+                  [queryParams]="{ edit: appointmentData.id }"
+                  styleClass="p-button-outlined text-color-secondary border-round-lg px-4 py-2 font-bold w-full md:w-auto"></p-button>
+        
+        <p-button *ngIf="!appointmentData.isPast"
+                  label="Iniciar Consulta" 
+                  icon="pi pi-play" 
+                  (onClick)="iniciarConsulta()"
+                  styleClass="bg-activa-primary border-none hover:bg-activa-primary-hover text-white border-round-lg px-5 py-2 font-bold shadow-2 w-full md:w-auto"></p-button>
+      </div>
+
+    </div>
+    
+    <div *ngIf="!appointmentData" class="text-center p-5 mt-5">
+      <i class="pi pi-spin pi-spinner text-4xl text-activa-primary"></i>
+      <p class="text-color-secondary mt-3">Cargando detalles de la cita...</p>
+    </div>
+
+  </div>
+</div>

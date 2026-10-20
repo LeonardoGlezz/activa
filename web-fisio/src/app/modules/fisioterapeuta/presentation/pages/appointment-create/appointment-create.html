@@ -1,0 +1,119 @@
+<p-toast></p-toast>
+
+<div class="fadein surface-ground p-3 md:p-5 min-h-screen flex flex-column align-items-center">
+  
+  <div class="w-full" style="max-width: 800px;">
+    
+    <div class="flex align-items-center mb-4 gap-3">
+      <p-button icon="pi pi-arrow-left" routerLink="/dashboard/citas" styleClass="p-button-rounded p-button-text text-color-secondary bg-white shadow-1"></p-button>
+      <div>
+        <h1 class="text-2xl md:text-3xl font-bold text-color m-0 mb-1">
+          {{ isEditMode ? 'Reprogramar Cita' : 'Agendar Nueva Cita' }}
+        </h1>
+        <p class="text-color-secondary m-0 text-sm">
+          {{ isEditMode ? 'Modifica el horario o los detalles de la sesión.' : 'Programa una sesión seleccionando al paciente y el horario.' }}
+        </p>
+      </div>
+    </div>
+
+    <div class="bg-white border-round-2xl shadow-1 border-1 surface-border p-4 md:p-5">
+      
+      <div class="grid formgrid p-fluid">
+        
+        <div class="col-12 mb-4">
+          <h3 class="text-lg font-bold text-color mb-3 border-bottom-1 surface-border pb-2"><i class="pi pi-user mr-2 text-activa-primary"></i>Datos del Paciente</h3>
+          
+          <label class="text-sm font-bold text-color-secondary mb-2 block">Buscar Paciente *</label>
+          <p-dropdown [options]="patientsList" 
+                      [(ngModel)]="appointment.patientId" 
+                      optionLabel="name" 
+                      optionValue="id" 
+                      placeholder="Escribe para buscar..." 
+                      [filter]="true" 
+                      filterBy="name" 
+                      [showClear]="true"
+                      [disabled]="isEditMode" 
+                      styleClass="w-full border-round-lg shadow-none">
+            <ng-template let-patient pTemplate="item">
+              <div class="flex flex-column">
+                <span class="font-bold">{{patient.name}}</span>
+                <span class="text-xs text-color-secondary">{{patient.email}}</span>
+              </div>
+            </ng-template>
+          </p-dropdown>
+          
+          <small *ngIf="!isEditMode" class="text-color-secondary mt-2 block">
+            Si es un paciente nuevo, primero debes <a (click)="irANuevoPaciente()" class="text-activa-primary font-bold no-underline hover:underline cursor-pointer">registrarlo aquí</a>.
+          </small>
+        </div>
+
+        <div class="col-12 mb-2">
+          <h3 class="text-lg font-bold text-color mb-3 border-bottom-1 surface-border pb-2"><i class="pi pi-calendar mr-2 text-activa-primary"></i>Detalles de la Sesión</h3>
+        </div>
+
+        <div class="col-12 md:col-6 mb-4">
+          <label class="text-sm font-bold text-color-secondary mb-2 block">Tipo de Servicio *</label>
+          <p-dropdown [options]="servicesList" [(ngModel)]="appointment.serviceType" optionLabel="name" placeholder="Selecciona el servicio" styleClass="w-full border-round-lg shadow-none"></p-dropdown>
+        </div>
+
+        <div class="col-12 md:col-6 mb-4">
+          <label class="text-sm font-bold text-color-secondary mb-2 block">Duración Estimada</label>
+          <p-dropdown [options]="durationOptions" [(ngModel)]="appointment.duration" optionLabel="label" optionValue="value" styleClass="w-full border-round-lg shadow-none"></p-dropdown>
+        </div>
+
+       <div class="col-12 md:col-6 mb-4">
+          <label class="text-sm font-bold text-color-secondary mb-2 block">Fecha y Hora *</label>
+          
+          <span class="p-input-icon-right w-full block">
+            <i class="pi pi-calendar text-color-secondary cursor-pointer" (click)="op.toggle($event)"></i>
+            
+            <input pInputText 
+                   type="text"
+                   readonly 
+                   [value]="appointment.date ? (appointment.date | date:'dd/MM/yyyy, h:mm a') : ''" 
+                   placeholder="Selecciona el día y la hora" 
+                   class="w-full border-round-lg shadow-none cursor-pointer"
+                   style="background-color: #ffffff; opacity: 1;"
+                   (click)="fechaTemporal = appointment.date ? appointment.date : fechaTemporal; op.toggle($event)">
+          </span>
+
+          <p-overlayPanel #op [showCloseIcon]="false" styleClass="border-round-2xl shadow-4 p-0 mt-2">
+            <ng-template pTemplate>
+              
+              <p-calendar [(ngModel)]="fechaTemporal" 
+                          [inline]="true" 
+                          [showTime]="true" 
+                          hourFormat="12" 
+                          [minDate]="minDate" 
+                          styleClass="border-none w-full">
+              </p-calendar>
+              
+              <div class="flex justify-content-end p-3 border-top-1 surface-border bg-gray-50 border-round-bottom-2xl">
+                <p-button label="Confirmar" icon="pi pi-check" (onClick)="confirmarFechaOverlay(op)" styleClass="p-button-sm bg-activa-primary border-none border-round-md px-4"></p-button>
+              </div>
+
+            </ng-template>
+          </p-overlayPanel>
+        </div>
+
+        <div class="col-12 mb-4">
+          <label class="text-sm font-bold text-color-secondary mb-2 block">Motivo de consulta / Notas internas (Opcional)</label>
+          <textarea pInputTextarea [(ngModel)]="appointment.notes" rows="4" class="w-full border-round-lg shadow-none" placeholder="Escribe aquí si el paciente reportó algún dolor específico o notas para la sesión..."></textarea>
+        </div>
+
+      </div>
+
+      <div class="flex justify-content-end gap-3 pt-4 border-top-1 surface-border mt-2">
+        <p-button label="Cancelar" routerLink="/dashboard/citas" styleClass="p-button-text text-color-secondary font-bold"></p-button>
+        <p-button [label]="isEditMode ? 'Guardar Cambios' : 'Agendar Cita'" 
+                  icon="pi pi-check" 
+                  (onClick)="saveAppointment()" 
+                  [disabled]="isSaving"
+                  styleClass="bg-activa-primary border-none hover:bg-activa-primary-hover border-round-lg px-5 py-2 font-bold shadow-2"></p-button>
+      </div>
+
+    </div>
+  </div>
+
+  <p-confirmDialog header="Confirmación" icon="pi pi-exclamation-triangle" styleClass="border-round-2xl"></p-confirmDialog>
+</div>

@@ -1,0 +1,11 @@
+/* Ocultar flechas de incremento/decremento en Chrome, Safari, Edge y Opera */
+::ng-deep .no-spinners::-webkit-outer-spin-button,
+::ng-deep .no-spinners::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Ocultar flechas en Firefox */
+::ng-deep .no-spinners {
+  -moz-appearance: textfield;
+}

@@ -1,0 +1,198 @@
+<ng-container *ngIf="estadoCuenta === 'approved'">
+  <div class="flex h-screen w-full bg-activa-main relative overflow-hidden">
+
+    <p-confirmDialog [style]="{width: '450px'}"></p-confirmDialog>
+
+    <div *ngIf="isMobileMenuOpen" 
+         class="fixed top-0 left-0 w-full h-full bg-black-alpha-40 z-4 md:hidden transition-all"
+         (click)="closeMenu()"></div>
+
+    <div [ngClass]="isMobileMenuOpen ? 'flex fixed h-full z-5 shadow-4 w-16rem' : (isDesktopCollapsed ? 'hidden md:flex w-5rem' : 'hidden md:flex w-16rem')"
+         class="bg-activa-surface flex-column justify-content-between transition-all duration-300 md:relative md:shadow-none border-right-1 h-full" 
+         style="border-color: #E2E8F0 !important;"> 
+      
+      <div class="flex justify-content-center align-items-center border-bottom-1 relative w-full" style="border-color: #E2E8F0 !important; height: 5rem;">
+        
+        <img src="/logo-nuevo.png" alt="Logo Activa" 
+             [style.height]="(isDesktopCollapsed && !isMobileMenuOpen) ? '40px' : '65px'"
+             [style.width]="(isDesktopCollapsed && !isMobileMenuOpen) ? '40px' : '65px'"
+             class="transition-all duration-300 fadein" 
+             style="object-fit: contain;">
+        
+        <i *ngIf="!isDesktopCollapsed" class="pi pi-bars text-color-secondary text-xl cursor-pointer hidden md:block hover:text-activa-primary transition-colors absolute" style="right: 1.2rem;" (click)="toggleMenu()"></i>
+        <i class="pi pi-times text-color-secondary text-xl cursor-pointer md:hidden hover:text-color absolute" style="right: 1.2rem;" (click)="closeMenu()"></i>
+      </div>
+
+      <div class="flex-1 py-4 flex flex-column gap-2 overflow-y-auto" [ngClass]="(isDesktopCollapsed && !isMobileMenuOpen) ? 'px-2' : 'px-3'">
+        <div *ngIf="isDesktopCollapsed && !isMobileMenuOpen" class="flex justify-content-center mb-3 hidden md:flex">
+           <i class="pi pi-bars text-color-secondary text-xl cursor-pointer hover:text-activa-primary transition-colors" (click)="toggleMenu()"></i>
+        </div>
+
+        <a routerLink="/dashboard/inicio" routerLinkActive #rlaInicio="routerLinkActive" [routerLinkActiveOptions]="{exact: true}" (click)="closeMenu()" 
+           [ngClass]="(isDesktopCollapsed && !isMobileMenuOpen) ? 'justify-content-center' : 'gap-3'"
+           class="flex align-items-center p-3 border-round-md cursor-pointer no-underline transition-colors"
+           [class.bg-activa-primary-light]="rlaInicio.isActive"
+           [class.text-activa-primary]="rlaInicio.isActive"
+           [class.text-color-secondary]="!rlaInicio.isActive"
+           [class.hover:surface-hover]="!rlaInicio.isActive">
+          <i class="pi pi-home text-lg" [class.font-bold]="rlaInicio.isActive"></i>
+          <span *ngIf="!isDesktopCollapsed || isMobileMenuOpen" class="text-sm fadein" [class.font-bold]="rlaInicio.isActive" [class.font-medium]="!rlaInicio.isActive">Inicio</span>
+        </a>
+        
+        <a routerLink="/dashboard/pacientes" routerLinkActive #rlaPacientes="routerLinkActive" (click)="closeMenu()" 
+           [ngClass]="(isDesktopCollapsed && !isMobileMenuOpen) ? 'justify-content-center' : 'gap-3'"
+           class="flex align-items-center p-3 border-round-md cursor-pointer no-underline transition-colors"
+           [class.bg-activa-primary-light]="rlaPacientes.isActive"
+           [class.text-activa-primary]="rlaPacientes.isActive"
+           [class.text-color-secondary]="!rlaPacientes.isActive"
+           [class.hover:surface-hover]="!rlaPacientes.isActive">
+          <i class="pi pi-users text-lg" [class.font-bold]="rlaPacientes.isActive"></i>
+          <span *ngIf="!isDesktopCollapsed || isMobileMenuOpen" class="text-sm fadein" [class.font-bold]="rlaPacientes.isActive" [class.font-medium]="!rlaPacientes.isActive">Pacientes</span>
+        </a>
+
+        <a routerLink="/dashboard/citas" routerLinkActive #rlaCitas="routerLinkActive" (click)="closeMenu()" 
+           [ngClass]="(isDesktopCollapsed && !isMobileMenuOpen) ? 'justify-content-center' : 'gap-3'"
+           class="flex align-items-center p-3 border-round-md cursor-pointer no-underline transition-colors"
+           [class.bg-activa-primary-light]="rlaCitas.isActive"
+           [class.text-activa-primary]="rlaCitas.isActive"
+           [class.text-color-secondary]="!rlaCitas.isActive"
+           [class.hover:surface-hover]="!rlaCitas.isActive">
+          <i class="pi pi-calendar text-lg" [class.font-bold]="rlaCitas.isActive"></i>
+          <span *ngIf="!isDesktopCollapsed || isMobileMenuOpen" class="text-sm fadein" [class.font-bold]="rlaCitas.isActive" [class.font-medium]="!rlaCitas.isActive">Agenda</span>
+        </a>
+
+        <a routerLink="/dashboard/ejercicios" routerLinkActive #rlaEjercicios="routerLinkActive" (click)="closeMenu()" 
+           [ngClass]="(isDesktopCollapsed && !isMobileMenuOpen) ? 'justify-content-center' : 'gap-3'"
+           class="flex align-items-center p-3 border-round-md cursor-pointer no-underline transition-colors"
+           [class.bg-activa-primary-light]="rlaEjercicios.isActive"
+           [class.text-activa-primary]="rlaEjercicios.isActive"
+           [class.text-color-secondary]="!rlaEjercicios.isActive"
+           [class.hover:surface-hover]="!rlaEjercicios.isActive">
+          <i class="pi pi-bolt text-bolt-lg" [class.font-bold]="rlaEjercicios.isActive"></i>
+          <span *ngIf="!isDesktopCollapsed || isMobileMenuOpen" class="text-sm fadein" [class.font-bold]="rlaEjercicios.isActive" [class.font-medium]="!rlaEjercicios.isActive">Ejercicios</span>
+        </a>
+
+        <a routerLink="/dashboard/rutinas" routerLinkActive #rlaRutinas="routerLinkActive" (click)="closeMenu()" 
+           [ngClass]="(isDesktopCollapsed && !isMobileMenuOpen) ? 'justify-content-center' : 'gap-3'"
+           class="flex align-items-center p-3 border-round-md cursor-pointer no-underline transition-colors"
+           [class.bg-activa-primary-light]="rlaRutinas.isActive"
+           [class.text-activa-primary]="rlaRutinas.isActive"
+           [class.text-color-secondary]="!rlaRutinas.isActive"
+           [class.hover:surface-hover]="!rlaRutinas.isActive">
+          <i class="pi pi-folder text-lg" [class.font-bold]="rlaRutinas.isActive"></i>
+          <span *ngIf="!isDesktopCollapsed || isMobileMenuOpen" class="text-sm fadein" [class.font-bold]="rlaRutinas.isActive" [class.font-medium]="!rlaRutinas.isActive">Rutinas</span>
+        </a>
+
+        <a routerLink="/dashboard/subscription" routerLinkActive #rlaPlanes="routerLinkActive" (click)="closeMenu()" 
+           [ngClass]="(isDesktopCollapsed && !isMobileMenuOpen) ? 'justify-content-center' : 'gap-3'"
+           class="flex align-items-center p-3 border-round-md cursor-pointer no-underline transition-colors"
+           [class.bg-activa-primary-light]="rlaPlanes.isActive"
+           [class.text-activa-primary]="rlaPlanes.isActive"
+           [class.text-color-secondary]="!rlaPlanes.isActive"
+           [class.hover:surface-hover]="!rlaPlanes.isActive">
+          <i class="pi pi-star text-lg" [class.font-bold]="rlaPlanes.isActive"></i>
+          <span *ngIf="!isDesktopCollapsed || isMobileMenuOpen" class="text-sm fadein" [class.font-bold]="rlaPlanes.isActive" [class.font-medium]="!rlaPlanes.isActive">Membresía</span>
+        </a>
+      </div>
+
+      <div class="p-3 border-top-1 overflow-hidden flex-shrink-0" style="border-color: #E2E8F0 !important;">
+        <p-menu #profileMenu [model]="userMenuItems" [popup]="true" appendTo="body"></p-menu>
+        <div class="flex align-items-center p-2 border-round-md hover:surface-hover cursor-pointer transition-colors"
+             [ngClass]="(isDesktopCollapsed && !isMobileMenuOpen) ? 'justify-content-center' : 'gap-3'"
+             (click)="profileMenu.toggle($event)">
+          <div class="bg-activa-main border-circle flex align-items-center justify-content-center text-activa-primary flex-shrink-0" style="width: 35px; height: 35px;">
+             <i class="pi pi-user text-xl"></i>
+          </div>
+          <div *ngIf="!isDesktopCollapsed || isMobileMenuOpen" class="flex flex-column fadein overflow-hidden">
+             <span class="font-medium text-sm text-color line-height-2 white-space-nowrap text-overflow-ellipsis">{{ userName }}</span>
+             <span class="text-xs text-color-secondary white-space-nowrap">Fisioterapeuta</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex-1 flex flex-column h-full overflow-hidden">
+      <div class="bg-activa-surface h-5rem px-4 flex justify-content-between align-items-center border-bottom-1 z-1 flex-shrink-0" style="border-color: #E2E8F0 !important;">
+        <div class="flex align-items-center gap-3">
+          <p-button icon="pi pi-bars" styleClass="p-button-text p-button-secondary md:hidden" (onClick)="toggleMenu()"></p-button>
+          <h2 class="m-0 text-6xl font-bold hidden sm:block" style="color: #13afdaa8;">Activa</h2>
+        </div>
+        <div class="flex align-items-center gap-4">
+          <i class="pi pi-bell text-color-secondary text-xl cursor-pointer hover:text-activa-primary transition-colors relative">
+            <span class="absolute top-0 right-0 bg-red-500 border-circle w-0.5rem h-0.5rem"></span>
+          </i>
+        </div>
+      </div>
+     <div class="flex-1 overflow-y-auto p-4 md:p-6 bg-activa-surface">
+        <router-outlet></router-outlet>
+      </div>
+    </div>
+  </div>
+</ng-container>
+
+<div *ngIf="estadoCuenta === 'pending_approval'" class="min-h-screen bg-activa-main flex flex-column justify-content-center align-items-center p-4">
+  <div class="bg-activa-surface border-round-2xl shadow-4 p-6 text-center w-full relative overflow-hidden" style="max-width: 45rem;">
+    <div class="absolute top-0 left-0 w-full h-1rem bg-activa-primary" style="background-color: #009688;"></div>
+    <div class="mb-5">
+    </div>
+    <h2 class="text-3xl font-bold text-color m-0 mb-3">Estamos revisando tu perfil</h2>
+    <p class="text-x text-color-secondary m-0 mb-5 line-height-3">
+      Hemos recibido tus documentos correctamente. Nuestro equipo de administración está verificando tu identidad para garantizar la seguridad de la plataforma.
+    </p>
+    <div class="bg-blue-50 border-round-lg p-4 mb-5 text-left flex align-items-start gap-3 border-1 border-blue-100">
+      <i class="pi pi-info-circle text-blue-600 text-2xl mt-1"></i>
+      <div>
+        <span class="block font-bold text-blue-900 text-lg mb-2">¿Qué sigue ahora?</span>
+        <ul class="text-blue-800 m-0 pl-3 line-height-3">
+          <li>El proceso de validación suele tomar entre <strong>24 y 48 horas hábiles</strong>.</li>
+          <li>Te enviaremos una notificación en cuanto tu cuenta sea activada.</li>
+          <li>Una vez activado, tendrás acceso total para gestionar a tus pacientes y rutinas.</li>
+        </ul>
+      </div>
+    </div>
+   <div class="border-top-1 surface-border pt-4 mt-2">
+      <button class="w-full flex justify-content-center align-items-center p-3 font-bold border-round-md cursor-pointer" 
+              style="background-color: #38c3d8; border: none; color: white;" 
+              (click)="cerrarSesion()">
+        <i class="pi pi-sign-out text-xl mr-2" style="color: white;"></i>
+        <span class="text-lg" style="color: white;">Cerrar Sesión por ahora</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="estadoCuenta === 'rejected'" class="min-h-screen bg-activa-main flex flex-column justify-content-center align-items-center p-3 fadein">
+  <div class="bg-activa-surface border-round-2xl shadow-4 p-4 md:p-5 text-center w-full relative overflow-hidden" style="max-width: 40rem; background-color: #ffffff;">
+    <div class="absolute top-0 left-0 w-full h-1rem" style="background-color: #dc2626;"></div>
+    <div class="mb-3 mt-2 flex justify-content-center">
+      <div class="border-circle flex justify-content-center align-items-center" style="width: 70px; height: 70px; background-color: #fee2e2;">
+        <i class="pi pi-times-circle" style="font-size: 3rem; color: #dc2626;"></i>
+      </div>
+    </div>
+    <h2 class="text-3xl font-bold m-0 mb-2" style="color: #1e293b;">Solicitud No Aprobada</h2>
+    <p class="text-lg m-0 mb-4 line-height-3" style="color: #64748b;">
+      Lamentablemente, nuestro equipo de administración no pudo validar la autenticidad de los documentos proporcionados o estos no cumplen con los requisitos mínimos de la plataforma.
+    </p>
+    <div class="border-round-lg p-3 mb-4 text-left flex align-items-start gap-3 border-1" style="background-color: #fecaca; border-color: #fca5a5;">
+      <i class="pi pi-exclamation-triangle text-xl mt-1" style="color: #b91c1c;"></i>
+      <div>
+        <span class="block font-bold text-base mb-2" style="color: #991b1b;">¿Qué puedo hacer ahora?</span>
+        <ul class="m-0 pl-3 line-height-3 text-sm sm:text-base" style="color: #7f1d1d;">
+          <li class="mb-1">Asegúrate de que tu Cédula Profesional sea visible y vigente.</li>
+          <li class="mb-1">Revisa que las identificaciones subidas correspondan a tus datos.</li>
+          <li>Si crees que esto es un error, ponte en contacto con SupportActiva&#64;gmail.com para aclarar la situación.</li>
+        </ul>
+      </div>
+    </div>
+   <div class="border-top-1 pt-3 mt-1 flex justify-content-center w-full" style="border-color: #e2e8f0;">
+      <button class="flex justify-content-center align-items-center py-2 px-5 font-bold border-round-md cursor-pointer transition-colors" 
+              style="background-color: transparent; border: 2px solid #cbd5e1; color: #475569;" 
+              onmouseover="this.style.backgroundColor='#f8fafc'; this.style.borderColor='#94a3b8';" 
+              onmouseout="this.style.backgroundColor='transparent'; this.style.borderColor='#cbd5e1';"
+              (click)="cerrarSesion()">
+        <i class="pi pi-sign-out text-lg mr-2"></i>
+        <span class="text-base">Cerrar Sesión</span>
+      </button>
+    </div>
+  </div>
+</div>

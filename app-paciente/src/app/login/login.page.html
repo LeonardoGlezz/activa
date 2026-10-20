@@ -1,0 +1,35 @@
+<ion-content [fullscreen]="true" class="login-content">
+  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-container">
+    <div class="logo-section">
+      <div class="logo-circle">
+        <img src="assets/icon/ico-activa.png" alt="ACTIVA" class="logo-image" width="52" height="52" />
+      </div>
+      <h1 class="logo-title">ACTIVA</h1>
+      <p class="logo-subtitle">Inicia sesión con tu correo</p>
+    </div>
+
+    <div class="form-section">
+      <label class="input-label">Correo electrónico</label>
+      <ion-item lines="none" class="input-wrapper">
+        <ion-icon name="mail-outline" slot="start"></ion-icon>
+        <ion-input
+          type="email"
+          formControlName="email"
+          placeholder="paciente@activa.com"
+          class="login-input input-dark-text"
+        ></ion-input>
+      </ion-item>
+    </div>
+
+    <div class="button-section">
+      <ion-button expand="block" class="login-btn-primary" type="submit">
+        <ion-icon name="arrow-forward-circle" slot="start"></ion-icon>
+        Validar y continuar
+      </ion-button>
+      <ion-button fill="clear" class="login-btn-secondary" routerLink="/welcome">
+        <ion-icon name="help-circle-outline" slot="start"></ion-icon>
+        Ayuda
+      </ion-button>
+    </div>
+  </form>
+</ion-content>

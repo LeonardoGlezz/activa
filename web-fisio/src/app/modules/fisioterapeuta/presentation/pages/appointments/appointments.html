@@ -1,0 +1,137 @@
+<p-toast></p-toast>
+
+<div class="flex flex-column lg:flex-row gap-4 p-3 lg:p-4 surface-ground min-h-screen">
+  
+  <div class="flex-1 flex flex-column bg-white border-round-2xl shadow-1 border-1 surface-border overflow-hidden">
+    
+    <div class="flex flex-column md:flex-row justify-content-between align-items-center p-3 md:p-4 border-bottom-1 surface-border gap-3">
+      
+      <div class="flex align-items-center justify-content-between bg-gray-50 border-round-lg border-1 surface-border p-1 w-full md:w-auto">
+        <div class="flex gap-1">
+          <p-button icon="pi pi-angle-double-left" (onClick)="changeYear(-1)" styleClass="p-button-text p-button-sm text-color-secondary w-2rem h-2rem p-0"></p-button>
+          <p-button icon="pi pi-angle-left" (onClick)="changeMonth(-1)" styleClass="p-button-text p-button-sm text-color w-2rem h-2rem p-0"></p-button>
+        </div>
+        
+        <span class="font-bold text-base md:text-lg px-2 text-color text-center flex-1 white-space-nowrap">
+          {{ currentMonthName }} {{ currentYear }}
+        </span>
+        
+        <div class="flex gap-1">
+          <p-button icon="pi pi-angle-right" (onClick)="changeMonth(1)" styleClass="p-button-text p-button-sm text-color w-2rem h-2rem p-0"></p-button>
+          <p-button icon="pi pi-angle-double-right" (onClick)="changeYear(1)" styleClass="p-button-text p-button-sm text-color-secondary w-2rem h-2rem p-0"></p-button>
+        </div>
+      </div>
+
+      <p-button label="Ir a Hoy" (onClick)="irAHoy()" styleClass="bg-white text-color border-1 surface-border hover:surface-hover border-round-lg px-4 py-2 font-bold shadow-none w-full md:w-auto"></p-button>
+    </div>
+
+    <div class="p-2 md:p-4">
+      
+      <div class="calendar-grid mb-2">
+        <div *ngFor="let day of daysOfWeek" class="text-center font-bold text-color-secondary text-xs md:text-sm py-1 uppercase">
+          {{ day }}
+        </div>
+      </div>
+
+      <div class="calendar-grid">
+        <div *ngFor="let day of calendarGrid" 
+             class="calendar-cell border-round-lg md:border-round-xl border-1 surface-border p-1 md:p-2 cursor-pointer transition-all flex flex-column"
+             [ngClass]="{
+               'opacity-0 pointer-events-none': day.empty,
+               'hover:border-activa-primary hover:shadow-2': !day.empty,
+               'bg-activa-primary-light border-activa-primary': day.isToday
+             }"
+             (click)="openDayDetails(day)">
+          
+          <span *ngIf="!day.empty" class="text-center md:text-right font-bold w-full block text-sm md:text-lg mb-1" 
+                [ngClass]="day.isToday ? 'text-activa-primary' : (day.isPast ? 'text-400' : 'text-color')">
+            {{ day.dayNumber }}
+          </span>
+
+          <div *ngIf="!day.empty && day.appointmentCount > 0" class="flex flex-wrap gap-1 mt-auto justify-content-center md:justify-content-end">
+             <span *ngFor="let app of day.appointments" class="appointment-dot border-circle" [ngClass]="'bg-' + app.type"></span>
+          </div>
+          
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="w-full lg:w-20rem flex flex-column gap-3 pb-2">
+    
+    <p-button label="+ Nueva Cita" routerLink="/dashboard/nueva-cita" styleClass="w-full bg-activa-primary border-none hover:bg-activa-primary-hover text-white border-round-xl py-3 font-bold shadow-2 text-lg"></p-button>
+
+    <div class="bg-white border-round-2xl shadow-1 border-1 surface-border p-4 flex-1 flex flex-column overflow-hidden mt-3">
+      <div class="flex justify-content-between align-items-center mb-4 flex-shrink-0">
+        <h3 class="m-0 text-color font-bold text-lg">Próximas</h3>
+        <a routerLink="/dashboard/historial-citas" class="text-xs font-bold no-underline text-activa-primary hover:underline">Ver todo</a>
+      </div>
+      
+      <div class="flex flex-column gap-3 overflow-y-auto invisible-scrollbar flex-1 pr-2">
+        <div *ngFor="let apt of upcomingAppointments" 
+             class="flex align-items-center gap-3 p-2 border-round-lg hover:surface-hover transition-colors cursor-pointer border-1 surface-border"
+             [routerLink]="['/dashboard/detalle-cita']"
+             [queryParams]="{ referrer: 'calendar', id: apt.id }"> 
+          <div class="flex flex-column align-items-center bg-gray-50 border-round-md p-2 min-w-max border-1 surface-border">
+            <span class="font-bold text-color text-sm">{{ apt.time }}</span>
+            <span class="text-xs text-color-secondary font-bold">{{ apt.ampm }}</span>
+          </div>
+          <div class="flex-1 flex flex-column overflow-hidden">
+            <span class="font-bold text-color text-sm white-space-nowrap text-overflow-ellipsis">{{ apt.patient }}</span>
+            <span class="text-xs text-color-secondary">{{ apt.status }}</span>
+          </div>
+          <div class="w-1rem flex justify-content-end">
+            <span class="w-0.5rem h-0.5rem border-circle inline-block {{ apt.dot }}"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <p-dialog [(visible)]="displayDayModal" [modal]="true" [draggable]="false" [resizable]="false" [style]="{ width: '400px', maxWidth: '95vw' }" styleClass="border-round-2xl shadow-4 overflow-hidden">
+    <ng-template pTemplate="header">
+      <div class="flex flex-column">
+        <span class="text-xl font-bold text-color">{{ fechaFormateada | titlecase }}</span>
+        <span class="text-sm text-color-secondary">{{ selectedDayAppointments.length }} citas programadas</span>
+      </div>
+    </ng-template>
+
+    <div class="py-3">
+      
+      <div *ngIf="selectedDayAppointments.length === 0" class="text-center p-5">
+        <i class="pi pi-calendar-times text-4xl text-color-secondary mb-3"></i>
+        <p class="m-0 text-color-secondary font-medium">No hay citas para este día.</p>
+        
+        <p-button *ngIf="!selectedDayIsPast" label="Agendar aquí" routerLink="/dashboard/nueva-cita" [queryParams]="{ date: selectedDateObj.toISOString() }" styleClass="p-button-text text-activa-primary font-bold mt-3"></p-button>
+      </div>
+
+      <div *ngIf="selectedDayAppointments.length > 0" class="flex flex-column gap-3">
+        <div *ngFor="let app of selectedDayAppointments" 
+             class="flex flex-column p-3 border-round-xl border-1 surface-border relative overflow-hidden cursor-pointer hover:shadow-2 transition-all"
+             [routerLink]="['/dashboard/detalle-cita']"
+             [queryParams]="{ referrer: 'calendar', id: app.id }">
+          <div class="absolute left-0 top-0 bottom-0 w-1rem" [ngClass]="'bg-' + app.type"></div>
+          
+          <div class="pl-3 flex justify-content-between align-items-center mb-2">
+            <span class="font-bold text-lg text-color">{{ app.time }}</span>
+            <p-button icon="pi pi-ellipsis-v" styleClass="p-button-rounded p-button-text p-button-sm text-color-secondary p-0"></p-button>
+          </div>
+          
+          <div class="pl-3 flex flex-column">
+            <span class="font-bold text-color mb-1">{{ app.patient }}</span>
+            <span class="text-sm text-color-secondary"><i class="pi pi-tag mr-1 text-xs"></i>{{ app.title }}</span>
+          </div>
+        </div>
+
+        <p-button *ngIf="!selectedDayIsPast" 
+                  label="+ Agendar otra cita" 
+                  routerLink="/dashboard/nueva-cita" 
+                  [queryParams]="{ date: selectedDateObj.toISOString() }" 
+                  styleClass="w-full p-button-outlined border-dashed border-round-lg font-bold mt-2 text-activa-primary"></p-button>
+      </div>
+      
+    </div>
+  </p-dialog>
+</div>

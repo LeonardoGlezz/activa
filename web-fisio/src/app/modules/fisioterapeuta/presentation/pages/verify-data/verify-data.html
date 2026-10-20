@@ -1,0 +1,104 @@
+<p-toast></p-toast>
+
+<div class="min-h-screen bg-activa-main flex flex-column">
+  
+  <div class="w-full bg-activa-surface flex justify-content-between align-items-center p-3 px-5 border-bottom-1 surface-border shadow-1">
+    <div class="flex align-items-center gap-2">
+      <div class="bg-activa-primary text-white border-round-sm p-1 flex align-items-center justify-content-center" style="width: 28px; height: 28px;">
+        <span class="font-bold text-sm">A</span>
+      </div>
+      <span class="font-bold text-xl text-color">ACTIVA</span>
+    </div>
+  </div>
+
+  <div class="flex-1 flex justify-content-center align-items-center p-4">
+    <div class="bg-activa-surface border-round-2xl shadow-2 p-5 w-full" style="max-width: 48rem;">
+      
+      <div class="mb-4">
+        <h2 class="text-3xl font-bold text-color m-0 mb-2">Verificación de Identidad</h2>
+        <p class="text-color-secondary m-0 text-sm mb-3">Para garantizar la seguridad de los pacientes, necesitamos verificar tus credenciales.</p>
+        
+        <div class="bg-green-50 border-round-lg p-3 flex align-items-start gap-3 border-1 border-green-200">
+          <i class="pi pi-lock text-green-600 text-xl mt-1"></i>
+          <div>
+            <span class="block font-bold text-green-800 text-sm mb-1">Protección de Alta Seguridad</span>
+            <span class="text-green-700 text-sm">Tus documentos serán encriptados automáticamente y solo se usarán para validación interna. Nadie más tendrá acceso a ellos.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid formgrid mt-4">
+        
+        <div class="col-12 md:col-6 mb-4">
+          <span class="font-bold text-color block mb-2">Título Profesional *</span>
+          
+          <div *ngIf="!degreeFile && !isUploadingDegree" class="upload-zone relative border-dashed border-2 surface-border border-round-xl p-4 flex flex-column align-items-center justify-content-center text-center hover:border-activa-primary transition-colors cursor-pointer bg-activa-main min-h-full">
+            <input type="file" (change)="onFileSelected($event, 'degree')" accept=".pdf" class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer">
+            <div class="bg-activa-primary-light text-activa-primary border-circle w-3rem h-3rem flex align-items-center justify-content-center mb-3">
+              <i class="pi pi-graduation-cap text-xl"></i>
+            </div>
+            <span class="font-semibold text-color text-sm mb-1">Haz clic para subir tu Título</span>
+            <span class="text-color-secondary text-xs">Solo formato PDF [MAX 5MB]</span>
+          </div>
+
+          <div *ngIf="isUploadingDegree" class="border-solid border-1 surface-border border-round-xl p-4 bg-activa-main flex flex-column justify-content-center min-h-full">
+            <span class="text-sm font-bold text-color mb-2">Subiendo y encriptando...</span>
+            <p-progressBar [value]="degreeProgress" [showValue]="false" styleClass="h-1rem"></p-progressBar>
+          </div>
+
+          <div *ngIf="degreeFile" class="border-solid border-2 border-green-400 border-round-xl p-4 bg-green-50 flex justify-content-between align-items-center min-h-full">
+            <div class="flex align-items-center gap-3 overflow-hidden">
+              <i class="pi pi-file-check text-green-500 text-2xl"></i>
+              <div class="flex flex-column overflow-hidden">
+                <span class="font-bold text-green-800 text-sm white-space-nowrap text-overflow-ellipsis">{{ degreeFile.name }}</span>
+                <span class="text-green-600 text-xs">Protegido y verificado</span>
+              </div>
+            </div>
+            <p-button icon="pi pi-trash" (onClick)="removeFile('degree')" styleClass="p-button-rounded p-button-text p-button-danger p-0"></p-button>
+          </div>
+        </div>
+
+        <div class="col-12 md:col-6 mb-4">
+          <span class="font-bold text-color block mb-2">Identificación Oficial (INE) *</span>
+          
+          <div *ngIf="!idFile && !isUploadingId" class="upload-zone relative border-dashed border-2 surface-border border-round-xl p-4 flex flex-column align-items-center justify-content-center text-center hover:border-activa-primary transition-colors cursor-pointer bg-activa-main min-h-full">
+            <input type="file" (change)="onFileSelected($event, 'id')" accept=".pdf" class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer">
+            <div class="bg-activa-primary-light text-activa-primary border-circle w-3rem h-3rem flex align-items-center justify-content-center mb-3">
+              <i class="pi pi-id-card text-xl"></i>
+            </div>
+            <span class="font-semibold text-color text-sm mb-1">Haz clic para subir tu INE</span>
+            <span class="text-color-secondary text-xs">Solo formato PDF [MAX 5MB]</span>
+          </div>
+
+          <div *ngIf="isUploadingId" class="border-solid border-1 surface-border border-round-xl p-4 bg-activa-main flex flex-column justify-content-center min-h-full">
+            <span class="text-sm font-bold text-color mb-2">Subiendo y encriptando...</span>
+            <p-progressBar [value]="idProgress" [showValue]="false" styleClass="h-1rem"></p-progressBar>
+          </div>
+
+          <div *ngIf="idFile" class="border-solid border-2 border-green-400 border-round-xl p-4 bg-green-50 flex justify-content-between align-items-center min-h-full">
+            <div class="flex align-items-center gap-3 overflow-hidden">
+              <i class="pi pi-file-check text-green-500 text-2xl"></i>
+              <div class="flex flex-column overflow-hidden">
+                <span class="font-bold text-green-800 text-sm white-space-nowrap text-overflow-ellipsis">{{ idFile.name }}</span>
+                <span class="text-green-600 text-xs">Protegido y verificado</span>
+              </div>
+            </div>
+            <p-button icon="pi pi-trash" (onClick)="removeFile('id')" styleClass="p-button-rounded p-button-text p-button-danger p-0"></p-button>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="flex justify-content-between align-items-center mt-4 pt-4 border-top-1 surface-border">
+        <p-button label="Hacerlo después" routerLink="/login" styleClass="p-button-text text-color-secondary font-bold"></p-button>
+       <p-button label="Finalizar Registro" 
+                  icon="pi pi-check" 
+                  (onClick)="finishRegistration()" 
+                  [disabled]="!degreeFile || !idFile || isSubmitting" 
+                  [loading]="isSubmitting"
+                  styleClass="bg-activa-primary border-none hover:bg-activa-primary-hover px-5 py-3 font-bold shadow-2 border-round-lg"></p-button>
+      </div>
+
+    </div>
+  </div>
+</div>

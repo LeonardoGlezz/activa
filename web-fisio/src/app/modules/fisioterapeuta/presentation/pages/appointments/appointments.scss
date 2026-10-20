@@ -1,0 +1,50 @@
+/* --- CUADRÍCULA DEL CALENDARIO (Móvil y PC) --- */
+.calendar-grid {
+  display: grid;
+  /* El truco mágico: minmax(0, 1fr) fuerza a que nunca se salgan de la pantalla */
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 2px; /* Espacio mínimo en móvil */
+}
+
+/* Celda de cada día */
+.calendar-cell {
+  aspect-ratio: 1 / 1; 
+  min-height: 45px; /* Altura más compacta para que quepa en celulares pequeños */
+  background-color: #fafafa;
+}
+
+/* Responsividad para pantallas de PC/Tabletas grandes */
+@media screen and (min-width: 768px) {
+  .calendar-grid {
+    gap: 8px; /* Espacio normal en PC */
+  }
+  .calendar-cell {
+    aspect-ratio: auto;
+    min-height: 90px; /* Más altos y espaciosos en computadora */
+  }
+}
+
+/* Puntitos de citas en el calendario */
+.appointment-dot {
+  width: 6px; /* Puntitos un pelo más chicos en móvil */
+  height: 6px;
+  display: inline-block;
+}
+
+@media screen and (min-width: 768px) {
+  .appointment-dot {
+    width: 8px;
+    height: 8px;
+  }
+}
+
+/* Paleta de colores para las citas */
+.bg-teal { background-color: var(--activa-primary) !important; }
+.bg-orange { background-color: #f97316 !important; }
+.bg-purple { background-color: #a855f7 !important; }
+.bg-red { background-color: #ef4444 !important; }
+
+/* Para capitalizar el texto de la fecha en el Modal */
+::ng-deep .p-dialog-title {
+  text-transform: capitalize;
+}
