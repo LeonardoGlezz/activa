@@ -10,8 +10,17 @@ import {
   ExerciseModel,
   RoutineTemplateModel,
   RoutineTemplateExerciseModel,
+  TrackingModel,
   sequelize,
 } from "../sequelize/client";
+
+/** Ordena los ejercicios de una rutina según exercise_order (el orden que definió el fisio). */
+const sortRoutineExercises = (routine: any): any => {
+  if (!routine || !Array.isArray(routine.exercises)) return routine;
+  const orderOf = (e: any) => Number(e?.RoutineExercise?.exercise_order ?? Number.MAX_SAFE_INTEGER);
+  routine.exercises.sort((a: any, b: any) => orderOf(a) - orderOf(b));
+  return routine;
+};
 
 
 export class SequelizeRoutineRepository implements RoutineRepository {
@@ -80,7 +89,7 @@ export class SequelizeRoutineRepository implements RoutineRepository {
       order: [['id_routine', 'DESC']] // Traemos la rutina más reciente
     });
 
-    return routine ? routine.toJSON() : null;
+    return routine ? sortRoutineExercises(routine.toJSON()) : null;
   }
 
   async findById(id: number): Promise<any | null> {
@@ -95,7 +104,7 @@ export class SequelizeRoutineRepository implements RoutineRepository {
       ]
     });
 
-    return routine ? routine.toJSON() : null;
+    return routine ? sortRoutineExercises(routine.toJSON()) : null;
   }
   // NUEVO: Implementación del historial
   async findAllByPatientId(patientId: number): Promise<any[]> {
@@ -112,7 +121,7 @@ export class SequelizeRoutineRepository implements RoutineRepository {
       order: [['id_routine', 'DESC']] // Ordenamos de la más reciente a la más antigua
     });
 
-    return routines.map(routine => routine.toJSON());
+    return routines.map(routine => sortRoutineExercises(routine.toJSON()));
   }
 
   /**
@@ -175,35 +184,36 @@ export class SequelizeRoutineRepository implements RoutineRepository {
       });
 
       if (replaceExisting) {
-        const currentRows = await RoutineExerciseModel.findAll({
-          where: { id_routine: routineId },
-          attributes: ["id_exercise"],
+        // Reemplazo completo: así el orden, series y repeticiones quedan exactamente como los dejó el fisio
+        await RoutineExerciseModel.destroy({ where: { id_routine: routineId }, transaction });
+        await RoutineExerciseModel.bulkCreate(entries, { transaction });
+      } else {
+        await RoutineExerciseModel.bulkCreate(entries, {
+          ignoreDuplicates: true,
+          updateOnDuplicate: ["repetitions", "sets", "exercise_order", "notes"],
           transaction,
         });
-
-        const currentIds = currentRows.map((row: any) => Number(row.id_exercise ?? row.getDataValue("id_exercise")));
-        const idsToRemove = currentIds.filter((id: number) => !normalizedIds.includes(id));
-
-        if (idsToRemove.length > 0) {
-          await RoutineExerciseModel.destroy({
-            where: {
-              id_routine: routineId,
-              id_exercise: idsToRemove,
-            },
-            transaction,
-          });
-        }
       }
-
-      await RoutineExerciseModel.bulkCreate(entries, {
-        ignoreDuplicates: true,
-        updateOnDuplicate: ["repetitions", "sets", "exercise_order", "notes"],
-        transaction,
-      });
       await transaction.commit();
 
       // Devolvemos la rutina actualizada con sus ejercicios
       return this.findById(routineId);
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
+  }
+
+  async countTracking(routineId: number): Promise<number> {
+    return TrackingModel.count({ where: { id_routine: routineId } });
+  }
+
+  async deleteById(routineId: number): Promise<void> {
+    const transaction = await sequelize.transaction();
+    try {
+      await RoutineExerciseModel.destroy({ where: { id_routine: routineId }, transaction });
+      await RoutineModel.destroy({ where: { id_routine: routineId }, transaction });
+      await transaction.commit();
     } catch (error) {
       await transaction.rollback();
       throw error;

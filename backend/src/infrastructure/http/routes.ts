@@ -159,6 +159,7 @@ export function buildRoutes(controllers: {
   router.get("/routines/history/patient/:patientId", authMiddleware, requireActivePlan, requirePatientAccess((req) => req.params.patientId), controllers.routineController.getHistoryByPatient);
   router.get("/routines/:id",                        authMiddleware, requireActivePlan, requireRoutineAccess, controllers.routineController.getById);
   router.put("/routines/:id",                        authMiddleware, requireActivePlan, requirePhysio, requireRoutineAccess, controllers.routineController.update);
+  router.delete("/routines/:id",                     authMiddleware, requireActivePlan, requirePhysio, requireRoutineAccess, controllers.routineController.remove);
 
   // Citas
   router.post("/appointments",                   authMiddleware, requireApproval, requireActivePlan, controllers.appointmentController.create);

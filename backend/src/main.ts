@@ -96,6 +96,7 @@ import { CreateRoutineTemplateUseCase } from "./application/use-cases/CreateRout
 import { CreateRoutineTemplateDirectUseCase } from "./application/use-cases/CreateRoutineTemplateDirect.uc";
 import { ListRoutineTemplatesUseCase } from "./application/use-cases/ListRoutineTemplates.uc";
 import { GetRoutineTemplateByIdUseCase } from "./application/use-cases/GetRoutineTemplateById.uc";
+import { DeleteRoutineUseCase } from "./application/use-cases/DeleteRoutine.uc";
 
 // 🪄 NUEVO: Caso de uso del Dashboard
 import { GetDashboardStatsUseCase } from "./application/use-cases/GetDashboardStats.uc";
@@ -195,6 +196,7 @@ async function bootstrap() {
     const listRoutineTemplates = new ListRoutineTemplatesUseCase(routineRepo);
     const getRoutineTemplateById = new GetRoutineTemplateByIdUseCase(routineRepo);
     const addExercisesToTemplate = new AddExercisesToTemplateUseCase(routineRepo);
+    const deleteRoutine = new DeleteRoutineUseCase(routineRepo);
 
     // Casos de Uso: Auth
     const registerPhysio = new RegisterPhysiotherapistUseCase(authRepo);
@@ -271,6 +273,7 @@ async function bootstrap() {
       createRoutineTemplateDirect,
       listRoutineTemplates,
       getRoutineTemplateById,
+      deleteRoutine,
     );
 
     const authController = new AuthController(

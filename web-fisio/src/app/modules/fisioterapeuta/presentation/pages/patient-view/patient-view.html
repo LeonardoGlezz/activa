@@ -171,22 +171,33 @@
         <ng-container *ngIf="routines.length > 0; else emptyRoutines">
           <div class="routine-card" *ngFor="let routine of routines">
             <div class="card-row">
-              <span class="type-tag green">{{ routine.status }}</span>
+              <span class="type-tag"
+                [class.green]="routine.status === 'Activa'"
+                [class.teal]="routine.status === 'Programada'"
+                [class.gray]="routine.status === 'Finalizada'">{{ routine.status }}</span>
               <div class="card-actions card-actions-inline">
-                <button class="link-btn" (click)="openEditRoutine(routine)" type="button">
-                  <i class="pi pi-pencil"></i>
+                <button class="link-btn" (click)="openEditRoutine(routine)" type="button" title="Editar rutina">
+                  <i class="pi pi-pencil"></i> Editar
                 </button>
-                <button class="link-btn danger" (click)="deleteRoutine(routine.id)" type="button">
+                <button class="link-btn" *ngIf="routine.status !== 'Finalizada'" (click)="finishRoutine(routine)" type="button" title="Marcar como terminada hoy">
+                  <i class="pi pi-flag"></i>
+                </button>
+                <button class="link-btn danger" (click)="deleteRoutine(routine)" type="button" title="Eliminar rutina">
                   <i class="pi pi-trash"></i>
                 </button>
               </div>
             </div>
             <p class="card-title">{{ routine.name }}</p>
-            <p class="card-body" *ngIf="routine.description">{{ routine.description }}</p>
             <div class="routine-meta">
               <span><i class="pi pi-list"></i> {{ routine.exercisesCount }} ejercicios</span>
               <span><i class="pi pi-calendar"></i> {{ formatDate(routine.startDate) }} - {{ formatDate(routine.endDate) }}</span>
             </div>
+            <ol class="routine-exercise-preview" *ngIf="routine.exercisesDetail?.length">
+              <li *ngFor="let ex of routine.exercisesDetail">
+                <span class="ex-name">{{ ex.name }}</span>
+                <span class="ex-dose" *ngIf="ex.sets || ex.repetitions">{{ ex.sets || '–' }} × {{ ex.repetitions || '–' }}</span>
+              </li>
+            </ol>
           </div>
         </ng-container>
         <ng-template #emptyRoutines>
@@ -409,8 +420,8 @@
     <div class="dialog-header-content">
       <div class="dialog-icon-wrap green"><i class="pi pi-bolt"></i></div>
       <div>
-        <h3>{{ routineModalTitle }} - Vista Previa</h3>
-        <p>Configura la rutina con fechas y selecciona ejercicios reales del banco</p>
+        <h3>{{ routineModalTitle }}</h3>
+        <p>1. Elige ejercicios a la derecha · 2. Ajusta orden, series y repeticiones a la izquierda · 3. Guarda</p>
       </div>
     </div>
   </ng-template>
@@ -464,9 +475,48 @@
           </div>
         </div>
 
-        <div class="selection-counter">
-          <i class="pi pi-check-circle"></i>
-          {{ routineForm.exerciseIds.length }} ejercicio(s) seleccionado(s)
+        <div class="plan-box">
+          <div class="plan-head">
+            <p class="template-title">Plan del paciente</p>
+            <span class="template-caption">{{ routineForm.exerciseIds.length }} ejercicio(s), en este orden</span>
+          </div>
+
+          <div class="plan-empty" *ngIf="routineForm.exerciseIds.length === 0">
+            <i class="pi pi-arrow-right"></i>
+            Marca ejercicios de la lista para agregarlos aquí.
+          </div>
+
+          <div class="plan-item" *ngFor="let ex of selectedExercises; let i = index; let first = first; let last = last; trackBy: trackById">
+            <div class="plan-item-head">
+              <span class="plan-index">{{ i + 1 }}</span>
+              <span class="plan-name">{{ ex.name }}</span>
+              <div class="plan-actions">
+                <button class="icon-btn" type="button" (click)="moveExercise(i, -1)" [disabled]="first" title="Subir">
+                  <i class="pi pi-arrow-up"></i>
+                </button>
+                <button class="icon-btn" type="button" (click)="moveExercise(i, 1)" [disabled]="last" title="Bajar">
+                  <i class="pi pi-arrow-down"></i>
+                </button>
+                <button class="icon-btn danger" type="button" (click)="removeExercise(ex.id)" title="Quitar de la rutina">
+                  <i class="pi pi-times"></i>
+                </button>
+              </div>
+            </div>
+            <div class="field-row compact-3">
+              <div class="field-group">
+                <label>Series</label>
+                <input pInputText type="number" min="1" [(ngModel)]="getExerciseConfig(ex.id).sets" class="field-input">
+              </div>
+              <div class="field-group">
+                <label>Repeticiones</label>
+                <input pInputText type="number" min="1" [(ngModel)]="getExerciseConfig(ex.id).repetitions" class="field-input">
+              </div>
+              <div class="field-group">
+                <label>Indicaciones</label>
+                <input pInputText [(ngModel)]="getExerciseConfig(ex.id).notes" placeholder="Ej: sin dolor, lento" class="field-input">
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -485,7 +535,7 @@
             >
               <div class="exercise-shell">
                 <button class="exercise-thumb" type="button" (click)="openExercisePreview(exercise)">
-                  <img [src]="exercise.video_url || placeholderImg" alt="exercise.name" (error)="$any($event.target).src = placeholderImg">
+                  <img [src]="exercise.video_url || placeholderImg" [alt]="exercise.name" (error)="$any($event.target).src = placeholderImg">
                   <span class="exercise-thumb-overlay"><i class="pi pi-play-circle"></i></span>
                 </button>
 
@@ -506,21 +556,8 @@
                 </div>
               </div>
 
-              <div class="exercise-config" *ngIf="isExerciseSelected(exercise.id)">
-                <div class="field-row compact-3">
-                  <div class="field-group">
-                    <label>Series</label>
-                    <input pInputText type="number" min="1" [(ngModel)]="getExerciseConfig(exercise.id).sets" class="field-input">
-                  </div>
-                  <div class="field-group">
-                    <label>Repeticiones</label>
-                    <input pInputText type="number" min="1" [(ngModel)]="getExerciseConfig(exercise.id).repetitions" class="field-input">
-                  </div>
-                  <div class="field-group">
-                    <label>Notas</label>
-                    <input pInputText [(ngModel)]="getExerciseConfig(exercise.id).notes" placeholder="Precauciones" class="field-input">
-                  </div>
-                </div>
+              <div class="exercise-added" *ngIf="isExerciseSelected(exercise.id)">
+                <i class="pi pi-check"></i> En el plan (paso {{ routineForm.exerciseIds.indexOf(exercise.id) + 1 }})
               </div>
             </div>
           </ng-container>
