@@ -10,7 +10,27 @@ import { TrackingSchema } from "../../../application/dtos/schemas";
 import { AuthRequest } from "../middlewares/auth.middleware";
 
 export class TrackingController {
-  constructor(private readonly registerPainLevel: any) {}
+  constructor(
+    private readonly registerPainLevel: any,
+    private readonly listPatientTracking?: any,
+  ) {}
+
+  /**
+   * GET /api/tracking/patient/:patientId — El paciente ve lo suyo; el fisio, lo de sus pacientes.
+   */
+  listByPatient = async (req: Request<{ patientId: string }>, res: Response): Promise<void> => {
+    try {
+      const patientId = parseInt(req.params.patientId, 10);
+      if (isNaN(patientId)) {
+        res.status(400).json({ success: false, message: "ID de paciente inválido." });
+        return;
+      }
+      const data = await this.listPatientTracking.execute(patientId);
+      res.status(200).json({ success: true, data });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: "No se pudo obtener el historial de sesiones." });
+    }
+  };
 
   /**
    * POST /api/tracking — Solo pacientes (JWT con id = id_patient).

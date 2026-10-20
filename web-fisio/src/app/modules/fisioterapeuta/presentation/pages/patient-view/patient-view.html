@@ -24,6 +24,43 @@
     </div>
   </div>
 
+  <!-- AVANCES DEL PACIENTE -->
+  <div class="progress-strip" *ngIf="!loadingTracking">
+    <ng-container *ngIf="trackings.length > 0; else noProgressTpl">
+      <div class="progress-stat">
+        <span class="stat-label">Sesiones últimos 7 días</span>
+        <span class="stat-value">{{ sessionsLast7Days }}</span>
+      </div>
+      <div class="progress-stat">
+        <span class="stat-label">Última sesión</span>
+        <span class="stat-value">{{ formatDate(trackings[0].date) }}</span>
+      </div>
+      <div class="progress-stat" [class.alert]="trackings[0].painLevel >= 7">
+        <span class="stat-label">Último dolor reportado</span>
+        <span class="stat-value">{{ trackings[0].painLevel }}/10</span>
+      </div>
+      <div class="pain-bars" title="Dolor reportado en las últimas sesiones (izquierda: más antigua)">
+        <span class="stat-label">Dolor por sesión</span>
+        <div class="bars">
+          <span class="bar" *ngFor="let t of recentPainTrend"
+            [style.height.%]="t.painLevel * 10"
+            [class]="'bar ' + painClass(t.painLevel)"
+            [title]="formatDate(t.date) + ': ' + t.painLevel + '/10'"></span>
+        </div>
+      </div>
+      <button class="icon-action-btn" type="button" (click)="showTrackingModal = true">
+        <i class="pi pi-chart-line"></i>
+        Ver sesiones
+      </button>
+    </ng-container>
+    <ng-template #noProgressTpl>
+      <div class="progress-empty">
+        <i class="pi pi-chart-line"></i>
+        Aún no hay sesiones registradas. Cuando el paciente termine su rutina en la app y reporte su dolor, lo verás aquí.
+      </div>
+    </ng-template>
+  </div>
+
   <!-- 4-QUADRANT GRID -->
   <div class="quadrant-grid">
 
@@ -411,6 +448,29 @@
       </button>
     </div>
   </ng-template>
+</p-dialog>
+
+<!-- MODAL: Sesiones del paciente -->
+<p-dialog [(visible)]="showTrackingModal" [modal]="true" [closable]="true"
+  [style]="{ width: '92vw', maxWidth: '640px' }" styleClass="custom-dialog">
+  <ng-template pTemplate="header">
+    <div class="dialog-header-content">
+      <div class="dialog-icon-wrap teal"><i class="pi pi-chart-line"></i></div>
+      <div>
+        <h3>Sesiones de {{ patient?.first_name }}</h3>
+        <p>Lo que el paciente reportó al terminar cada rutina</p>
+      </div>
+    </div>
+  </ng-template>
+  <div class="dialog-body">
+    <div class="tracking-row" *ngFor="let t of trackings">
+      <span class="pain-pill" [class]="'pain-pill ' + painClass(t.painLevel)">{{ t.painLevel }}/10</span>
+      <div class="tracking-info">
+        <p class="card-title">{{ formatDate(t.date) }}<span class="date-text" *ngIf="t.routineName"> · {{ t.routineName }}</span></p>
+        <p class="card-body" *ngIf="t.feedback">"{{ t.feedback }}"</p>
+      </div>
+    </div>
+  </div>
 </p-dialog>
 
 <!-- MODAL: Rutina -->

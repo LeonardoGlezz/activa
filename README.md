@@ -72,6 +72,10 @@ Para detener todo: `Ctrl + C` en la terminal. Para apagar MySQL: `npm run db:dow
 
 Ver [DESPLIEGUE.md](DESPLIEGUE.md): un solo servicio gratis en Render, con la base en TiDB Cloud y los archivos en Cloudflare R2; la página principal en `/` y las apps en `/paciente/`, `/fisio/` y `/admin/`.
 
+## Aviso de privacidad y términos de uso
+
+Los textos están en `backend/legal/` y el backend los publica en `/legal` (por ejemplo `http://localhost:3000/legal/`). Pacientes y fisios los aceptan la primera vez que entran. Son un borrador: lo que falta llenar y revisar está en [docs/avisos-legales.md](docs/avisos-legales.md).
+
 ## Origen
 
 Basado en el proyecto integrador "ACTIVA" (Universidad Tecnológica de Tehuacán, 2026), desarrollado por el equipo Web & Code Studio. Código copiado de los repositorios originales:

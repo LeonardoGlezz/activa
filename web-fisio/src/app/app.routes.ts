@@ -19,6 +19,8 @@ import { SubscriptionComponent } from './modules/fisioterapeuta/presentation/pag
 
 // IMPORTAMOS EL CADENERO
 import { authGuard } from './core/auth/application/auth.guard';
+import { legalGuard } from './core/legal/legal.guard';
+import { AceptarAvisosComponent } from './modules/fisioterapeuta/presentation/pages/aceptar-avisos/aceptar-avisos';
 
 
 
@@ -33,6 +35,8 @@ export const routes: Routes = [
   // =========================================================
   // 🔴 RUTAS PRIVADAS (Solo entran con Token JWT)
   // =========================================================
+  // Aviso de privacidad y términos: se aceptan una vez por versión
+  { path: 'aceptar-avisos', component: AceptarAvisosComponent, canActivate: [authGuard] },
   {
     path: 'fisioterapeuta',
     loadChildren: () => import('./modules/fisioterapeuta/fisioterapeuta.routes').then(m => m.FISIOTERAPEUTA_ROUTES),
@@ -41,19 +45,19 @@ export const routes: Routes = [
   { 
     path: 'verificar-datos', 
     component: VerifyDataComponent,
-    canActivate: [authGuard] // Protegido: Solo fisios registrados suben documentos
+    canActivate: [authGuard, legalGuard] // Protegido: Solo fisios registrados suben documentos
   },
   { 
     path: 'Ejercicios', 
     component: BancoEjerciciosComponent,
-    canActivate: [authGuard] // Protegido
+    canActivate: [authGuard, legalGuard] // Protegido
   },
   
   // DASHBOARD PRINCIPAL Y SUS SUB-PANTALLAS
   { 
     path: 'dashboard', 
     component: Menu, 
-    canActivate: [authGuard], // 🛡️ MAGIA: Al proteger el padre, proteges a todos los hijos automáticamente
+    canActivate: [authGuard, legalGuard], // 🛡️ MAGIA: Al proteger el padre, proteges a todos los hijos automáticamente
     children: [
       { path: 'inicio', component: HomeComponent },
       { path: 'ejercicios', component: BancoEjerciciosComponent },

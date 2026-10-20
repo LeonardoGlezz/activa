@@ -38,6 +38,7 @@ COPY backend/package.json backend/package-lock.json ./
 RUN npm ci --omit=dev && npm cache clean --force
 
 COPY --from=build /src/backend/dist ./dist
+COPY backend/legal ./legal
 COPY landing ./public
 COPY --from=build /src/web-fisio/dist/web-code-frontend/browser ./public/fisio
 COPY --from=build /src/app-paciente/www ./public/paciente

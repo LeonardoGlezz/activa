@@ -11,6 +11,7 @@ import { MessageService } from 'primeng/api';
 
 // IMPORTAMOS NUESTRO CASO DE USO
 import { AuthUseCase } from '../../../../../core/auth/application/auth.use-case';
+import { LEGAL_URLS } from '../../../../../core/legal/legal.service';
 
 @Component({
   selector: 'app-login-fisio',
@@ -32,6 +33,7 @@ export class LoginFisioComponent implements OnInit {
   
   loginForm!: FormGroup;
   isLoading: boolean = false;
+  readonly legalUrls = LEGAL_URLS;
 
   constructor(
     private fb: FormBuilder,

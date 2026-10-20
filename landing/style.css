@@ -141,8 +141,9 @@ main {
   color: var(--muted);
   font-size: 14px;
 }
-.admin-link { color: var(--muted); }
-.admin-link:hover { color: var(--teal-dark); }
+.footer-links { display: flex; gap: 16px; flex-wrap: wrap; }
+.footer-links a { color: var(--muted); }
+.footer-links a:hover { color: var(--teal-dark); }
 
 @media (max-width: 480px) {
   .hero { padding: 16px 0 28px; }

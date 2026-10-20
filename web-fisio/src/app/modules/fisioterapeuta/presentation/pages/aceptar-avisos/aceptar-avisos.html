@@ -1,0 +1,33 @@
+<p-toast></p-toast>
+<div class="avisos-page">
+  <div class="avisos-card">
+    <h1>Antes de continuar</h1>
+    <p class="intro">Para usar Activa necesitamos que leas y aceptes estos documentos.</p>
+
+    <ul class="resumen">
+      <li>Tus datos (identificación, CURP, INE y cédula) se usan para crear y verificar tu cuenta. No los vendemos ni los usamos para publicidad.</li>
+      <li>Tú eres responsable de los datos de tus pacientes. Activa los guarda y protege por tu cuenta y les pide su consentimiento la primera vez que entran.</li>
+      <li>Las rutinas que asignas son tu responsabilidad profesional; Activa no sustituye la consulta.</li>
+    </ul>
+
+    <div class="enlaces">
+      <a [href]="urls.privacidadFisio" target="_blank" rel="noopener"><i class="pi pi-file"></i> Aviso de privacidad para fisioterapeutas</a>
+      <a [href]="urls.terminos" target="_blank" rel="noopener"><i class="pi pi-book"></i> Términos y reglas de uso</a>
+      <a [href]="urls.privacidadPacientes" target="_blank" rel="noopener"><i class="pi pi-users"></i> Aviso que verán tus pacientes</a>
+    </div>
+
+    <label class="check">
+      <input type="checkbox" [(ngModel)]="aceptaPrivacidad">
+      <span>He leído el aviso de privacidad para fisioterapeutas y doy mi consentimiento para el tratamiento de mis datos.</span>
+    </label>
+    <label class="check">
+      <input type="checkbox" [(ngModel)]="aceptaTerminos">
+      <span>Acepto los términos y reglas de uso, incluidas mis obligaciones como responsable de los datos de mis pacientes.</span>
+    </label>
+
+    <p-button label="Aceptar y continuar" type="button" (onClick)="aceptar()" [loading]="enviando"
+              [disabled]="!aceptaPrivacidad || !aceptaTerminos"
+              styleClass="w-full p-3 border-round-md mt-3 bg-activa-primary border-none hover:bg-activa-primary-hover"></p-button>
+    <button type="button" class="salir" (click)="salir()">No acepto, cerrar sesión</button>
+  </div>
+</div>

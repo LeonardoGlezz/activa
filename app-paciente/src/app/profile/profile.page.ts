@@ -6,6 +6,7 @@ import { RoutineApiService } from '../core/infrastructure/api/routine-api.servic
 import { PhysiotherapistApiService, Physiotherapist } from '../core/infrastructure/api/physiotherapist-api.service';
 import { PatientRepository } from '../../core/domain/repositories/patient.repository';
 import { environment } from '../../environments/environment';
+import { LegalApiService } from '../core/infrastructure/api/legal-api.service';
 
 @Component({
   selector: 'app-profile',
@@ -20,6 +21,8 @@ export class ProfilePage implements OnInit {
   physio: Physiotherapist | null = null;
   pacienteDesde = '—';
   clinicName    = (environment as any).clinicName ?? 'ACTIVA Health Center';
+  readonly privacyUrl = LegalApiService.privacyUrl;
+  readonly termsUrl   = LegalApiService.termsUrl;
 
   // Stats
   edad   = '—';
@@ -37,7 +40,8 @@ export class ProfilePage implements OnInit {
     private routineApi: RoutineApiService,
     private physioApi: PhysiotherapistApiService,
     private patientRepo: PatientRepository,
-    private toast: ToastController
+    private toast: ToastController,
+    private legal: LegalApiService
   ) {}
 
   async ngOnInit() {
@@ -120,6 +124,7 @@ export class ProfilePage implements OnInit {
     await this.storage.remove('currentPatientId');
     await this.storage.remove('currentPatient');
     await this.storage.remove('currentRoutineId');
+    this.legal.clearSession();
     this.router.navigate(['/login']);
   }
 

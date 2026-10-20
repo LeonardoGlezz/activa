@@ -40,7 +40,8 @@ export class RegisterPainLevelUseCase {
     ) as string[];
 
     const row = {
-      date: new Date().toISOString().slice(0, 10),
+      // Fecha en la zona horaria de la clínica (en UTC, una sesión nocturna quedaba con fecha del día siguiente)
+      date: new Intl.DateTimeFormat("en-CA", { timeZone: process.env.APP_TIMEZONE || "America/Mexico_City" }).format(new Date()),
       completed: 1,
       pain_level: data.painLevel,
       feedback: (data.postObservations ?? "").trim(),

@@ -11,6 +11,8 @@ export interface Tracking {
   startTime?: string;
   endTime?: string;
   postObservations?: string;
+  date?: string;
+  routineName?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -19,9 +21,21 @@ export class TrackingApiService {
 
   constructor(private http: HttpClient) {}
 
-  // ✅ El backend solo tiene POST /tracking — get devuelve vacío de forma segura
+  /** Sesiones registradas por el paciente, de la más reciente a la más antigua. */
   getByPatientId(patientId: number, limit = 50): Observable<Tracking[]> {
-    return of([]);
+    return this.http
+      .get<{ success: boolean; data: any[] }>(`${this.baseUrl}/patient/${patientId}`)
+      .pipe(
+        map((res) => (res.data || []).slice(0, limit).map((r) => ({
+          id: r.id,
+          routineId: r.routineId,
+          painLevel: Number(r.painLevel) || 0,
+          postObservations: r.feedback || '',
+          date: r.date,
+          routineName: r.routineName || '',
+        }))),
+        catchError(() => of([]))
+      );
   }
 
   create(data: {
