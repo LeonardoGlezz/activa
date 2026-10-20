@@ -27,7 +27,11 @@ export class DetalleRutinaPage implements OnInit {
 
   async ngOnInit() {
     await this.storage.create();
-    const patientId = (await this.storage.get('currentPatientId')) ?? 1;
+    const patientId = await this.storage.get('currentPatientId');
+    if (!patientId) {
+      this.loading = false;
+      return;
+    }
 
     this.routineApi.getRoutines(patientId).subscribe(async (routines) => {
       this.routines = routines.map((r) => ({

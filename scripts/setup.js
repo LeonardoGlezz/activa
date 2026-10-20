@@ -14,8 +14,10 @@ for (const folder of folders) {
 
 const envFile = path.join(root, "backend", ".env");
 if (!fs.existsSync(envFile)) {
-  fs.copyFileSync(path.join(root, "backend", ".env.example"), envFile);
-  console.log("\n📝 Creado backend/.env a partir de backend/.env.example");
+  const secret = require("crypto").randomBytes(48).toString("hex");
+  const example = fs.readFileSync(path.join(root, "backend", ".env.example"), "utf8");
+  fs.writeFileSync(envFile, example.replace(/^JWT_SECRET=.*$/m, `JWT_SECRET=${secret}`));
+  console.log("\n📝 Creado backend/.env (con un JWT_SECRET aleatorio) a partir de backend/.env.example");
 }
 
 console.log("\n✅ Listo. Siguiente paso: npm run db:up && npm run db:setup && npm run dev");

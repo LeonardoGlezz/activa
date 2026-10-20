@@ -36,7 +36,8 @@ export class Tab4Page implements OnInit {
   async ngOnInit() {
     await this.storage.create();
     const patientId = await this.storage.get('currentPatientId');
-    const id = patientId ?? 1;
+    if (!patientId) return;
+    const id = patientId;
 
     // Nombre del paciente
     this.patientRepo.getPatientById(id).subscribe({

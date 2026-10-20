@@ -8,5 +8,6 @@ export interface Patient {
   height?: number;
   weight?: number;
   email?: string;
+  password?: string; // Solo al crear: contraseña inicial para la app del paciente
   physiotherapist_id: number; // Requisito de la BD
 }

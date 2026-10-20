@@ -23,6 +23,7 @@ export class LoginPage {
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required]],
     });
   }
 
@@ -33,7 +34,7 @@ export class LoginPage {
   async onSubmit() {
     if (this.loginForm.invalid) {
       const toast = await this.toastController.create({
-        message: 'Ingresa un correo electrónico válido',
+        message: 'Ingresa tu correo y tu contraseña',
         duration: 2000,
         position: 'bottom',
         color: 'warning',
@@ -43,7 +44,8 @@ export class LoginPage {
     }
 
     const email = this.loginForm.value.email.trim();
-    this.patientRepo.getPatientByEmail(email).subscribe({
+    const password = this.loginForm.value.password;
+    this.patientRepo.login(email, password).subscribe({
       next: async (patient) => {
         if (patient) {
           // Guardar datos del paciente en Storage
@@ -60,7 +62,7 @@ export class LoginPage {
           this.router.navigate(['/tabs/your-progress']);
         } else {
           const toast = await this.toastController.create({
-            message: 'No se encontró un paciente con ese correo',
+            message: 'Correo o contraseña incorrectos',
             duration: 2500,
             position: 'bottom',
             color: 'danger',
@@ -70,7 +72,7 @@ export class LoginPage {
       },
       error: async () => {
         const toast = await this.toastController.create({
-          message: 'Correo no registrado o error de conexión.',
+          message: 'Correo o contraseña incorrectos, o error de conexión.',
           duration: 3000,
           position: 'bottom',
           color: 'danger',

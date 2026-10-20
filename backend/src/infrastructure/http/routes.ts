@@ -7,6 +7,7 @@ import { requireActivePlan } from "./middlewares/active-plan.middleware";
 import { requireAdmin } from "./middlewares/admin.middleware";
 import { PhysiotherapistModel } from "../persistence/sequelize/client";
 import { uploadPatientMedicalPdf } from "./middlewares/upload-patient-medical.middleware";
+import { requirePatientAccess, requireRoutineAccess, requirePhysio } from "./middlewares/patient-access.middleware";
 
 export function buildRoutes(controllers: {
   patientController:       any;
@@ -131,9 +132,9 @@ export function buildRoutes(controllers: {
   );
 
   // Pacientes
-  router.post("/patients",    authMiddleware, requireApproval, requireActivePlan, controllers.patientController.create);
+  router.post("/patients",    authMiddleware, requireApproval, requireActivePlan, requirePhysio, controllers.patientController.create);
   router.get("/patients",     authMiddleware, requireApproval, requireActivePlan, controllers.patientController.list);
-  router.put("/patients/:id", authMiddleware, requireApproval, requireActivePlan, controllers.patientController.update);
+  router.put("/patients/:id", authMiddleware, requireApproval, requireActivePlan, requirePhysio, requirePatientAccess((req) => req.params.id), controllers.patientController.update);
   router.get("/patients/:id", authMiddleware, requireApproval, requireActivePlan, controllers.patientController.getById);
 
   // Ejercicios
@@ -145,20 +146,20 @@ export function buildRoutes(controllers: {
   router.post("/tracking", authMiddleware, requireApproval, requireActivePlan, controllers.trackingController.create);
 
   // Rutinas
-  router.post("/routines",                           authMiddleware, requireActivePlan, controllers.routineController.create);
-  router.post("/routines/templates",                 authMiddleware, requireActivePlan, controllers.routineController.createTemplate);
-  router.put("/routines/templates/:id",              authMiddleware, requireActivePlan, controllers.routineController.updateTemplate);
-  router.get("/routines/templates",                  authMiddleware, requireActivePlan, controllers.routineController.listTemplates);
-  router.get("/routines/templates/:id",              authMiddleware, requireActivePlan, controllers.routineController.getTemplateById);
-  router.post("/routines/:id/template",              authMiddleware, requireActivePlan, controllers.routineController.saveAsTemplate);
-  router.get("/routines/patient/:patientId",         authMiddleware, requireActivePlan, controllers.routineController.getByPatient);
-  router.get("/routines/history/patient/:patientId", authMiddleware, requireActivePlan, controllers.routineController.getHistoryByPatient);
-  router.get("/routines/:id",                        authMiddleware, requireActivePlan, controllers.routineController.getById);
-  router.put("/routines/:id",                        authMiddleware, requireActivePlan, controllers.routineController.update);
+  router.post("/routines",                           authMiddleware, requireActivePlan, requirePhysio, requirePatientAccess((req) => req.body?.patientId), controllers.routineController.create);
+  router.post("/routines/templates",                 authMiddleware, requireActivePlan, requirePhysio, controllers.routineController.createTemplate);
+  router.put("/routines/templates/:id",              authMiddleware, requireActivePlan, requirePhysio, controllers.routineController.updateTemplate);
+  router.get("/routines/templates",                  authMiddleware, requireActivePlan, requirePhysio, controllers.routineController.listTemplates);
+  router.get("/routines/templates/:id",              authMiddleware, requireActivePlan, requirePhysio, controllers.routineController.getTemplateById);
+  router.post("/routines/:id/template",              authMiddleware, requireActivePlan, requirePhysio, requireRoutineAccess, controllers.routineController.saveAsTemplate);
+  router.get("/routines/patient/:patientId",         authMiddleware, requireActivePlan, requirePatientAccess((req) => req.params.patientId), controllers.routineController.getByPatient);
+  router.get("/routines/history/patient/:patientId", authMiddleware, requireActivePlan, requirePatientAccess((req) => req.params.patientId), controllers.routineController.getHistoryByPatient);
+  router.get("/routines/:id",                        authMiddleware, requireActivePlan, requireRoutineAccess, controllers.routineController.getById);
+  router.put("/routines/:id",                        authMiddleware, requireActivePlan, requirePhysio, requireRoutineAccess, controllers.routineController.update);
 
   // Citas
   router.post("/appointments",                   authMiddleware, requireApproval, requireActivePlan, controllers.appointmentController.create);
-  router.get("/appointments/patient/:patientId", authMiddleware, requireApproval, requireActivePlan, controllers.appointmentController.getByPatient);
+  router.get("/appointments/patient/:patientId", authMiddleware, requireApproval, requireActivePlan, requirePatientAccess((req) => req.params.patientId), controllers.appointmentController.getByPatient);
   router.put("/appointments/:id",                authMiddleware, requireApproval, requireActivePlan, controllers.appointmentController.update);
   router.get("/appointments",                    authMiddleware, requireApproval, requireActivePlan, controllers.appointmentController.getMyPhysioAppointments);
 
@@ -168,7 +169,7 @@ export function buildRoutes(controllers: {
 
   // Notificaciones
   router.post("/notifications",                   authMiddleware, requireApproval, requireActivePlan, controllers.notificationController.create);
-  router.get("/notifications/patient/:patientId", authMiddleware, requireApproval, requireActivePlan, controllers.notificationController.getByPatient);
+  router.get("/notifications/patient/:patientId", authMiddleware, requireApproval, requireActivePlan, requirePatientAccess((req) => req.params.patientId), controllers.notificationController.getByPatient);
   router.patch("/notifications/:id/read",         authMiddleware, requireApproval, requireActivePlan, controllers.notificationController.markAsRead);
 
   // Documentos médicos

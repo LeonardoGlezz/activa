@@ -46,7 +46,8 @@ export class ProfilePage implements OnInit {
     // Intentar cargar desde storage primero (objeto crudo del back)
     const stored = await this.storage.get('currentPatient');
     const patientId = await this.storage.get('currentPatientId');
-    const id = patientId ?? stored?.id ?? stored?.idpatient ?? 1;
+    const id = patientId ?? stored?.id ?? stored?.idpatient;
+    if (!id) return;
 
     // Siempre traer datos frescos del back para tener todos los campos
     this.patientRepo.getPatientById(id).subscribe({

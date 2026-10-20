@@ -54,6 +54,15 @@
             </div>
 
             <div class="field col-12 md:col-6 mb-4">
+              <label class="block font-bold text-color-secondary mb-2 text-sm">Contraseña para la app (mín. 8)</label>
+              <span class="p-input-icon-left w-full">
+                <i class="pi pi-lock text-color-secondary"></i>
+                <input type="password" pInputText [(ngModel)]="nuevoPaciente.password" autocomplete="new-password"
+                  class="w-full border-round-lg py-2 shadow-none" placeholder="Compártela con tu paciente">
+              </span>
+            </div>
+
+            <div class="field col-12 md:col-6 mb-4">
               <label class="block font-bold text-color-secondary mb-2 text-sm">Año de Nacimiento</label>
               <input type="text" pInputText pKeyFilter="int" maxlength="4" [ngModel]="nuevoPaciente.birth_year"
                 (ngModelChange)="nuevoPaciente.birth_year = $any($event)"

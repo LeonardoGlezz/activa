@@ -1,3 +1,4 @@
+import { getJwtSecret } from "../../infrastructure/config/env";
 import { OAuth2Client } from "google-auth-library";
 import jwt from "jsonwebtoken";
 
@@ -39,7 +40,7 @@ export class LoginPatientWithGoogleUseCase {
         email: patient.email,
         role: "paciente",
       },
-      process.env.JWT_SECRET || "secret_dev",
+      getJwtSecret(),
       { expiresIn: "8h" }
     );
 

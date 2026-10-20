@@ -71,12 +71,12 @@ export class AuthController {
 
   loginPatient = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { email } = req.body;
-      if (!email) {
-        res.status(400).json({ message: "Se requiere el correo." });
+      const { email, password } = req.body;
+      if (!email || !password) {
+        res.status(400).json({ message: "Se requieren el correo y la contraseña." });
         return;
       }
-      const result = await this.loginPatientEmailUseCase.execute(email);
+      const result = await this.loginPatientEmailUseCase.execute(email, password);
       res.status(200).json(result);
     } catch (error: any) {
       res.status(401).json({ message: error.message });
