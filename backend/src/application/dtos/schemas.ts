@@ -29,12 +29,20 @@ export const PatientSchema = z.object({
 
 
 // 3. Reglas para el Ejercicio
+/** Enlace externo (YouTube, Vimeo, MP4, GIF...) o archivo subido a /uploads/exercise-media */
+const ExerciseMediaUrl = z.string().trim().refine(
+  (v) => v === "" || /^https?:\/\/\S+$/i.test(v) || /^\/uploads\/exercise-media\/[\w.-]+$/.test(v),
+  "Debe ser un enlace (http/https) o un archivo subido"
+);
 export const ExerciseSchema = z.object({
   name: z.string().min(3, "El nombre del ejercicio es obligatorio"),
   bodyZone: z.string().min(2, "La zona del cuerpo es obligatoria"),
   description: z.string().min(10, "La descripción debe ser más detallada"),
-  videoUrl: z.string().url("Debe ser un enlace (URL) válido")
+  videoUrl: ExerciseMediaUrl.optional().nullable()
 });
+
+/** Edición parcial de un ejercicio (p. ej. solo cambiar su video) */
+export const ExerciseUpdateSchema = ExerciseSchema.partial();
 
 // 4. Reglas para el Seguimiento (Guardar Molestias)
 export const TrackingSchema = z.object({

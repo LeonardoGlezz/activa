@@ -12,19 +12,30 @@ import { Exercise } from '../../core/exercises/domain/exercise.model';
 import { PatientUseCase } from  '../../core/patient/application/patient.use-case';
 import { environment } from '../../../environments/environment.development';
 import { MessageService } from 'primeng/api';
+import { RouterModule } from '@angular/router';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { ExerciseMediaKind, getEmbedUrl, getMediaKind, getMediaThumbnail, resolveMediaUrl } from '../../core/exercises/domain/exercise-media';
+
+/** Ejercicio con su material de demostración ya preparado para la vista */
+type BankExercise = Exercise & {
+  mediaUrl: string;
+  mediaKind: ExerciseMediaKind;
+  thumbnail: string | null;
+  embedUrl: SafeResourceUrl | null;
+};
 
 
 @Component({
   selector: 'app-banco-ejercicios',
   standalone: true,
-  imports: [CommonModule, ButtonModule, InputTextModule, FormsModule, DialogModule, ListboxModule, ToastModule],
+  imports: [CommonModule, RouterModule, ButtonModule, InputTextModule, FormsModule, DialogModule, ListboxModule, ToastModule],
   providers: [MessageService],
   templateUrl: './banco-ejercicios.html',
   styleUrl: './banco-ejercicios.scss'
 })
 export class BancoEjerciciosComponent implements OnInit {
-  exercises: Exercise[] = [];
-  filteredExercises: Exercise[] = [];
+  exercises: BankExercise[] = [];
+  filteredExercises: BankExercise[] = [];
   searchTerm: string = '';
   loading: boolean = false;
   selectedCategory: string = 'Todos';
@@ -56,7 +67,7 @@ export class BancoEjerciciosComponent implements OnInit {
   showAssignModal: boolean = false;
   showPreviewModal: boolean = false;
   selectedExercise?: Exercise;
-  previewExercise?: Exercise;
+  previewExercise?: BankExercise;
   selectedPatient?: any;
   selectedRoutineTemplateId: number | null = null;
   savingToRoutine: boolean = false;
@@ -77,7 +88,8 @@ export class BancoEjerciciosComponent implements OnInit {
     private patientUseCase: PatientUseCase,
     private http: HttpClient,
     private messageService: MessageService,
-    private cd: ChangeDetectorRef
+    private cd: ChangeDetectorRef,
+    private sanitizer: DomSanitizer
   ) {}
 
   ngOnInit(): void {
@@ -89,13 +101,22 @@ export class BancoEjerciciosComponent implements OnInit {
     this.loading = true;
     this.exerciseUseCase.listExercises(1, 100).subscribe({
       next: (result) => {
-        this.exercises = (result.rows || []).map((exercise: any) => ({
-          id: exercise.id ?? exercise.id_exercise,
-          name: exercise.name,
-          bodyZone: exercise.bodyZone ?? exercise.body_zone,
-          description: exercise.description,
-          videoUrl: exercise.videoUrl ?? exercise.video_url,
-        }));
+        this.exercises = (result.rows || []).map((exercise: any) => {
+          const videoUrl = exercise.videoUrl ?? exercise.video_url;
+          const mediaUrl = resolveMediaUrl(videoUrl);
+          const embed = getEmbedUrl(mediaUrl);
+          return {
+            id: exercise.id ?? exercise.id_exercise,
+            name: exercise.name,
+            bodyZone: exercise.bodyZone ?? exercise.body_zone,
+            description: exercise.description,
+            videoUrl,
+            mediaUrl,
+            mediaKind: getMediaKind(mediaUrl),
+            thumbnail: getMediaThumbnail(mediaUrl),
+            embedUrl: embed ? this.sanitizer.bypassSecurityTrustResourceUrl(embed) : null,
+          };
+        });
         // Se muestran todos inmediatamente al entrar
         this.filteredExercises = [...this.exercises]; 
         this.loading = false;
@@ -219,7 +240,7 @@ export class BancoEjerciciosComponent implements OnInit {
     this.cd.detectChanges();
   }
 
-  openPreview(exercise: Exercise): void {
+  openPreview(exercise: BankExercise): void {
     this.previewExercise = exercise;
     this.showPreviewModal = true;
     this.cd.detectChanges();

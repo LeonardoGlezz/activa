@@ -80,6 +80,7 @@ import { UpdatePasswordUseCase } from "./application/use-cases/UpdatePassword.uc
 import { CreateExerciseUseCase } from "./application/use-cases/CreateExercise.uc";
 import { ListExercisesUseCase } from "./application/use-cases/ListExercises.uc";
 import { GetExerciseByIdUseCase } from "./application/use-cases/GetExerciseById.uc";
+import { UpdateExerciseUseCase } from "./application/use-cases/UpdateExercise.uc";
 
 // --- Seguimiento (Tracking) ---
 import { RegisterPainLevelUseCase } from "./application/use-cases/RegisterPainLevel.uc";
@@ -182,6 +183,7 @@ async function bootstrap() {
     const createExercise = new CreateExerciseUseCase(exerciseRepo);
     const listExercises = new ListExercisesUseCase(exerciseRepo);
     const getExerciseById = new GetExerciseByIdUseCase(exerciseRepo);
+    const updateExercise = new UpdateExerciseUseCase(exerciseRepo);
 
     // Casos de Uso: Rutinas
     const createRoutine = new CreateRoutineUseCase(routineRepo);
@@ -248,7 +250,8 @@ async function bootstrap() {
     const exerciseController = new ExerciseController(
       createExercise,
       listExercises,
-      getExerciseById
+      getExerciseById,
+      updateExercise
     );
 
     const trackingController = new TrackingController(

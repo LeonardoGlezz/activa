@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { RouteAnimationService } from '../core/services/route-animation.service';
 import { RoutineApiService, RoutineWithExercises, RoutineExercise } from '../core/infrastructure/api/routine-api.service';
 import { Storage } from '@ionic/storage-angular';
-import { getExerciseVideoUrl, getExerciseYouTubeEmbedUrl } from '../core/helpers/exercise-media.helper';
+import { getExerciseDirectVideoUrl, getExerciseImageUrl, getExerciseVideoUrl, getExerciseYouTubeEmbedUrl } from '../core/helpers/exercise-media.helper';
 
 @Component({
   selector: 'app-detalle-rutina',
@@ -105,6 +105,8 @@ export class DetalleRutinaPage implements OnInit {
 
   getExerciseVideoUrl = getExerciseVideoUrl;
   getExerciseYouTubeEmbedUrl = getExerciseYouTubeEmbedUrl;
+  getExerciseDirectVideoUrl = getExerciseDirectVideoUrl;
+  getExerciseImageUrl = getExerciseImageUrl;
 
   ionViewWillLeave() {
     if (document.activeElement instanceof HTMLElement) {
