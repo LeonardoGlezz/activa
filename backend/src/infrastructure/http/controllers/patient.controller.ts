@@ -7,6 +7,7 @@
  */
 
 import { Request, Response } from "express";
+import bcrypt from "bcrypt";
 import { PatientModel, UserModel, PhysiotherapistModel } from "../../../infrastructure/persistence/sequelize/client"; 
 
 export class PatientController {
@@ -43,11 +44,18 @@ export class PatientController {
 
       const idPhysioReal = (physioRecord as any).id_physio; // ¡Este es el ID correcto para la BD!
 
+      // El fisio define la contraseña inicial con la que el paciente entra a la app.
+      if (typeof rawData.password !== "string" || rawData.password.length < 8) {
+        res.status(400).json({ success: false, message: "La contraseña del paciente debe tener al menos 8 caracteres." });
+        return;
+      }
+      const hashedPassword = await bcrypt.hash(rawData.password, 10);
+
       // 3. EMPAQUETAMOS LOS DATOS PARA LA TRANSACCIÓN
       const payloadTransaccion = {
         userData: {
           email: rawData.email,
-          password: "NO_PASSWORD_MOBILE_LOGIN", // Contraseña dummy
+          password: hashedPassword,
           role: 'patient',
           status: 'approved'
         },
@@ -107,6 +115,18 @@ export class PatientController {
       }
 
       const idUsuarioMovil = pacienteActual.getDataValue('id_user');
+
+      // Permite al fisio asignar o restablecer la contraseña del paciente.
+      if (rawData.password !== undefined && rawData.password !== "") {
+        if (typeof rawData.password !== "string" || rawData.password.length < 8) {
+          res.status(400).json({ success: false, message: "La contraseña del paciente debe tener al menos 8 caracteres." });
+          return;
+        }
+        await UserModel.update(
+          { password: await bcrypt.hash(rawData.password, 10) },
+          { where: { id_user: idUsuarioMovil } }
+        );
+      }
 
       if (rawData.email && idUsuarioMovil) {
         await UserModel.update(

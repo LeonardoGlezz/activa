@@ -1,3 +1,4 @@
+import { getJwtSecret } from "../../infrastructure/config/env";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { IAuthRepository } from "../ports/IAuthRepository";
@@ -66,7 +67,7 @@ export class LoginPhysiotherapistUseCase {
         last_name_maternal: lastNameM,
         professional_license: Cedula
       },
-      process.env.JWT_SECRET || "secret_dev",
+      getJwtSecret(),
       { expiresIn: "8h" }
     );
 

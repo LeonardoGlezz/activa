@@ -1,40 +1,13 @@
 import { Response } from "express";
 import { AuthRequest } from "../middlewares/auth.middleware";
-import { PatientMedicalDocumentModel, PatientModel } from "../../persistence/sequelize/client";
+import { PatientMedicalDocumentModel } from "../../persistence/sequelize/client";
+import { assertPatientAccess } from "../middlewares/patient-access.middleware";
 
 function publicFileUrl(req: AuthRequest, storedPath: string): string {
   const base =
     process.env.PUBLIC_API_URL?.replace(/\/$/, "") ||
     `${req.protocol}://${req.get("host")}`;
   return `${base}/${storedPath.replace(/^\//, "")}`;
-}
-
-async function assertPatientAccess(req: AuthRequest, patientId: number): Promise<{ ok: true } | { ok: false; status: number; message: string }> {
-  const u = req.user;
-  if (!u) {
-    return { ok: false, status: 401, message: "No autorizado." };
-  }
-
-  if (u.role === "patient") {
-    if (Number(u.id) !== patientId) {
-      return { ok: false, status: 403, message: "No puedes acceder a expedientes de otros pacientes." };
-    }
-    return { ok: true };
-  }
-
-  if (u.role === "physio") {
-    const row = await PatientModel.findByPk(patientId);
-    if (!row) {
-      return { ok: false, status: 404, message: "Paciente no encontrado." };
-    }
-    const idPhysio = (u as any).id_physio as number | undefined;
-    if (idPhysio == null || row.getDataValue("id_physio") !== idPhysio) {
-      return { ok: false, status: 403, message: "No tienes permiso para este paciente." };
-    }
-    return { ok: true };
-  }
-
-  return { ok: false, status: 403, message: "Rol no autorizado." };
 }
 
 export class DocumentController {

@@ -117,7 +117,7 @@ export class PatientListComponent implements OnInit {
   }
 
   abrirModalEditar(patient: any) {
-    this.pacienteEditando = { ...patient };
+    this.pacienteEditando = { ...patient, password: '' };
     this.pacienteOriginal = { ...patient };
     this.displayEditModal = true;
   }
@@ -138,7 +138,8 @@ export class PatientListComponent implements OnInit {
       p.email === orig.email &&
       Number(p.birth_year) === Number(orig.birth_year) &&
       Number(p.height) === Number(orig.height) &&
-      Number(p.weight) === Number(orig.weight)
+      Number(p.weight) === Number(orig.weight) &&
+      !p.password
     );
 
     if (sinCambios) {
@@ -155,6 +156,11 @@ export class PatientListComponent implements OnInit {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(p.email)) {
       this.messageService.add({ severity: 'warn', summary: 'Correo inválido', detail: 'Proporciona un correo válido.' });
+      return;
+    }
+
+    if (p.password && p.password.length < 8) {
+      this.messageService.add({ severity: 'warn', summary: 'Contraseña', detail: 'La nueva contraseña debe tener al menos 8 caracteres.' });
       return;
     }
 
@@ -184,7 +190,8 @@ export class PatientListComponent implements OnInit {
       email: p.email,
       birthYear: birthYearNum,
       height: alturaNum,
-      weight: pesoNum
+      weight: pesoNum,
+      password: p.password || undefined
     };
 
     this.patientUseCase.executeUpdate(p.id, payloadParaBackend as any).subscribe({

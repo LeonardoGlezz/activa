@@ -1,3 +1,4 @@
+import { getJwtSecret } from "../../config/env";
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
@@ -16,10 +17,7 @@ export const authMiddleware = (req: AuthRequest, res: Response, next: NextFuncti
   const token = authHeader.split(" ")[1];
 
   try {
-    // 🔥 EL ARREGLO ESTÁ AQUÍ: Le damos la misma llave de respaldo que usa el Login
-    const secretKey = process.env.JWT_SECRET || "secret_dev";
-    
-    const decoded = jwt.verify(token, secretKey) as {
+    const decoded = jwt.verify(token, getJwtSecret()) as {
       id: number;
       role: string;
       status?: string;

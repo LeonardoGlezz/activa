@@ -114,6 +114,14 @@
           </span>
         </div>
 
+        <div class="col-12 mb-3">
+          <label class="text-sm font-medium text-color-secondary mb-1 block">Nueva contraseña para la app (déjala vacía para no cambiarla)</label>
+          <span class="p-input-icon-left w-full">
+            <i class="pi pi-lock text-color-secondary"></i>
+            <input pInputText type="password" [(ngModel)]="pacienteEditando.password" autocomplete="new-password" class="p-2 border-round-md pl-5">
+          </span>
+        </div>
+
         <div class="col-12 md:col-4 mb-3">
           <label class="text-sm font-medium text-color-secondary mb-1 block">Año de Nacimiento</label>
           <input type="text" 

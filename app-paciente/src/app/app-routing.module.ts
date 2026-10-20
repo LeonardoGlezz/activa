@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
+import { patientSessionGuard } from './core/guards/patient-session.guard';
 
 const routes: Routes = [
   {
@@ -17,9 +18,12 @@ const routes: Routes = [
   },
   {
     path: 'tabs',
+    canActivate: [patientSessionGuard],
     loadChildren: () => import('./tabs/tabs.module').then( m => m.TabsPageModule)
-  },  {
+  },
+  {
     path: 'physiotherapist-profile',
+    canActivate: [patientSessionGuard],
     loadChildren: () => import('./physiotherapist-profile/physiotherapist-profile.module').then( m => m.PhysiotherapistProfilePageModule)
   },
 

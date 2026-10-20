@@ -10,6 +10,7 @@ import express, { Application } from "express";
 import cors from "cors";
 import * as dotenv from "dotenv";
 import path from "path";
+import { getJwtSecret } from "./infrastructure/config/env";
 
 // Auth
 import { SequelizeAuthRepository } from "./infrastructure/persistence/repositories/SequelizeAuthRepository";
@@ -131,6 +132,9 @@ dotenv.config();
 async function bootstrap() {
   try {
     console.log("🚀 Iniciando servidor Activa...");
+
+    // Falla al arrancar si falta JWT_SECRET, en vez de fallar en el primer login.
+    getJwtSecret();
 
     // ============================================================
     // FASE 1: CONEXIÓN A BASE DE DATOS
