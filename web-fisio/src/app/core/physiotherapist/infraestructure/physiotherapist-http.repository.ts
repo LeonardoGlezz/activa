@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Physiotherapist, CreatePhysiotherapistDTO } from '../domain/physiotherapist.model';
 import { PhysiotherapistRepository } from '../domain/physiotherapist.repository';
-import { environment } from '../../../../environments/environment.development';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class PhysiotherapistHttpRepository implements PhysiotherapistRepository {

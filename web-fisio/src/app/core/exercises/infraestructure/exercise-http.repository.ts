@@ -3,7 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Exercise } from '../domain/exercise.model';
 import { ExerciseMediaUpload, ExerciseRepository, ExerciseResponse } from '../domain/exercise.repository';
-import { environment } from '../../../../environments/environment.development';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class ExerciseHttpRepository implements ExerciseRepository {

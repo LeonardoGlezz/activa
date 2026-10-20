@@ -1,4 +1,4 @@
-import { environment } from '../../../../environments/environment.development';
+import { environment } from '../../../../environments/environment';
 
 /** Cómo se debe mostrar el material de demostración de un ejercicio */
 export type ExerciseMediaKind = 'youtube' | 'vimeo' | 'video' | 'image' | 'link' | 'none';

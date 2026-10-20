@@ -12,7 +12,7 @@ import { MessageService } from 'primeng/api';
 
 import { ExerciseUseCase } from '../../../../../core/exercises/application/exercise.use-case';
 import { PatientUseCase } from '../../../../../core/patient/application/patient.use-case';
-import { environment } from '../../../../../../environments/environment.development';
+import { environment } from '../../../../../../environments/environment';
 import { resolveMediaUrl } from '../../../../../core/exercises/domain/exercise-media';
 
 @Component({

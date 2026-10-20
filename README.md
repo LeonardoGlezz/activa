@@ -68,6 +68,10 @@ Para detener todo: `Ctrl + C` en la terminal. Para apagar MySQL: `npm run db:dow
 - **Pagos (Stripe) y login con Google** no funcionan en local hasta que pongas tus claves en `backend/.env`. Todo lo demás sí.
 - `backend/.env` es solo tuyo: nunca lo subas al repo (ya está en `.gitignore`).
 
+## Publicar en internet
+
+Ver [DESPLIEGUE.md](DESPLIEGUE.md): un solo servicio gratis en Render, con la base en TiDB Cloud y los archivos en Cloudflare R2; la página principal en `/` y las apps en `/paciente/`, `/fisio/` y `/admin/`.
+
 ## Aviso de privacidad y términos de uso
 
 Los textos están en `backend/legal/` y el backend los publica en `/legal` (por ejemplo `http://localhost:3000/legal/`). Pacientes y fisios los aceptan la primera vez que entran. Son un borrador: lo que falta llenar y revisar está en [docs/avisos-legales.md](docs/avisos-legales.md).

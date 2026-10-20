@@ -10,7 +10,8 @@ import Stripe from "stripe";
 import { CreateCheckoutSessionUseCase } from "../../../application/use-cases/CreateCheckoutSession.uc";
 import { PhysiotherapistModel } from "../../persistence/sequelize/client";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
+// Valor de relleno si no hay clave: la API arranca y solo fallan las llamadas a Stripe.
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_sin_configurar");
 
 const PLANES: Record<string, {
   id_plan: number;

@@ -10,7 +10,7 @@ import { ToastModule } from 'primeng/toast';
 import { ExerciseUseCase } from '../../core/exercises/application/exercise.use-case';
 import { Exercise } from '../../core/exercises/domain/exercise.model';
 import { PatientUseCase } from  '../../core/patient/application/patient.use-case';
-import { environment } from '../../../environments/environment.development';
+import { environment } from '../../../environments/environment';
 import { MessageService } from 'primeng/api';
 import { RouterModule } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';

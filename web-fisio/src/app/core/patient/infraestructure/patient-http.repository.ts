@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { Patient } from '../domain/patient.model';
 import { PatientRepository } from '../domain/patient.repository';
 // Importamos el environment
-import { environment } from '../../../../environments/environment.development';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'

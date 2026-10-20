@@ -14,7 +14,7 @@ type PlanId = 'basico' | 'ilimitado';
 
 export class CreateCheckoutSessionUseCase {
   async execute(planId: string, physioId: string): Promise<string> {
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_sin_configurar");
 
     const prices: Record<PlanId, string> = {
       basico:    process.env.STRIPE_PRICE_BASICO!,

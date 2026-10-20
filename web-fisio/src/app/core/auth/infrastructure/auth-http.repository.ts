@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { RegisterPhysioDTO } from '../domain/auth.model';
 import { AuthRepository } from '../domain/auth.repository';
-import { environment } from '../../../../environments/environment.development';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class AuthHttpRepository implements AuthRepository {

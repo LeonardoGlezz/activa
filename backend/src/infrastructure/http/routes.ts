@@ -8,6 +8,7 @@ import { requireAdmin } from "./middlewares/admin.middleware";
 import { PhysiotherapistModel } from "../persistence/sequelize/client";
 import { uploadPatientMedicalPdf } from "./middlewares/upload-patient-medical.middleware";
 import { uploadExerciseMedia } from "./middlewares/upload-exercise-media.middleware";
+import { persistUploads } from "../storage/object-storage";
 import { requirePatientAccess, requireRoutineAccess, requirePhysio } from "./middlewares/patient-access.middleware";
 
 export function buildRoutes(controllers: {
@@ -65,6 +66,7 @@ export function buildRoutes(controllers: {
       { name: 'ineFront',   maxCount: 1 },
       { name: 'cedulaPdf', maxCount: 1 }
     ]),
+    persistUploads,
     async (req: any, res: any) => {
       try {
         const idUsuario = req.user.id;
@@ -146,7 +148,7 @@ export function buildRoutes(controllers: {
   // Ejercicios
   router.post("/exercises",     authMiddleware, requireApproval, requireActivePlan, controllers.exerciseController.create);
   router.get("/exercises",      authMiddleware, requireApproval, requireActivePlan, controllers.exerciseController.list);
-  router.post("/exercises/media", authMiddleware, requireApproval, requireActivePlan, requirePhysio, uploadExerciseMedia, controllers.exerciseController.uploadMedia);
+  router.post("/exercises/media", authMiddleware, requireApproval, requireActivePlan, requirePhysio, uploadExerciseMedia, persistUploads, controllers.exerciseController.uploadMedia);
   router.get("/exercises/:id",  authMiddleware, requireApproval, requireActivePlan, controllers.exerciseController.getById);
   router.put("/exercises/:id",  authMiddleware, requireApproval, requireActivePlan, requirePhysio, controllers.exerciseController.update);
 
@@ -188,6 +190,7 @@ export function buildRoutes(controllers: {
     "/documents",
     authMiddleware, requireApproval, requireActivePlan,
     uploadPatientMedicalPdf.single("file"),
+    persistUploads,
     controllers.documentController.create
   );
   router.delete("/documents/:id", authMiddleware, requireApproval, requireActivePlan, controllers.documentController.remove);
