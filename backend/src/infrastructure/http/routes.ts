@@ -24,6 +24,7 @@ export function buildRoutes(controllers: {
   documentController:      any;
   subscriptionController:  any;
   adminController:         any;
+  legalController:         any;
 }) {
   const router = Router();
 
@@ -51,6 +52,10 @@ export function buildRoutes(controllers: {
   router.get("/physiotherapists/:id", authMiddleware, controllers.physioController.getById);
   router.patch("/auth/update-email",    authMiddleware, controllers.authController.updateEmail);
   router.patch("/auth/update-password", authMiddleware, controllers.authController.updatePassword);
+
+  // Aviso de privacidad y términos: estado y aceptación de la cuenta actual
+  router.get("/legal/consent",  authMiddleware, controllers.legalController.getStatus);
+  router.post("/legal/consent", authMiddleware, controllers.legalController.accept);
 
   // Subida de documentos (fisio aún no aprobado, no necesita plan)
   router.post(

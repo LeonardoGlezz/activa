@@ -34,6 +34,7 @@ import {
   RoutineTemplateModel,
   RoutineTemplateExerciseModel,
   PatientMedicalDocumentModel,
+  LegalConsentModel,
 } from "./infrastructure/persistence/sequelize/client";
 import { buildRoutes } from "./infrastructure/http/routes";
 import { errorHandler } from "./infrastructure/http/middlewares/error.middleware";
@@ -125,6 +126,7 @@ import { NotificationController } from "./infrastructure/http/controllers/notifi
 import { DashboardController } from "./infrastructure/http/controllers/dashboard.controller";
 import { DocumentController } from "./infrastructure/http/controllers/document.controller";
 import { AdminController } from "./infrastructure/http/controllers/admin.controller";
+import { LegalController } from "./infrastructure/http/controllers/legal.controller";
 
 // Cargar variables de entorno (.env)
 dotenv.config();
@@ -147,6 +149,7 @@ async function bootstrap() {
     await RoutineTemplateModel.sync();
     await RoutineTemplateExerciseModel.sync();
     await PatientMedicalDocumentModel.sync();
+    await LegalConsentModel.sync();
 
     // ============================================================
     // FASE 2: INSTANCIACIÓN DE REPOSITORIOS (INFRAESTRUCTURA)
@@ -314,6 +317,7 @@ async function bootstrap() {
 
     // 💳 NUEVO: Instanciamos el controlador de Suscripciones
     const subscriptionController = new SubscriptionController(createCheckoutSession);
+    const legalController = new LegalController();
 
     // ============================================================
     // FASE 5: CONFIGURACIÓN DEL SERVIDOR EXPRESS
@@ -323,6 +327,8 @@ async function bootstrap() {
     app.use(cors());
     app.use(express.json());
     app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+    // Aviso de privacidad y términos de uso (páginas públicas)
+    app.use("/legal", express.static(path.join(process.cwd(), "legal")));
 
     // ============================================================
     // FASE 6: REGISTRO DE RUTAS
@@ -341,6 +347,7 @@ async function bootstrap() {
       documentController,
       subscriptionController,
       adminController,
+      legalController,
     }));
 
     // ============================================================

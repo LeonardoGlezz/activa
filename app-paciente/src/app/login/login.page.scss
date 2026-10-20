@@ -118,3 +118,20 @@
     margin-right: 8px;
   }
 }
+
+.legal-links {
+  text-align: center;
+  font-size: 13px;
+  margin: 20px 0 0;
+  color: var(--activa-text);
+
+  a {
+    color: var(--activa-primary-dark);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  span {
+    margin: 0 8px;
+  }
+}

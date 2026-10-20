@@ -1,0 +1,81 @@
+.avisos-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  background: var(--surface-ground, #f5f7f6);
+}
+
+.avisos-card {
+  width: 100%;
+  max-width: 620px;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+
+  h1 {
+    margin: 0 0 6px;
+    font-size: 1.6rem;
+    color: #0f6e56;
+  }
+}
+
+.intro {
+  margin: 0 0 16px;
+  color: #52606d;
+}
+
+.resumen {
+  margin: 0 0 16px;
+  padding-left: 20px;
+  line-height: 1.5;
+  color: #1f2933;
+
+  li { margin-bottom: 6px; }
+}
+
+.enlaces {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+
+  a {
+    color: #0f6e56;
+    font-weight: 600;
+    text-decoration: none;
+
+    &:hover { text-decoration: underline; }
+    i { margin-right: 6px; }
+  }
+}
+
+.check {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  line-height: 1.45;
+  cursor: pointer;
+
+  input {
+    margin-top: 3px;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    accent-color: #1d9e75;
+  }
+}
+
+.salir {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  background: none;
+  border: none;
+  color: #52606d;
+  cursor: pointer;
+  font-size: 0.9rem;
+}

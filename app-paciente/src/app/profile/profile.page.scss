@@ -184,6 +184,7 @@ $red:        #d32f2f;
     box-shadow: 0 1px 6px rgba(0,0,0,0.07);
     cursor: pointer;
     color: $text-dark;
+    text-decoration: none;
 
     span { flex: 1; font-size: 0.93rem; font-weight: 500; }
     .menu-icon    { font-size: 1.2rem; color: $teal; }

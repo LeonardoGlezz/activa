@@ -7,3 +7,19 @@
 .main-content {
   min-height: calc(100vh - 60px);
 }
+
+.legal-footer {
+  text-align: center;
+  padding: 16px;
+  font-size: 0.85rem;
+  color: #6b7280;
+
+  a {
+    color: #0f6e56;
+    text-decoration: none;
+
+    &:hover { text-decoration: underline; }
+  }
+
+  span { margin: 0 8px; }
+}

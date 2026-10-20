@@ -1,0 +1,65 @@
+<ion-content [fullscreen]="true" class="consent-content">
+  <div class="consent-container">
+    <div class="consent-header">
+      <ion-icon name="shield-checkmark-outline" class="consent-icon"></ion-icon>
+      <h1>Tu privacidad</h1>
+      <p>Antes de empezar, lee cómo cuidamos tus datos.</p>
+    </div>
+
+    <div class="consent-card">
+      <h2>Aviso de privacidad simplificado</h2>
+      <p>
+        Tu fisioterapeuta es responsable de tus datos personales y usa Activa para darte tus rutinas y ver tu avance.
+      </p>
+      <p>
+        Guardamos tus datos de contacto y <strong>datos de salud</strong>: estatura, peso, los ejercicios que te asignan,
+        si los completas, el dolor que reportas, tus comentarios, tus citas y los documentos médicos que tu fisioterapeuta suba.
+      </p>
+      <p>
+        Los usamos solo para tu tratamiento, para avisar a tu fisioterapeuta si reportas dolor alto y para mantener la
+        plataforma funcionando. <strong>No los vendemos ni los usamos para publicidad.</strong>
+      </p>
+      <p>
+        Puedes pedir ver, corregir o borrar tus datos, o retirar tu consentimiento, como se explica en el aviso completo.
+      </p>
+      <a class="consent-link" [href]="privacyUrl" target="_blank" rel="noopener">
+        <ion-icon name="document-text-outline"></ion-icon>
+        Leer el aviso de privacidad completo
+      </a>
+      <a class="consent-link" [href]="termsUrl" target="_blank" rel="noopener">
+        <ion-icon name="reader-outline"></ion-icon>
+        Leer los términos y reglas de uso
+      </a>
+    </div>
+
+    <div class="consent-important">
+      <ion-icon name="alert-circle-outline"></ion-icon>
+      <span>Activa no sustituye la consulta. Si un ejercicio te causa dolor fuerte o mareo, detente y avisa a tu fisioterapeuta. En una emergencia llama al 911.</span>
+    </div>
+
+    <ion-item lines="none" class="consent-check">
+      <ion-checkbox slot="start" [(ngModel)]="aceptaPrivacidad" labelPlacement="end" justify="start">
+        <span class="ion-text-wrap">
+          He leído el aviso de privacidad y doy mi <strong>consentimiento expreso</strong> para el tratamiento de mis datos
+          personales, incluidos mis datos de salud.
+        </span>
+      </ion-checkbox>
+    </ion-item>
+
+    <ion-item lines="none" class="consent-check">
+      <ion-checkbox slot="start" [(ngModel)]="aceptaTerminos" labelPlacement="end" justify="start">
+        <span class="ion-text-wrap">Acepto los términos y reglas de uso de Activa.</span>
+      </ion-checkbox>
+    </ion-item>
+
+    <p class="consent-minor">Si el paciente es menor de edad, debe aceptar su madre, padre o tutor.</p>
+
+    <ion-button expand="block" class="consent-accept" [disabled]="!puedeContinuar" (click)="aceptar()">
+      <ion-spinner *ngIf="enviando" name="crescent" slot="start"></ion-spinner>
+      Aceptar y continuar
+    </ion-button>
+    <ion-button expand="block" fill="clear" class="consent-decline" (click)="noAcepto()">
+      No acepto, salir
+    </ion-button>
+  </div>
+</ion-content>

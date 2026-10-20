@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 import { patientSessionGuard } from './core/guards/patient-session.guard';
+import { patientConsentGuard } from './core/guards/patient-consent.guard';
 
 const routes: Routes = [
   {
@@ -17,13 +18,18 @@ const routes: Routes = [
     loadChildren: () => import('./login/login.module').then( m => m.LoginPageModule)
   },
   {
-    path: 'tabs',
+    path: 'consentimiento',
     canActivate: [patientSessionGuard],
+    loadChildren: () => import('./consentimiento/consentimiento.module').then( m => m.ConsentimientoPageModule)
+  },
+  {
+    path: 'tabs',
+    canActivate: [patientSessionGuard, patientConsentGuard],
     loadChildren: () => import('./tabs/tabs.module').then( m => m.TabsPageModule)
   },
   {
     path: 'physiotherapist-profile',
-    canActivate: [patientSessionGuard],
+    canActivate: [patientSessionGuard, patientConsentGuard],
     loadChildren: () => import('./physiotherapist-profile/physiotherapist-profile.module').then( m => m.PhysiotherapistProfilePageModule)
   },
 
