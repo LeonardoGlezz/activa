@@ -35,6 +35,7 @@ export class RoutineController {
     private readonly createRoutineTemplateDirect: CreateRoutineTemplateDirectUseCase,
     private readonly listRoutineTemplates: any,
     private readonly getRoutineTemplateById: any,
+    private readonly deleteRoutine: any,
   ) {}
 
   // ============================================================
@@ -172,6 +173,26 @@ export class RoutineController {
       res.status(200).json({ success: true, message: "Ejercicios actualizados en la rutina.", data: updated });
     } catch (error: any) {
       res.status(400).json({ success: false, message: error.message });
+    }
+  };
+
+  /**
+   * Elimina una rutina que el paciente todavía no ha empezado.
+   * @endpoint DELETE /api/routines/:id
+   */
+  remove = async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+    try {
+      const routineId = parseInt(req.params.id, 10);
+      if (isNaN(routineId)) {
+        res.status(400).json({ success: false, message: "ID de rutina inválido." });
+        return;
+      }
+
+      await this.deleteRoutine.execute(routineId);
+      res.status(200).json({ success: true, message: "Rutina eliminada." });
+    } catch (error: any) {
+      const status = error?.code === "ROUTINE_HAS_TRACKING" ? 409 : 400;
+      res.status(status).json({ success: false, code: error?.code, message: error.message });
     }
   };
 

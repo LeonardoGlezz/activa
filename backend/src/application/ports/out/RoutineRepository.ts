@@ -23,6 +23,10 @@ export interface RoutineRepository {
   findAllByPatientId(patientId: number): Promise<any[]>;
   // Añade ejercicios a una rutina existente (sin duplicar)
   addExercises(routineId: number, exerciseIds: number[], exerciseItems?: RoutineExerciseItemDTO[], options?: AddExercisesOptions): Promise<any>;
+  // Cuenta los registros de avance (tracking) de una rutina
+  countTracking(routineId: number): Promise<number>;
+  // Elimina la rutina y sus vínculos con ejercicios
+  deleteById(routineId: number): Promise<void>;
 
   // Plantillas: guardar rutina existente como plantilla reusable
   createTemplateFromRoutine(data: CreateRoutineTemplateDTO): Promise<any>;
