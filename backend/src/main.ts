@@ -32,6 +32,7 @@ import { SequelizeNotificationRepository } from "./infrastructure/persistence/re
 // 1. INFRAESTRUCTURA CORE
 import { sequelize } from "./infrastructure/persistence/sequelize/client";
 import { ensureSchema, ensureAdmin } from "./infrastructure/persistence/schema";
+import { serveUploadsFromStorage } from "./infrastructure/storage/object-storage";
 import { buildRoutes } from "./infrastructure/http/routes";
 import { errorHandler } from "./infrastructure/http/middlewares/error.middleware";
 
@@ -321,7 +322,7 @@ async function bootstrap() {
     app.set("trust proxy", 1);
     app.use(cors());
     app.use(express.json());
-    app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+    app.use("/uploads", express.static(path.join(process.cwd(), "uploads")), serveUploadsFromStorage);
 
     // ============================================================
     // FASE 6: REGISTRO DE RUTAS

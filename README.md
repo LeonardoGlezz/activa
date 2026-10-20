@@ -70,7 +70,7 @@ Para detener todo: `Ctrl + C` en la terminal. Para apagar MySQL: `npm run db:dow
 
 ## Publicar en internet
 
-Ver [DESPLIEGUE.md](DESPLIEGUE.md): un solo servicio en Railway con MySQL, la página principal en `/` y las apps en `/paciente/`, `/fisio/` y `/admin/`.
+Ver [DESPLIEGUE.md](DESPLIEGUE.md): un solo servicio gratis en Render, con la base en TiDB Cloud y los archivos en Cloudflare R2; la página principal en `/` y las apps en `/paciente/`, `/fisio/` y `/admin/`.
 
 ## Origen
 
