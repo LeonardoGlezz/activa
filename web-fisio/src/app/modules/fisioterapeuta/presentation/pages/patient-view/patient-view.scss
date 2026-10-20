@@ -1304,3 +1304,104 @@ $white: #ffffff;
   align-items: center;
   gap: 0.35rem;
 }
+
+// ========== AVANCES DEL PACIENTE ==========
+.progress-strip {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  background: $white;
+  border-radius: 16px;
+  padding: 0.7rem 1.25rem;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(20, 184, 166, 0.1);
+
+  .icon-action-btn {
+    margin-left: auto;
+  }
+}
+
+.progress-stat {
+  display: flex;
+  flex-direction: column;
+  padding-right: 1rem;
+  border-right: 1px solid $gray-200;
+
+  .stat-label {
+    font-size: 0.72rem;
+    color: $gray-600;
+  }
+
+  .stat-value {
+    font-size: 1rem;
+    font-weight: 800;
+    color: $gray-900;
+  }
+
+  &.alert .stat-value {
+    color: #dc2626;
+  }
+}
+
+.pain-bars {
+  display: flex;
+  flex-direction: column;
+
+  .stat-label {
+    font-size: 0.72rem;
+    color: $gray-600;
+  }
+
+  .bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 32px;
+    margin-top: 2px;
+  }
+
+  .bar {
+    width: 10px;
+    min-height: 3px;
+    border-radius: 3px 3px 0 0;
+  }
+}
+
+.pain-low { background: $green; color: $white; }
+.pain-mid { background: #f59e0b; color: $white; }
+.pain-high { background: #dc2626; color: $white; }
+
+.progress-empty {
+  font-size: 0.85rem;
+  color: $gray-600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tracking-row {
+  display: flex;
+  gap: 0.8rem;
+  align-items: flex-start;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid $gray-200;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.pain-pill {
+  flex: 0 0 auto;
+  font-size: 0.78rem;
+  font-weight: 800;
+  border-radius: 20px;
+  padding: 0.2rem 0.6rem;
+}
+
+.tracking-info p {
+  margin: 0;
+}

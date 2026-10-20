@@ -102,6 +102,11 @@ export class PatientViewComponent implements OnInit {
   pendingTemplateId: number | null = null;
   private initialRoutineSnapshot = '';
 
+  // ===== AVANCES (sesiones reportadas por el paciente) =====
+  trackings: any[] = [];
+  loadingTracking = true;
+  showTrackingModal = false;
+
   // ===== EDITAR PACIENTE =====
   showEditPatientModal = false;
   editingPatient: any = {};
@@ -135,6 +140,7 @@ export class PatientViewComponent implements OnInit {
       this.loadRoutines();
       this.loadExercises();
       this.loadLogbooks();
+      this.loadTracking();
       this.tryOpenRoutineFromRoute();
     });
   }
@@ -279,6 +285,38 @@ export class PatientViewComponent implements OnInit {
         notes: e.RoutineExercise?.notes ?? e.routineExercise?.notes ?? ''
       }))
     };
+  }
+
+  loadTracking(): void {
+    this.loadingTracking = true;
+    this.http.get<any>(`${environment.webservice.baseUrl}/api/tracking/patient/${this.patientId}`).subscribe({
+      next: (resp) => {
+        this.trackings = Array.isArray(resp?.data) ? resp.data : [];
+        this.loadingTracking = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.trackings = [];
+        this.loadingTracking = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  get sessionsLast7Days(): number {
+    const from = this.getTodayDate(-6);
+    return this.trackings.filter(t => String(t.date || '').substring(0, 10) >= from).length;
+  }
+
+  /** Últimas 10 sesiones, de la más antigua a la más reciente, para la mini gráfica. */
+  get recentPainTrend(): any[] {
+    return this.trackings.slice(0, 10).reverse();
+  }
+
+  painClass(level: number): string {
+    if (level >= 7) return 'pain-high';
+    if (level >= 4) return 'pain-mid';
+    return 'pain-low';
   }
 
   loadAppointments(): void {
@@ -997,7 +1035,8 @@ export class PatientViewComponent implements OnInit {
   formatDate(dateStr: string): string {
     if (!dateStr) return '—';
     try {
-      const d = new Date(dateStr);
+      // 'YYYY-MM-DD' se interpreta como UTC y en México mostraba el día anterior
+      const d = /^\d{4}-\d{2}-\d{2}$/.test(dateStr) ? new Date(dateStr + 'T12:00:00') : new Date(dateStr);
       return d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' });
     } catch {
       return dateStr;

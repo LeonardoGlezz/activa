@@ -97,6 +97,7 @@ import { CreateRoutineTemplateDirectUseCase } from "./application/use-cases/Crea
 import { ListRoutineTemplatesUseCase } from "./application/use-cases/ListRoutineTemplates.uc";
 import { GetRoutineTemplateByIdUseCase } from "./application/use-cases/GetRoutineTemplateById.uc";
 import { DeleteRoutineUseCase } from "./application/use-cases/DeleteRoutine.uc";
+import { ListPatientTrackingUseCase } from "./application/use-cases/ListPatientTracking.uc";
 
 // 🪄 NUEVO: Caso de uso del Dashboard
 import { GetDashboardStatsUseCase } from "./application/use-cases/GetDashboardStats.uc";
@@ -256,8 +257,10 @@ async function bootstrap() {
       updateExercise
     );
 
+    const listPatientTracking = new ListPatientTrackingUseCase(trackingRepo);
     const trackingController = new TrackingController(
-      registerPain
+      registerPain,
+      listPatientTracking
     );
 
     const addExercisesToRoutine = new AddExercisesToRoutineUseCase(routineRepo);
