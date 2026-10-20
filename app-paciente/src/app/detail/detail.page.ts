@@ -3,7 +3,7 @@ import { trigger, transition, style, animate } from '@angular/animations';
 import { Storage } from '@ionic/storage-angular';
 import { RoutineApiService, RoutineExercise } from '../core/infrastructure/api/routine-api.service';
 import { RouteAnimationService } from '../core/services/route-animation.service';
-import { getExerciseVideoUrl, getExerciseYouTubeEmbedUrl } from '../core/helpers/exercise-media.helper';
+import { getExerciseDirectVideoUrl, getExerciseImageUrl, getExerciseVideoUrl, getExerciseYouTubeEmbedUrl } from '../core/helpers/exercise-media.helper';
 
 @Component({
   selector: 'app-detail',
@@ -86,6 +86,8 @@ export class DetailPage implements OnInit {
 
   getExerciseVideoUrl = getExerciseVideoUrl;
   getExerciseYouTubeEmbedUrl = getExerciseYouTubeEmbedUrl;
+  getExerciseDirectVideoUrl = getExerciseDirectVideoUrl;
+  getExerciseImageUrl = getExerciseImageUrl;
 
   ionViewWillLeave() {
     if (document.activeElement instanceof HTMLElement) {

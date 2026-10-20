@@ -7,6 +7,7 @@ import { requireActivePlan } from "./middlewares/active-plan.middleware";
 import { requireAdmin } from "./middlewares/admin.middleware";
 import { PhysiotherapistModel } from "../persistence/sequelize/client";
 import { uploadPatientMedicalPdf } from "./middlewares/upload-patient-medical.middleware";
+import { uploadExerciseMedia } from "./middlewares/upload-exercise-media.middleware";
 import { requirePatientAccess, requireRoutineAccess, requirePhysio } from "./middlewares/patient-access.middleware";
 
 export function buildRoutes(controllers: {
@@ -140,7 +141,9 @@ export function buildRoutes(controllers: {
   // Ejercicios
   router.post("/exercises",     authMiddleware, requireApproval, requireActivePlan, controllers.exerciseController.create);
   router.get("/exercises",      authMiddleware, requireApproval, requireActivePlan, controllers.exerciseController.list);
+  router.post("/exercises/media", authMiddleware, requireApproval, requireActivePlan, requirePhysio, uploadExerciseMedia, controllers.exerciseController.uploadMedia);
   router.get("/exercises/:id",  authMiddleware, requireApproval, requireActivePlan, controllers.exerciseController.getById);
+  router.put("/exercises/:id",  authMiddleware, requireApproval, requireActivePlan, requirePhysio, controllers.exerciseController.update);
 
   // Seguimiento
   router.post("/tracking", authMiddleware, requireApproval, requireActivePlan, controllers.trackingController.create);

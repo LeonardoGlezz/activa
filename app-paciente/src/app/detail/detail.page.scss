@@ -238,3 +238,12 @@
     margin-right: 8px;
   }
 }
+
+/* Video subido (MP4) o GIF/foto de demostración */
+.exercise-media {
+  display: block;
+  width: 100%;
+  max-height: 60vh;
+  object-fit: contain;
+  background: #000;
+}

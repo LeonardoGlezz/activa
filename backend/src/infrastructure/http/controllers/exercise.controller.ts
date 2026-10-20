@@ -7,7 +7,8 @@
  */
 
 import { Request, Response } from "express";
-import { ExerciseSchema } from "../../../application/dtos/schemas";
+import { ExerciseSchema, ExerciseUpdateSchema } from "../../../application/dtos/schemas";
+import { EXERCISE_MEDIA_DIR } from "../middlewares/upload-exercise-media.middleware";
 
 /**
  * Clase controladora para la entidad Ejercicio.
@@ -20,11 +21,13 @@ export class ExerciseController {
    * @param createExercise Caso de uso para dar de alta nuevos ejercicios.
    * @param listExercises Caso de uso para la recuperación paginada del catálogo.
    * @param getExerciseById Caso de uso para obtener la ficha técnica de un ejercicio.
+   * @param updateExercise Caso de uso para editar un ejercicio (p. ej. cambiar su video).
    */
   constructor(
     private readonly createExercise: any, 
     private readonly listExercises: any,
-    private readonly getExerciseById: any
+    private readonly getExerciseById: any,
+    private readonly updateExercise: any
   ) {}
 
   // ============================================================
@@ -68,6 +71,55 @@ export class ExerciseController {
 
       res.status(400).json({ success: false, message: error.message });
     }
+  };
+
+  /**
+   * Edita un ejercicio existente. Todos los campos son opcionales.
+   * @endpoint PUT /api/exercises/:id
+   */
+  update = async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+    try {
+      const exerciseId = parseInt(req.params.id, 10);
+      if (isNaN(exerciseId)) {
+        res.status(400).json({ success: false, message: "El ID proporcionado no es un identificador válido." });
+        return;
+      }
+
+      const validatedData = ExerciseUpdateSchema.parse(req.body);
+      const exercise = await this.updateExercise.execute(exerciseId, validatedData);
+
+      if (!exercise) {
+        res.status(404).json({ success: false, message: "El ejercicio solicitado no existe." });
+        return;
+      }
+
+      res.status(200).json({ success: true, message: "Ejercicio actualizado.", data: exercise });
+    } catch (error: any) {
+      if (error.name === 'ZodError') {
+        res.status(400).json({ success: false, message: "Datos del ejercicio inválidos.", errors: error.errors });
+        return;
+      }
+      res.status(400).json({ success: false, message: error.message });
+    }
+  };
+
+  /**
+   * Recibe el video/GIF/imagen de demostración (campo "file") y devuelve su ruta,
+   * que después se guarda como videoUrl del ejercicio.
+   * @endpoint POST /api/exercises/media
+   */
+  uploadMedia = async (req: Request, res: Response): Promise<void> => {
+    const file = (req as any).file;
+    if (!file) {
+      res.status(400).json({ success: false, message: "No se recibió ningún archivo." });
+      return;
+    }
+    res.status(201).json({
+      success: true,
+      url: `/${EXERCISE_MEDIA_DIR}/${file.filename}`,
+      mimeType: file.mimetype,
+      size: file.size
+    });
   };
 
   // ============================================================

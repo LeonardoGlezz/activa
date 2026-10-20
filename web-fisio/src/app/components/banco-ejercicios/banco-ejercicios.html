@@ -4,6 +4,7 @@
   <div class="page-header">
     <h1>Banco de Ejercicios</h1>
     <div class="search-wrapper">
+      <a routerLink="/dashboard/ejercicios/nuevo" class="new-exercise-btn"><i class="pi pi-plus"></i> Nuevo ejercicio</a>
       <input pInputText type="text" [(ngModel)]="searchTerm" (input)="onSearch()"
         (keypress)="($any($event).charCode >= 65 && $any($event).charCode <= 90) || ($any($event).charCode >= 97 && $any($event).charCode <= 122) || $any($event).charCode === 32"
         placeholder="Buscar..." class="search-input-simple">
@@ -22,7 +23,11 @@
     <div class="exercises-grid" *ngIf="!loading && filteredExercises.length > 0">
       <div class="exercise-item" *ngFor="let exercise of filteredExercises">
         <div class="exercise-image-wrapper" (click)="openPreview(exercise)">
-          <img [src]="exercise.videoUrl || placeholderImg" (error)="$any($event.target).src = placeholderImg" alt="{{ exercise.name }}">
+          <video *ngIf="exercise.mediaKind === 'video'; else thumbTpl" [src]="exercise.mediaUrl + '#t=0.5'" muted playsinline preload="metadata"></video>
+          <ng-template #thumbTpl>
+            <img [src]="exercise.thumbnail || placeholderImg" (error)="$any($event.target).src = placeholderImg" alt="{{ exercise.name }}">
+          </ng-template>
+          <div class="no-media-badge" *ngIf="exercise.mediaKind === 'none'"><i class="pi pi-video"></i> Sin video</div>
           <div class="image-overlay"></div>
           <div class="badge-zone">{{ exercise.bodyZone }}</div>
           <button class="quick-preview-btn" type="button"><i class="pi pi-eye"></i></button>
@@ -30,9 +35,14 @@
         <div class="exercise-content">
           <h3>{{ exercise.name }}</h3>
           <p>{{ exercise.description }}</p>
-          <button class="assign-button" (click)="openAssignModal(exercise)" type="button">
-            <i class="pi pi-user-plus"></i> Asignar
-          </button>
+          <div class="card-actions">
+            <button class="assign-button" (click)="openAssignModal(exercise)" type="button">
+              <i class="pi pi-user-plus"></i> Asignar
+            </button>
+            <a class="edit-button" [routerLink]="['/dashboard/ejercicios', exercise.id, 'editar']" title="Editar ejercicio y su video">
+              <i class="pi pi-pencil"></i>
+            </a>
+          </div>
         </div>
       </div>
     </div>
@@ -53,7 +63,9 @@
   [style]="{ width: '90vw', maxWidth: '1000px', padding: '0' }" styleClass="exercise-preview-modal" [showHeader]="false">
   <div *ngIf="previewExercise" class="preview-content">
     <div class="preview-image">
-      <img [src]="previewExercise.videoUrl || placeholderImg" (error)="$any($event.target).src = placeholderImg" alt="{{ previewExercise.name }}">
+      <iframe *ngIf="previewExercise.embedUrl" [src]="previewExercise.embedUrl" title="Video del ejercicio" allowfullscreen></iframe>
+      <video *ngIf="previewExercise.mediaKind === 'video'" [src]="previewExercise.mediaUrl" controls playsinline autoplay muted loop></video>
+      <img *ngIf="!previewExercise.embedUrl && previewExercise.mediaKind !== 'video'" [src]="previewExercise.thumbnail || placeholderImg" (error)="$any($event.target).src = placeholderImg" alt="{{ previewExercise.name }}">
       <button class="modal-close-btn" (click)="showPreviewModal = false" type="button"><i class="pi pi-times"></i></button>
     </div>
     <div class="preview-details">
@@ -64,6 +76,9 @@
       <button class="primary-btn" (click)="showPreviewModal = false; openAssignModal(previewExercise)" type="button">
         <i class="pi pi-user-plus"></i> Asignar a Paciente
       </button>
+      <a class="secondary-link" [routerLink]="['/dashboard/ejercicios', previewExercise.id, 'editar']" (click)="showPreviewModal = false">
+        <i class="pi pi-pencil"></i> {{ previewExercise.mediaKind === 'none' ? 'Agregar video o imagen' : 'Cambiar video o imagen' }}
+      </a>
     </div>
   </div>
 </p-dialog>

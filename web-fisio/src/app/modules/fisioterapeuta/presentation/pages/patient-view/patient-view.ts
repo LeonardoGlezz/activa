@@ -19,6 +19,7 @@ import { PatientUseCase } from '../../../../../core/patient/application/patient.
 import { AppointmentUseCase } from '../../../../../core/appointment/application/appointment.use-case';
 import { ExerciseUseCase } from '../../../../../core/exercises/application/exercise.use-case';
 import { environment } from '../../../../../../environments/environment.development';
+import { resolveMediaUrl } from '../../../../../core/exercises/domain/exercise-media';
 
 @Component({
   selector: 'app-patient-view',
@@ -203,7 +204,7 @@ export class PatientViewComponent implements OnInit {
           name: e.name,
           body_zone: e.body_zone || e.bodyZone || 'General',
           description: e.description || '',
-          video_url: e.video_url || e.videoUrl || '',
+          video_url: resolveMediaUrl(e.video_url || e.videoUrl),
         }));
         this.loadingExercises = false;
         this.cdr.detectChanges();
@@ -790,7 +791,7 @@ export class PatientViewComponent implements OnInit {
   }
 
   isDirectVideoFile(url: string): boolean {
-    return /\.(mp4|webm|ogg)(\?.*)?$/i.test(url || '');
+    return /\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(url || '');
   }
 
   isEmbeddableVideo(url: string): boolean {
