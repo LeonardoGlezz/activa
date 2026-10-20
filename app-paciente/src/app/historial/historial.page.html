@@ -35,10 +35,11 @@
             
             <div class="card-title">
               <h2>Sesión {{ trackings.length - i }}</h2>
-              <p *ngIf="t.startTime" class="card-time">{{ formatTime(t.startTime) }}</p>
+              <p *ngIf="t.date" class="card-time">{{ formatDate(t.date) }}<span *ngIf="t.routineName"> · {{ t.routineName }}</span></p>
+              <p *ngIf="!t.date && t.startTime" class="card-time">{{ formatTime(t.startTime) }}</p>
             </div>
             
-            <ion-badge [color]="getPainColor(t.painLevel)" class="pain-badge">Nivel {{ t.painLevel }}</ion-badge>
+            <ion-badge [color]="getPainColor(t.painLevel)" class="pain-badge">Dolor {{ t.painLevel }}/10</ion-badge>
           </div>
           
           <p class="pain-label">{{ getPainLabel(t.painLevel) }}</p>

@@ -35,6 +35,14 @@ export class HistorialPage implements OnInit {
     }
   }
 
+  formatDate(dateStr?: string): string {
+    if (!dateStr) return '';
+    const d = new Date(String(dateStr).substring(0, 10) + 'T12:00:00');
+    if (isNaN(d.getTime())) return String(dateStr);
+    const txt = d.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' });
+    return txt.charAt(0).toUpperCase() + txt.slice(1);
+  }
+
   formatTime(timeStr?: string): string {
     if (!timeStr) return '';
     const parts = String(timeStr).split(':');

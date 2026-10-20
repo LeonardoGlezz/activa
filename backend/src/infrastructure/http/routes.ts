@@ -147,6 +147,7 @@ export function buildRoutes(controllers: {
 
   // Seguimiento
   router.post("/tracking", authMiddleware, requireApproval, requireActivePlan, controllers.trackingController.create);
+  router.get("/tracking/patient/:patientId", authMiddleware, requireApproval, requireActivePlan, requirePatientAccess((req) => req.params.patientId), controllers.trackingController.listByPatient);
 
   // Rutinas
   router.post("/routines",                           authMiddleware, requireActivePlan, requirePhysio, requirePatientAccess((req) => req.body?.patientId), controllers.routineController.create);
