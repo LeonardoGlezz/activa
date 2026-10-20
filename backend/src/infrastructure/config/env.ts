@@ -9,3 +9,12 @@ export function getJwtSecret(): string {
   }
   return secret;
 }
+
+/**
+ * Stripe es opcional. Sin una clave real (sk_live_ / sk_test_ con valor) la API
+ * arranca igual, los pagos no se ofrecen y los fisios aprobados no necesitan plan.
+ */
+export function isStripeConfigured(): boolean {
+  const key = process.env.STRIPE_SECRET_KEY ?? "";
+  return /^sk_(live|test)_/.test(key) && key !== "sk_test_sin_configurar";
+}

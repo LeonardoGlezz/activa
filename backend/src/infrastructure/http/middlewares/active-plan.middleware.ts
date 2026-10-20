@@ -1,6 +1,7 @@
 import { Response, NextFunction } from "express";
 import { AuthRequest } from "./auth.middleware";
 import { PhysiotherapistModel } from "../../persistence/sequelize/client";
+import { isStripeConfigured } from "../../config/env";
 
 /**
  * **************************************************************************
@@ -13,6 +14,7 @@ import { PhysiotherapistModel } from "../../persistence/sequelize/client";
  *   - Pacientes → pasan siempre (no tienen plan)
  *   - Fisios con plan_activo = 'activo' → pasan
  *   - Fisios con plan_activo = 'inactivo' → 402 Payment Required
+ *   - Sin Stripe configurado no se cobra: todos los fisios aprobados pasan
  *
  * USO EN RUTAS:
  *   router.get('/patients', authMiddleware, requireApproval, requireActivePlan, ...)
@@ -31,6 +33,11 @@ export const requireActivePlan = async (
 
   // ✅ Los pacientes pasan siempre — el plan es exclusivo del fisioterapeuta
   if (req.user.role === 'patient') {
+    next();
+    return;
+  }
+
+  if (!isStripeConfigured()) {
     next();
     return;
   }

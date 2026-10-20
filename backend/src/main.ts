@@ -10,6 +10,7 @@ import express, { Application } from "express";
 import cors from "cors";
 import * as dotenv from "dotenv";
 import path from "path";
+import fs from "fs";
 import { getJwtSecret } from "./infrastructure/config/env";
 
 // Auth
@@ -29,12 +30,8 @@ import { SequelizeLogbookRepository } from "./infrastructure/persistence/reposit
 import { SequelizeNotificationRepository } from "./infrastructure/persistence/repositories/SequelizeNotificationRepository";
 
 // 1. INFRAESTRUCTURA CORE
-import {
-  sequelize,
-  RoutineTemplateModel,
-  RoutineTemplateExerciseModel,
-  PatientMedicalDocumentModel,
-} from "./infrastructure/persistence/sequelize/client";
+import { sequelize } from "./infrastructure/persistence/sequelize/client";
+import { ensureSchema, ensureAdmin } from "./infrastructure/persistence/schema";
 import { buildRoutes } from "./infrastructure/http/routes";
 import { errorHandler } from "./infrastructure/http/middlewares/error.middleware";
 
@@ -141,9 +138,12 @@ async function bootstrap() {
     // ============================================================
     await sequelize.authenticate();
     console.log("✅ Conexión a MySQL (Sequelize) establecida con éxito.");
-    await RoutineTemplateModel.sync();
-    await RoutineTemplateExerciseModel.sync();
-    await PatientMedicalDocumentModel.sync();
+    await ensureSchema();
+
+    // En producción la cuenta de administrador sale de las variables de entorno.
+    if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
+      await ensureAdmin(process.env.ADMIN_EMAIL, process.env.ADMIN_PASSWORD);
+    }
 
     // ============================================================
     // FASE 2: INSTANCIACIÓN DE REPOSITORIOS (INFRAESTRUCTURA)
@@ -311,6 +311,8 @@ async function bootstrap() {
     // ============================================================
     const app: Application = express();
 
+    // Detrás del proxy del hosting: req.protocol debe ser https, no http.
+    app.set("trust proxy", 1);
     app.use(cors());
     app.use(express.json());
     app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
@@ -337,6 +339,21 @@ async function bootstrap() {
     // ============================================================
     // FASE 7: LANZAMIENTO
     // ============================================================
+    // Producción: el mismo servidor entrega la página principal y las tres apps
+    // ya compiladas (ver Dockerfile). En local esta carpeta no existe y se omite.
+    const publicDir = process.env.PUBLIC_DIR || path.join(process.cwd(), "public");
+    if (fs.existsSync(publicDir)) {
+      for (const appDir of ["fisio", "paciente", "admin"]) {
+        const root = path.join(publicDir, appDir);
+        app.use(`/${appDir}`, express.static(root), (req, res, next) => {
+          // Rutas internas de la app (ej. /fisio/dashboard) → su index.html
+          if (req.method !== "GET") return next();
+          res.sendFile(path.join(root, "index.html"));
+        });
+      }
+      app.use(express.static(publicDir));
+    }
+
     const port = Number(process.env.PORT) || 3000;
     app.use(errorHandler);
     app.listen(port, '0.0.0.0', () => {

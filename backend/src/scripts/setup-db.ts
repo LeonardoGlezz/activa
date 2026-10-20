@@ -13,18 +13,15 @@
  * **************************************************************************
  */
 
-import bcrypt from "bcrypt";
-import { DataTypes } from "sequelize";
 import {
   sequelize,
-  UserModel,
-  AdminModel,
   PhysiotherapistModel,
   PatientModel,
   ExerciseModel,
   RoutineModel,
   RoutineExerciseModel,
 } from "../infrastructure/persistence/sequelize/client";
+import { ensureSchema, ensureAdmin, findOrCreateUser } from "../infrastructure/persistence/schema";
 
 const DEMO = {
   admin: { email: "admin@activa.local", password: "admin123" },
@@ -32,41 +29,9 @@ const DEMO = {
   patient: { email: "paciente@activa.local", password: "paciente123" },
 };
 
-// Columnas que el código consulta en `physiotherapist` (Stripe / plan activo)
-const PHYSIO_EXTRA_COLUMNS = {
-  plan_activo: { type: DataTypes.STRING(20), allowNull: true, defaultValue: "inactivo" },
-  plan_type: { type: DataTypes.STRING(50), allowNull: true },
-  plan_expires_at: { type: DataTypes.DATE, allowNull: true },
-  plan_status: { type: DataTypes.STRING(20), allowNull: true, defaultValue: "inactive" },
-  stripe_customer_id: { type: DataTypes.STRING, allowNull: true },
-  stripe_subscription_id: { type: DataTypes.STRING, allowNull: true },
-};
-
-async function addMissingColumns() {
-  const qi = sequelize.getQueryInterface();
-  const existing = await qi.describeTable("physiotherapist");
-  for (const [name, definition] of Object.entries(PHYSIO_EXTRA_COLUMNS)) {
-    if (!existing[name]) {
-      await qi.addColumn("physiotherapist", name, definition);
-      console.log(`   + columna physiotherapist.${name}`);
-    }
-  }
-}
-
-async function findOrCreateUser(email: string, role: string, password: string | null) {
-  const found: any = await UserModel.findOne({ where: { email } });
-  if (found) return found;
-  const hash = password ? await bcrypt.hash(password, 10) : null;
-  return (await UserModel.create({ email, role, password: hash })) as any;
-}
-
 async function seed() {
   // --- Admin ---
-  const adminUser = await findOrCreateUser(DEMO.admin.email, "admin", DEMO.admin.password);
-  await AdminModel.findOrCreate({
-    where: { id_user: adminUser.id_user },
-    defaults: { name: "Administrador", id_user: adminUser.id_user },
-  });
+  await ensureAdmin(DEMO.admin.email, DEMO.admin.password);
 
   // --- Fisioterapeuta aprobado y con plan activo ---
   const physioUser = await findOrCreateUser(DEMO.physio.email, "physio", DEMO.physio.password);
@@ -141,11 +106,9 @@ async function main() {
   await sequelize.authenticate();
   console.log("✅ Conectado a MySQL");
 
-  // Crea solo las tablas que no existen; no modifica ni borra las que ya hay.
-  await sequelize.sync();
+  await ensureSchema();
   console.log("✅ Tablas listas");
 
-  await addMissingColumns();
   await seed();
 
   console.log("\n✅ Base de datos local lista. Usuarios de prueba:");

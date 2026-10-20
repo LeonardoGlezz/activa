@@ -1,0 +1,9 @@
+**/node_modules
+**/dist
+**/www
+**/.angular
+**/.env
+**/.env.*
+backend/uploads
+app-paciente/android
+.git

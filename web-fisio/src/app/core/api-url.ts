@@ -1,4 +1,4 @@
-import { environment } from '../../environments/environment.development';
+import { environment } from '../../environments/environment';
 
 /** Base del backend sin /api (ej. http://localhost:3000) */
 export const WS_BASE_URL = environment.webservice.baseUrl;
