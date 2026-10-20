@@ -35,7 +35,7 @@ export class ConfirmedAppointmentPage implements OnInit {
   async ngOnInit() {
     await this.storage.create();
     const patient = await this.storage.get('currentPatient');
-    const patientId = await this.storage.get('currentPatientId') ?? patient?.id ?? 1;
+    const patientId = await this.storage.get('currentPatientId') ?? patient?.id;
     if (!patientId) {
       this.loading = false;
       return;

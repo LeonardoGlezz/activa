@@ -41,7 +41,8 @@ export class PatientCreateComponent implements OnInit {
     sex: '',
     height: undefined,
     weight: undefined,
-    email: ''
+    email: '',
+    password: ''
   };
 
   constructor(
@@ -93,6 +94,12 @@ export class PatientCreateComponent implements OnInit {
       return;
     }
 
+    // 3b. Contraseña inicial con la que el paciente entrará a la app
+    if (!p.password || p.password.length < 8) {
+      this.messageService.add({ severity: 'warn', summary: 'Contraseña', detail: 'La contraseña del paciente debe tener al menos 8 caracteres.' });
+      return;
+    }
+
     // 4. Validación estricta del Año de Nacimiento
     const currentYear = new Date().getFullYear();
     const birthYearNum = Number(p.birth_year);
@@ -137,6 +144,7 @@ export class PatientCreateComponent implements OnInit {
       height: alturaNum,
       weight: pesoNum,
       email: p.email.toLowerCase().trim(),
+      password: p.password,
       physiotherapistId: 1 
     };
 

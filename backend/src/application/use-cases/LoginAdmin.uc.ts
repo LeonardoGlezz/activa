@@ -1,3 +1,4 @@
+import { getJwtSecret } from "../../infrastructure/config/env";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { QueryTypes } from "sequelize";
@@ -50,7 +51,7 @@ export class LoginAdminUseCase {
 
     const token = jwt.sign(
       { id: plain.id_user, role: "admin", email: plain.email },
-      process.env.JWT_SECRET || "secret_dev",
+      getJwtSecret(),
       { expiresIn: "8h" }
     );
 

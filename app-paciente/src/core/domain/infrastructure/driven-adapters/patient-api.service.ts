@@ -17,10 +17,10 @@ export class PatientApiService implements PatientRepository {
 
   constructor(private http: HttpClient, private storage: Storage) {}
 
-  getPatientByEmail(email: string): Observable<Patient | null> {
+  login(email: string, password: string): Observable<Patient | null> {
     return this.http.post<{ success: boolean; patient?: any; token?: string }>(
       `${this.authUrl}/login-patient`,
-      { email: email.trim() }
+      { email: email.trim(), password }
     ).pipe(
       switchMap((res) => {
         if (!res?.patient) return from(Promise.resolve(null as Patient | null));

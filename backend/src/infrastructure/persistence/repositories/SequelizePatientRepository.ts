@@ -85,6 +85,7 @@ export class SequelizePatientRepository implements PatientRepository {
     if (!patient) return null;
     const plain = patient.get({ plain: true }) as any;
     plain.email = email;
+    plain.password_hash = (user as any).password;
     return plain;
   }
 }
