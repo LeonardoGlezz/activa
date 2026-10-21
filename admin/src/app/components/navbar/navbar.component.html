@@ -17,11 +17,7 @@
     <!-- Links administrativos (cuando está logueado) -->
     <div class="navbar-links" [class.active]="isMenuOpen" *ngIf="isLoggedIn">
       <a routerLink="/dashboard" (click)="closeMenu()" routerLinkActive="active" class="nav-link">Panel</a>
-      <a href="#" (click)="closeMenu()" class="nav-link">Gestión de Fisios</a>
-      <a href="#" (click)="closeMenu()" class="nav-link">Reportes</a>
-      <a href="#" (click)="closeMenu()" class="nav-link">Suscripciones</a>
-      <a href="#" (click)="closeMenu()" class="nav-link">Pagos</a>
-      <a href="#" (click)="closeMenu()" class="nav-link">Configuración</a>
+      <a routerLink="/fisioterapeuta" (click)="closeMenu()" routerLinkActive="active" class="nav-link">Gestión de Fisios</a>
     </div>
 
     <!-- Botones públicos (cuando no está logueado) -->

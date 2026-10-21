@@ -32,6 +32,22 @@ export interface AdminOverview {
   generated_at: string;
 }
 
+export type PhysioStatus = 'pending_profile' | 'pending_approval' | 'approved' | 'rejected';
+
+export interface PhysioRow {
+  id_physio: number;
+  first_name: string;
+  last_name_paternal?: string | null;
+  last_name_maternal?: string | null;
+  professional_license?: string | null;
+  curp?: string | null;
+  ine_doc_url?: string | null;
+  license_doc_url?: string | null;
+  status: PhysioStatus;
+  created_at?: string;
+  email: string | null;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -56,5 +72,37 @@ export class AdminService {
           return throwError(() => new Error(msg));
         })
       );
+  }
+
+  listPhysios(status: PhysioStatus): Observable<PhysioRow[]> {
+    return this.http
+      .get<PhysioRow[]>(`${this.baseUrl}/physiotherapists/pending`, {
+        headers: this.getHeaders(),
+        params: { status },
+      })
+      .pipe(
+        catchError((error) => {
+          const msg = error?.error?.message || 'Error al obtener los fisioterapeutas.';
+          return throwError(() => new Error(msg));
+        })
+      );
+  }
+
+  setPhysioStatus(id: number, action: 'approved' | 'rejected'): Observable<{ message: string }> {
+    return this.http
+      .patch<{ message: string }>(`${this.baseUrl}/physiotherapists/${id}/approve`, { action }, {
+        headers: this.getHeaders(),
+      })
+      .pipe(
+        catchError((error) => {
+          const msg = error?.error?.message || 'No se pudo actualizar al fisioterapeuta.';
+          return throwError(() => new Error(msg));
+        })
+      );
+  }
+
+  /** URL pública de un documento subido por el fisio (se guarda solo el nombre del archivo) */
+  documentUrl(fileName: string): string {
+    return `${this.baseUrl.replace(/\/api\/?$/, '')}/uploads/documents/${encodeURIComponent(fileName)}`;
   }
 }

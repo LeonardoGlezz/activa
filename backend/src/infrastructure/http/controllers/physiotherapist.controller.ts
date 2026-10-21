@@ -126,7 +126,13 @@ export class PhysiotherapistController {
 
 listPending = async (req: Request, res: Response): Promise<void> => {
   try {
-    const result = await this.listPendingUseCase.execute();
+    const allowed = ["pending_profile", "pending_approval", "approved", "rejected"];
+    const status = String(req.query.status ?? "pending_approval");
+    if (!allowed.includes(status)) {
+      res.status(400).json({ message: "Estado inválido." });
+      return;
+    }
+    const result = await this.listPendingUseCase.execute(status);
     res.status(200).json(result);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
