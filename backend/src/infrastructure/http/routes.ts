@@ -6,7 +6,7 @@ import { requireActivePlan } from "./middlewares/active-plan.middleware";
 import { requireAdmin } from "./middlewares/admin.middleware";
 import { uploadExerciseMedia } from "./middlewares/upload-exercise-media.middleware";
 import { persistUploads } from "../storage/object-storage";
-import { requirePatientAccess, requireRoutineAccess, requirePhysio, requirePatient, requireAppointmentAccess, requireNotificationAccess, requireOwnPhysioOrAdmin } from "./middlewares/patient-access.middleware";
+import { requirePatientAccess, requireRoutineAccess, requirePhysio, requirePatient, requireAppointmentAccess, requireNotificationAccess, requireOwnPhysioOrAdmin, requireTemplateAccess, requireUsableExercises } from "./middlewares/patient-access.middleware";
 
 export function buildRoutes(controllers: {
   patientController:       any;
@@ -117,27 +117,36 @@ export function buildRoutes(controllers: {
   router.get("/patients/:id", authMiddleware, requireApproval, requireActivePlan, controllers.patientController.getById);
 
   // Ejercicios
-  router.post("/exercises",     authMiddleware, requireApproval, requireActivePlan, controllers.exerciseController.create);
-  router.get("/exercises",      authMiddleware, requireApproval, requireActivePlan, controllers.exerciseController.list);
+  // Ejercicios: banco base (todos lo ven) + "Mis ejercicios" de cada fisio
+  router.get("/exercises",      authMiddleware, requireApproval, requireActivePlan, requirePhysio, controllers.exerciseController.list);
+  router.post("/exercises",     authMiddleware, requireApproval, requireActivePlan, requirePhysio, controllers.exerciseController.create);
   router.post("/exercises/media", authMiddleware, requireApproval, requireActivePlan, requirePhysio, uploadExerciseMedia, persistUploads, controllers.exerciseController.uploadMedia);
+  router.post("/exercises/:id/copy", authMiddleware, requireApproval, requireActivePlan, requirePhysio, controllers.exerciseController.copyToMine);
   router.get("/exercises/:id",  authMiddleware, requireApproval, requireActivePlan, controllers.exerciseController.getById);
   router.put("/exercises/:id",  authMiddleware, requireApproval, requireActivePlan, requirePhysio, controllers.exerciseController.update);
+  router.delete("/exercises/:id", authMiddleware, requireApproval, requireActivePlan, requirePhysio, controllers.exerciseController.remove);
+
+  // El admin edita el banco base
+  router.get("/admin/exercises",        authMiddleware, requireAdmin, controllers.exerciseController.list);
+  router.post("/admin/exercises",       authMiddleware, requireAdmin, controllers.exerciseController.create);
+  router.put("/admin/exercises/:id",    authMiddleware, requireAdmin, controllers.exerciseController.update);
+  router.delete("/admin/exercises/:id", authMiddleware, requireAdmin, controllers.exerciseController.remove);
 
   // Seguimiento
   router.post("/tracking", authMiddleware, requireApproval, requireActivePlan, controllers.trackingController.create);
   router.get("/tracking/patient/:patientId", authMiddleware, requireApproval, requireActivePlan, requirePatientAccess((req) => req.params.patientId), controllers.trackingController.listByPatient);
 
   // Rutinas
-  router.post("/routines",                           authMiddleware, requireApproval, requireActivePlan, requirePhysio, requirePatientAccess((req) => req.body?.patientId), controllers.routineController.create);
-  router.post("/routines/templates",                 authMiddleware, requireApproval, requireActivePlan, requirePhysio, controllers.routineController.createTemplate);
-  router.put("/routines/templates/:id",              authMiddleware, requireApproval, requireActivePlan, requirePhysio, controllers.routineController.updateTemplate);
+  router.post("/routines",                           authMiddleware, requireApproval, requireActivePlan, requirePhysio, requirePatientAccess((req) => req.body?.patientId), requireUsableExercises, controllers.routineController.create);
+  router.post("/routines/templates",                 authMiddleware, requireApproval, requireActivePlan, requirePhysio, requireUsableExercises, controllers.routineController.createTemplate);
+  router.put("/routines/templates/:id",              authMiddleware, requireApproval, requireActivePlan, requirePhysio, requireTemplateAccess, requireUsableExercises, controllers.routineController.updateTemplate);
   router.get("/routines/templates",                  authMiddleware, requireApproval, requireActivePlan, requirePhysio, controllers.routineController.listTemplates);
-  router.get("/routines/templates/:id",              authMiddleware, requireApproval, requireActivePlan, requirePhysio, controllers.routineController.getTemplateById);
+  router.get("/routines/templates/:id",              authMiddleware, requireApproval, requireActivePlan, requirePhysio, requireTemplateAccess, controllers.routineController.getTemplateById);
   router.post("/routines/:id/template",              authMiddleware, requireApproval, requireActivePlan, requirePhysio, requireRoutineAccess, controllers.routineController.saveAsTemplate);
   router.get("/routines/patient/:patientId",         authMiddleware, requireApproval, requireActivePlan, requirePatientAccess((req) => req.params.patientId), controllers.routineController.getByPatient);
   router.get("/routines/history/patient/:patientId", authMiddleware, requireApproval, requireActivePlan, requirePatientAccess((req) => req.params.patientId), controllers.routineController.getHistoryByPatient);
   router.get("/routines/:id",                        authMiddleware, requireApproval, requireActivePlan, requireRoutineAccess, controllers.routineController.getById);
-  router.put("/routines/:id",                        authMiddleware, requireApproval, requireActivePlan, requirePhysio, requireRoutineAccess, controllers.routineController.update);
+  router.put("/routines/:id",                        authMiddleware, requireApproval, requireActivePlan, requirePhysio, requireRoutineAccess, requireUsableExercises, controllers.routineController.update);
   router.delete("/routines/:id",                     authMiddleware, requireApproval, requireActivePlan, requirePhysio, requireRoutineAccess, controllers.routineController.remove);
 
   // Citas

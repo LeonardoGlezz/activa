@@ -83,7 +83,7 @@
           <span *ngIf="!isDesktopCollapsed || isMobileMenuOpen" class="text-sm fadein" [class.font-bold]="rlaRutinas.isActive" [class.font-medium]="!rlaRutinas.isActive">Rutinas</span>
         </a>
 
-        <a routerLink="/dashboard/subscription" routerLinkActive #rlaPlanes="routerLinkActive" (click)="closeMenu()" 
+        <a *ngIf="billingEnabled" routerLink="/dashboard/subscription" routerLinkActive #rlaPlanes="routerLinkActive" (click)="closeMenu()" 
            [ngClass]="(isDesktopCollapsed && !isMobileMenuOpen) ? 'justify-content-center' : 'gap-3'"
            class="flex align-items-center p-3 border-round-md cursor-pointer no-underline transition-colors"
            [class.bg-activa-primary-light]="rlaPlanes.isActive"

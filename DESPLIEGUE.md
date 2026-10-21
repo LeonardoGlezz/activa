@@ -57,7 +57,25 @@ Con una sola app, las 750 horas gratis alcanzan para el mes completo. Si no quie
 2. Da de alta a tu amigo desde `/admin/` → **Fisioterapeutas → Dar de alta un fisio**. El panel te da un mensaje con su dirección, correo y contraseña para que se lo mandes. (También puede registrarse él mismo en `/fisio/` y tú lo apruebas en la misma pantalla.)
 3. Él da de alta a sus pacientes con correo y contraseña y les comparte la dirección principal. Ellos entran con **Soy paciente**.
 
-Sin claves de Stripe no se cobra nada: los fisios aprobados usan todo. Si algún día vendes ACTIVA, agrega las variables `STRIPE_*` de `backend/.env.example`.
+Sin claves de Stripe no se cobra nada y el panel del fisio no muestra "Membresía": los fisios aprobados usan todo. Si algún día vendes ACTIVA, agrega las variables `STRIPE_*` de `backend/.env.example`.
+
+### Recordatorios de citas por correo (opcional, gratis)
+
+ACTIVA avisa al paciente dentro de la app un día antes de cada cita, sin configurar nada. Si además quieres que le llegue un **correo**, agrega estas variables en Render → servicio → **Environment**:
+
+| Variable | Con Brevo (gratis, 300 correos al día, sin tarjeta) | Con Gmail |
+|---|---|---|
+| `SMTP_HOST` | `smtp-relay.brevo.com` | `smtp.gmail.com` |
+| `SMTP_PORT` | `587` | `587` |
+| `SMTP_USER` | el usuario SMTP que te da Brevo en *SMTP & API* | tu correo de Gmail |
+| `SMTP_PASS` | la clave SMTP de Brevo | una "contraseña de aplicación" de Google (requiere verificación en dos pasos) |
+| `MAIL_FROM` | `Activa <tu-correo@dominio.com>` (un remitente verificado en Brevo) | `Activa <tu-correo@gmail.com>` |
+
+Si no pones `SMTP_HOST`, ACTIVA simplemente no manda correos.
+
+### Qué pasa con los datos viejos al actualizar
+
+Desde octubre de 2026 ACTIVA ya no guarda documentos (INE, PDF de cédula ni documentos médicos de pacientes). Al arrancar la versión nueva, el servidor **borra esos archivos y la CURP** que hubiera en la base. Las fotos y videos de ejercicios no se tocan. También agrega solo el banco base de ejercicios (49 ejercicios de rehabilitación en español).
 
 ## Si algo falla
 

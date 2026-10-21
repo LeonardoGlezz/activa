@@ -904,3 +904,52 @@ $white: #ffffff;
   font-weight: 600;
   text-decoration: none;
 }
+
+.page-subtitle {
+  margin: 0.25rem 0 0;
+  color: $gray-700;
+  font-size: 0.9rem;
+}
+
+.source-track {
+  .filter-badge { text-transform: none; }
+  margin-bottom: 0.75rem;
+}
+
+.zone-badge {
+  text-transform: none;
+  padding: 0.5rem 1rem;
+}
+
+.badge-mine {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  background: $teal-dark;
+  color: $white;
+  padding: 0.35rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+button.edit-button {
+  background: $white;
+  cursor: pointer;
+}
+
+.delete-button {
+  color: #b91c1c;
+
+  &:hover {
+    border-color: #fca5a5;
+  }
+}
+
+.link-button {
+  background: none;
+  border: 0;
+  cursor: pointer;
+  width: 100%;
+  font-size: 0.95rem;
+}

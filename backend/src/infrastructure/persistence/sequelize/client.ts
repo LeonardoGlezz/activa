@@ -143,7 +143,11 @@ export const ExerciseModel = sequelize.define("Exercise", {
   name: { type: DataTypes.STRING, allowNull: false },
   body_zone: { type: DataTypes.STRING },
   description: { type: DataTypes.TEXT },
-  video_url: { type: DataTypes.TEXT }
+  video_url: { type: DataTypes.TEXT },
+  // null = banco base de Activa (lo edita el admin); con valor = "Mis ejercicios" de ese fisio
+  id_physio: { type: DataTypes.INTEGER, allowNull: true },
+  // El fisio confirmó que la foto o el video es suyo o tiene permiso de usarlo
+  rights_confirmed: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false }
 }, { tableName: "exercise" });
 
 // --- ROUTINE ---

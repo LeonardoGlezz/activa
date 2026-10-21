@@ -48,7 +48,7 @@ export const ExerciseUpdateSchema = ExerciseSchema.partial();
 export const TrackingSchema = z.object({
   startTime: z.string().optional(),
   endTime: z.string().optional(),
-  painLevel: z.number().int().min(1, "El dolor mínimo es 1").max(10, "El dolor máximo es 10"),
+  painLevel: z.number().int().min(0, "El dolor mínimo es 0").max(10, "El dolor máximo es 10"),
   postObservations: z.string().optional(),
   intraObservations: z.string().optional(),
   alert: z.number().int().min(0).max(1).optional(),

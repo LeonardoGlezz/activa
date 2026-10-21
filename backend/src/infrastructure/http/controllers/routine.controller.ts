@@ -208,7 +208,8 @@ export class RoutineController {
         return;
       }
 
-      const physiotherapistId = Number(req.body?.physiotherapistId);
+      // La plantilla siempre es del fisio en sesión, diga lo que diga el cuerpo
+      const physiotherapistId = Number((req as any).user?.id_physio);
       if (!physiotherapistId) {
         res.status(400).json({ success: false, message: "Se requiere physiotherapistId para crear plantilla." });
         return;
@@ -233,7 +234,8 @@ export class RoutineController {
    */
   createTemplate = async (req: Request, res: Response): Promise<void> => {
     try {
-      const physiotherapistId = Number(req.body?.physiotherapistId);
+      // La plantilla siempre es del fisio en sesión, diga lo que diga el cuerpo
+      const physiotherapistId = Number((req as any).user?.id_physio);
       if (!physiotherapistId) {
         res.status(400).json({ success: false, message: "Se requiere physiotherapistId para crear plantilla." });
         return;

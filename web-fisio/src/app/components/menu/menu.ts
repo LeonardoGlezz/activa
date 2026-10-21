@@ -31,12 +31,18 @@ export class Menu implements OnInit {
 
   userName: string = 'Cargando...';
   userMenuItems: MenuItem[] = [];
+  /** Solo se muestra "Membresía" si Activa cobra (Stripe configurado) */
+  billingEnabled = false;
 
   constructor(private router: Router, private http: HttpClient) {}
 
   ngOnInit() {
     this.checkScreenSize();
-    this.verificarEstadoCuenta(); 
+    this.verificarEstadoCuenta();
+    this.http.get<any>(`${environment.webservice.baseUrl}/api/publico/planes`).subscribe({
+      next: (resp) => (this.billingEnabled = Boolean(resp?.billingEnabled)),
+      error: () => (this.billingEnabled = false),
+    });
 
     this.userMenuItems = [
       {

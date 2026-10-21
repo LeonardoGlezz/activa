@@ -7,7 +7,6 @@ import { environment } from '../../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class ExerciseHttpRepository implements ExerciseRepository {
-  // Ajuste según tu estructura de environment.webservice.baseUrl
   private readonly apiUrl = `${environment.webservice.baseUrl}/api/exercises`;
 
   constructor(private http: HttpClient) {}
@@ -36,5 +35,14 @@ export class ExerciseHttpRepository implements ExerciseRepository {
     const formData = new FormData();
     formData.append('file', file);
     return this.http.post<ExerciseMediaUpload>(`${this.apiUrl}/media`, formData);
+  }
+
+  /** Copia un ejercicio del banco base a Mis ejercicios */
+  copyToMine(id: number | string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${id}/copy`, {});
+  }
+
+  remove(id: number | string): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/${id}`);
   }
 }

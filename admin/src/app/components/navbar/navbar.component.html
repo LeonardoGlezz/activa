@@ -21,6 +21,7 @@
         Fisioterapeutas <span class="pill" *ngIf="pendientes > 0" [title]="pendientes + ' por validar'">{{ pendientes }}</span>
       </a>
       <a routerLink="/pacientes" routerLinkActive="active" class="nav-link">Pacientes</a>
+      <a routerLink="/ejercicios" routerLinkActive="active" class="nav-link">Ejercicios</a>
       <a routerLink="/actividad" routerLinkActive="active" class="nav-link">Actividad</a>
       <a routerLink="/cuenta" routerLinkActive="active" class="nav-link mobile-only">Mi cuenta</a>
       <button type="button" class="nav-link mobile-only as-button" (click)="logout()">Cerrar sesión</button>

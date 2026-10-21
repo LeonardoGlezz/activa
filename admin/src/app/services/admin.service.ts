@@ -39,6 +39,22 @@ export interface AdminOverview {
   };
 }
 
+/** Ejercicio del banco base de Activa (lo ven todos los fisios) */
+export interface BaseExercise {
+  id_exercise: number;
+  name: string;
+  body_zone: string;
+  description: string;
+  video_url: string | null;
+}
+
+export interface BaseExerciseForm {
+  name: string;
+  bodyZone: string;
+  description: string;
+  videoUrl: string | null;
+}
+
 export type PhysioStatus = 'pending_profile' | 'pending_approval' | 'approved' | 'rejected';
 
 export interface PhysioRow {
@@ -208,6 +224,26 @@ export class AdminService {
   }
 
   /** Cambia el error HTTP por un Error con el mensaje del servidor (o uno genérico) */
+  listBaseExercises(): Observable<{ rows: BaseExercise[]; zones: string[] }> {
+    return this.request(this.http.get<{ rows: BaseExercise[]; zones: string[] }>(`${this.baseUrl}/admin/exercises`, { headers: this.getHeaders() }),
+      'No se pudo cargar el banco de ejercicios.');
+  }
+
+  createBaseExercise(data: BaseExerciseForm): Observable<{ data: BaseExercise }> {
+    return this.request(this.http.post<{ data: BaseExercise }>(`${this.baseUrl}/admin/exercises`, data, { headers: this.getHeaders() }),
+      'No se pudo guardar el ejercicio.');
+  }
+
+  updateBaseExercise(id: number, data: BaseExerciseForm): Observable<{ data: BaseExercise }> {
+    return this.request(this.http.put<{ data: BaseExercise }>(`${this.baseUrl}/admin/exercises/${id}`, data, { headers: this.getHeaders() }),
+      'No se pudo guardar el ejercicio.');
+  }
+
+  deleteBaseExercise(id: number): Observable<{ message: string }> {
+    return this.request(this.http.delete<{ message: string }>(`${this.baseUrl}/admin/exercises/${id}`, { headers: this.getHeaders() }),
+      'No se pudo borrar el ejercicio.');
+  }
+
   private request<T>(obs: Observable<T>, fallback: string): Observable<T> {
     return obs.pipe(catchError((error) => throwError(() => new Error(error?.error?.message || fallback))));
   }

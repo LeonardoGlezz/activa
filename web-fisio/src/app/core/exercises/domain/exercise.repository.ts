@@ -4,7 +4,9 @@ import { Exercise } from './exercise.model';
 export interface ExerciseResponse {
   success: boolean;
   rows: Exercise[];
-  count: number;
+  count?: number;
+  total?: number;
+  zones?: string[];
   page?: number;
   limit?: number;
 }
@@ -22,4 +24,6 @@ export abstract class ExerciseRepository {
   abstract create(exercise: Exercise): Observable<any>;
   abstract update(id: number | string, exercise: Partial<Exercise>): Observable<any>;
   abstract uploadMedia(file: File): Observable<ExerciseMediaUpload>;
+  abstract copyToMine(id: number | string): Observable<any>;
+  abstract remove(id: number | string): Observable<any>;
 }

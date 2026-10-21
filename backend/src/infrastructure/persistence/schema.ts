@@ -16,7 +16,8 @@ import bcrypt from "bcrypt";
 import fs from "fs";
 import path from "path";
 import { DataTypes, Op } from "sequelize";
-import { sequelize, UserModel, AdminModel, StoredFileModel } from "./sequelize/client";
+import { sequelize, UserModel, AdminModel, StoredFileModel, ExerciseModel } from "./sequelize/client";
+import { BASE_EXERCISES } from "./seed/base-exercises";
 
 // Columnas que el código consulta en `physiotherapist` (Stripe / plan activo)
 const PHYSIO_EXTRA_COLUMNS = {
@@ -81,6 +82,10 @@ const ADDED_MODEL_COLUMNS: Record<string, Record<string, any>> = {
   appointment: {
     reminder_sent_at: { type: DataTypes.DATE, allowNull: true },
   },
+  exercise: {
+    id_physio: { type: DataTypes.INTEGER, allowNull: true },
+    rights_confirmed: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+  },
 };
 
 export async function ensureSchema(): Promise<void> {
@@ -91,15 +96,18 @@ export async function ensureSchema(): Promise<void> {
     ...ADDED_MODEL_COLUMNS,
     physiotherapist: { ...PHYSIO_EXTRA_COLUMNS, ...ADDED_MODEL_COLUMNS.physiotherapist },
   };
+  let exerciseOwnerAdded = false;
   for (const [table, columns] of Object.entries(columnsByTable)) {
     const existing = await qi.describeTable(table);
     for (const [name, definition] of Object.entries(columns)) {
       if (!existing[name]) {
         await qi.addColumn(table, name, definition);
         console.log(`   + columna ${table}.${name}`);
+        if (table === "exercise" && name === "id_physio") exerciseOwnerAdded = true;
       }
     }
   }
+  if (exerciseOwnerAdded) await assignUploadedExercisesToTheirPhysio();
 
   // Estado "No asistió" en citas creadas antes de que existiera
   const appointment = await qi.describeTable("appointment");
@@ -112,6 +120,47 @@ export async function ensureSchema(): Promise<void> {
   }
 
   await purgeSensitiveData();
+  await seedBaseExercises();
+}
+
+/**
+ * Antes todos los ejercicios eran de todos. Al separar "banco base" y
+ * "Mis ejercicios", los que tienen un video o foto subidos y que solo usa un
+ * fisio en sus rutinas o plantillas pasan a ser de ese fisio.
+ */
+async function assignUploadedExercisesToTheirPhysio(): Promise<void> {
+  const [rows]: any = await sequelize.query(`
+    SELECT e.id_exercise, MIN(u.id_physio) AS id_physio, COUNT(DISTINCT u.id_physio) AS physios
+    FROM exercise e
+    JOIN (
+      SELECT re.id_exercise, r.id_physio FROM routine_exercise re JOIN routine r ON r.id_routine = re.id_routine
+      UNION ALL
+      SELECT te.id_exercise, t.id_physio FROM routine_template_exercise te JOIN routine_template t ON t.id_template = te.id_template
+    ) u ON u.id_exercise = e.id_exercise
+    WHERE e.video_url LIKE '%uploads/%'
+    GROUP BY e.id_exercise
+  `);
+  for (const row of rows) {
+    if (Number(row.physios) === 1) {
+      await ExerciseModel.update({ id_physio: row.id_physio }, { where: { id_exercise: row.id_exercise } });
+    }
+  }
+  if (rows.length) console.log(`   + ${rows.length} ejercicio(s) con video subido revisados para "Mis ejercicios"`);
+}
+
+/** Agrega al banco base los ejercicios de base-exercises.ts que falten (por nombre) */
+async function seedBaseExercises(): Promise<void> {
+  const existing: any[] = await ExerciseModel.findAll({
+    where: { id_physio: null },
+    attributes: ["name"],
+  });
+  const names = new Set(existing.map((e) => String(e.name).trim().toLowerCase()));
+  const missing = BASE_EXERCISES.filter((e) => !names.has(e.name.toLowerCase()));
+  if (!missing.length) return;
+  await ExerciseModel.bulkCreate(
+    missing.map((e) => ({ name: e.name, body_zone: e.bodyZone, description: e.description, id_physio: null }))
+  );
+  console.log(`   + ${missing.length} ejercicio(s) en el banco base`);
 }
 
 export async function findOrCreateUser(email: string, role: string, password: string | null) {

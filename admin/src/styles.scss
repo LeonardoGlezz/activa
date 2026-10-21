@@ -208,7 +208,8 @@ $ac-warning: #F39C12;
   small { color: #777; }
   .error { color: $ac-danger; }
 }
-.field input, .field select, .filters input, .filters select {
+.field.full { grid-column: 1 / -1; }
+.field input, .field select, .field textarea, .filters input, .filters select {
   padding: 0.6rem 0.75rem; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; font-family: inherit;
   background: #fff; color: $ac-dark;
   &:focus { outline: 2px solid rgba($ac-primary, 0.4); border-color: $ac-primary; }
@@ -228,7 +229,10 @@ $ac-warning: #F39C12;
   th, td { text-align: left; padding: 0.7rem 0.75rem; border-bottom: 1px solid #eee; vertical-align: top; }
   th { color: #555; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.03em; }
   tr.clickable { cursor: pointer; &:hover { background: #f7fbfb; } }
+  td.actions { white-space: nowrap; }
+  small { color: #666; }
 }
+.btn-link.danger { color: $ac-danger; margin-left: 0.75rem; }
 
 .event-list {
   list-style: none; margin: 0; padding: 0;

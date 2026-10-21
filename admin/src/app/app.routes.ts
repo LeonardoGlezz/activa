@@ -6,6 +6,7 @@ import { PacientesComponent } from './pages/pacientes/pacientes.component';
 import { PacienteDetalleComponent } from './pages/paciente-detalle/paciente-detalle.component';
 import { ActividadComponent } from './pages/actividad/actividad.component';
 import { CuentaComponent } from './pages/cuenta/cuenta.component';
+import { EjerciciosComponent } from './pages/ejercicios/ejercicios.component';
 import { authGuard, guestGuard } from './guards/auth.guard';
 
 export const appRoutes: Routes = [
@@ -17,6 +18,7 @@ export const appRoutes: Routes = [
   { path: 'pacientes', component: PacientesComponent, canActivate: [authGuard] },
   { path: 'pacientes/:id', component: PacienteDetalleComponent, canActivate: [authGuard] },
   { path: 'actividad', component: ActividadComponent, canActivate: [authGuard] },
+  { path: 'ejercicios', component: EjerciciosComponent, canActivate: [authGuard] },
   { path: 'cuenta', component: CuentaComponent, canActivate: [authGuard] },
   { path: '**', redirectTo: 'login' },
 ];

@@ -2,19 +2,26 @@
 
 <div class="exercises-page fadein">
   <div class="page-header">
-    <h1>Banco de Ejercicios</h1>
+    <div>
+      <h1>Banco de ejercicios</h1>
+      <p class="page-subtitle">{{ exercises.length - mineCount }} del banco base de Activa · {{ mineCount }} en Mis ejercicios</p>
+    </div>
     <div class="search-wrapper">
       <a routerLink="/dashboard/ejercicios/nuevo" class="new-exercise-btn"><i class="pi pi-plus"></i> Nuevo ejercicio</a>
-      <input pInputText type="text" [(ngModel)]="searchTerm" (input)="onSearch()"
-        (keypress)="($any($event).charCode >= 65 && $any($event).charCode <= 90) || ($any($event).charCode >= 97 && $any($event).charCode <= 122) || $any($event).charCode === 32"
-        placeholder="Buscar..." class="search-input-simple">
+      <input pInputText type="search" [(ngModel)]="searchTerm" (input)="onSearch()"
+        placeholder="Buscar: rodilla, puente, liga..." class="search-input-simple" aria-label="Buscar ejercicios">
     </div>
   </div>
 
   <div class="filters-section">
+    <div class="filters-track source-track">
+      <button *ngFor="let src of sources" (click)="selectSource(src.value)" [class.active]="selectedSource === src.value" class="filter-badge" type="button">
+        {{ src.label }}
+      </button>
+    </div>
     <div class="filters-track">
-      <button *ngFor="let cat of categories" (click)="filterByZone(cat)" [class.active]="selectedCategory === cat.label" class="filter-badge">
-        {{ cat.label }}
+      <button *ngFor="let zone of zones" (click)="selectZone(zone)" [class.active]="selectedZone === zone" class="filter-badge zone-badge" type="button">
+        {{ zone }}
       </button>
     </div>
   </div>
@@ -30,6 +37,7 @@
           <div class="no-media-badge" *ngIf="exercise.mediaKind === 'none'"><i class="pi pi-video"></i> Sin video</div>
           <div class="image-overlay"></div>
           <div class="badge-zone">{{ exercise.bodyZone }}</div>
+          <div class="badge-mine" *ngIf="exercise.scope === 'mine'">Mío</div>
           <button class="quick-preview-btn" type="button"><i class="pi pi-eye"></i></button>
         </div>
         <div class="exercise-content">
@@ -39,9 +47,19 @@
             <button class="assign-button" (click)="openAssignModal(exercise)" type="button">
               <i class="pi pi-user-plus"></i> Asignar
             </button>
-            <a class="edit-button" [routerLink]="['/dashboard/ejercicios', exercise.id, 'editar']" title="Editar ejercicio y su video">
-              <i class="pi pi-pencil"></i>
-            </a>
+            <ng-container *ngIf="exercise.editable; else baseActions">
+              <a class="edit-button" [routerLink]="['/dashboard/ejercicios', exercise.id, 'editar']" title="Editar ejercicio y su video" aria-label="Editar">
+                <i class="pi pi-pencil"></i>
+              </a>
+              <button class="edit-button delete-button" type="button" (click)="deleteExercise(exercise)" [disabled]="deletingId === exercise.id" title="Borrar de Mis ejercicios" aria-label="Borrar">
+                <i class="pi pi-trash"></i>
+              </button>
+            </ng-container>
+            <ng-template #baseActions>
+              <button class="edit-button" type="button" (click)="copyToMine(exercise)" title="Copiar a Mis ejercicios para cambiarlo o agregarle tu video" aria-label="Copiar a Mis ejercicios">
+                <i class="pi pi-copy"></i>
+              </button>
+            </ng-template>
           </div>
         </div>
       </div>
@@ -50,7 +68,10 @@
     <div class="empty-state" *ngIf="!loading && filteredExercises.length === 0">
       <i class="pi pi-inbox"></i>
       <h2>Sin resultados</h2>
-      <p>No encontramos ejercicios con esos criterios</p>
+      <p *ngIf="selectedSource === 'mine' && mineCount === 0; else noMatch">
+        Todavía no tienes ejercicios propios. Crea uno con "Nuevo ejercicio" o copia uno del banco base.
+      </p>
+      <ng-template #noMatch><p>No encontramos ejercicios con esos criterios</p></ng-template>
     </div>
 
     <div class="loading-grid" *ngIf="loading">
@@ -76,9 +97,12 @@
       <button class="primary-btn" (click)="showPreviewModal = false; openAssignModal(previewExercise)" type="button">
         <i class="pi pi-user-plus"></i> Asignar a Paciente
       </button>
-      <a class="secondary-link" [routerLink]="['/dashboard/ejercicios', previewExercise.id, 'editar']" (click)="showPreviewModal = false">
+      <a *ngIf="previewExercise.editable" class="secondary-link" [routerLink]="['/dashboard/ejercicios', previewExercise.id, 'editar']" (click)="showPreviewModal = false">
         <i class="pi pi-pencil"></i> {{ previewExercise.mediaKind === 'none' ? 'Agregar video o imagen' : 'Cambiar video o imagen' }}
       </a>
+      <button *ngIf="!previewExercise.editable" class="secondary-link link-button" type="button" (click)="showPreviewModal = false; copyToMine(previewExercise)">
+        <i class="pi pi-copy"></i> Copiar a Mis ejercicios para agregarle tu video
+      </button>
     </div>
   </div>
 </p-dialog>

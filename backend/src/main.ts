@@ -38,7 +38,6 @@ import { errorHandler } from "./infrastructure/http/middlewares/error.middleware
 // 2. REPOSITORIOS (PERSISTENCIA)
 import { SequelizePatientRepository } from "./infrastructure/persistence/repositories/SequelizePatientRepository";
 import { SequelizePhysiotherapistRepository } from "./infrastructure/persistence/repositories/SequelizePhysiotherapistRepository";
-import { SequelizeExerciseRepository } from "./infrastructure/persistence/repositories/SequelizeExerciseRepository";
 import { SequelizeTrackingRepository } from "./infrastructure/persistence/repositories/SequelizeTrackingRepository";
 import { SequelizeRoutineRepository } from "./infrastructure/persistence/repositories/SequelizeRoutineRepository";
 
@@ -71,10 +70,6 @@ import { UpdateEmailUseCase } from "./application/use-cases/UpdateEmail.uc";
 import { UpdatePasswordUseCase } from "./application/use-cases/UpdatePassword.uc";
 
 // --- Ejercicios ---
-import { CreateExerciseUseCase } from "./application/use-cases/CreateExercise.uc";
-import { ListExercisesUseCase } from "./application/use-cases/ListExercises.uc";
-import { GetExerciseByIdUseCase } from "./application/use-cases/GetExerciseById.uc";
-import { UpdateExerciseUseCase } from "./application/use-cases/UpdateExercise.uc";
 
 // --- Seguimiento (Tracking) ---
 import { RegisterPainLevelUseCase } from "./application/use-cases/RegisterPainLevel.uc";
@@ -153,7 +148,6 @@ async function bootstrap() {
     // ============================================================
     const patientRepo = new SequelizePatientRepository();
     const physioRepo = new SequelizePhysiotherapistRepository();
-    const exerciseRepo = new SequelizeExerciseRepository();
     const trackingRepo = new SequelizeTrackingRepository();
     const routineRepo = new SequelizeRoutineRepository();
     const authRepo = new SequelizeAuthRepository();
@@ -181,10 +175,6 @@ async function bootstrap() {
     const listPendingPhysio = new ListPendingPhysiotherapistsUseCase(physioRepo);
 
     // Casos de Uso: Ejercicios
-    const createExercise = new CreateExerciseUseCase(exerciseRepo);
-    const listExercises = new ListExercisesUseCase(exerciseRepo);
-    const getExerciseById = new GetExerciseByIdUseCase(exerciseRepo);
-    const updateExercise = new UpdateExerciseUseCase(exerciseRepo);
 
     // Casos de Uso: Rutinas
     const createRoutine = new CreateRoutineUseCase(routineRepo);
@@ -246,12 +236,7 @@ async function bootstrap() {
       listPendingPhysio,
     );
 
-    const exerciseController = new ExerciseController(
-      createExercise,
-      listExercises,
-      getExerciseById,
-      updateExercise
-    );
+    const exerciseController = new ExerciseController();
 
     const listPatientTracking = new ListPatientTrackingUseCase(trackingRepo);
     const trackingController = new TrackingController(

@@ -15,6 +15,8 @@ import { MessageService } from 'primeng/api';
 import { RouterModule } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ExerciseMediaKind, getEmbedUrl, getMediaKind, getMediaThumbnail, resolveMediaUrl } from '../../core/exercises/domain/exercise-media';
+import { BODY_ZONES } from '../../core/exercises/domain/exercise.model';
+import { Router } from '@angular/router';
 
 /** Ejercicio con su material de demostración ya preparado para la vista */
 type BankExercise = Exercise & {
@@ -39,30 +41,17 @@ export class BancoEjerciciosComponent implements OnInit {
   filteredExercises: BankExercise[] = [];
   searchTerm: string = '';
   loading: boolean = false;
-  selectedCategory: string = 'Todos';
 
-  // Organización por Zonas de Tratamiento - EXPANDIDO
-  categories = [
-    { label: 'Todos', muscles: [] },
-    { 
-      label: 'Tren Superior', 
-      muscles: ['hombro', 'espalda', 'brazo', 'pecho', 'cervical', 'dorsal', 'escapula', 'escapulohumeral',
-                'acromioclavicular', 'rotador', 'coracoides', 'manguito', 'trapecio', 'deltoides', 'bíceps',
-                'tríceps', 'antebrazo', 'muñeca', 'cuello', 'clavícula', 'escapular', 'lumbalgia', 'dorso']
-    },
-    { 
-      label: 'Tren Inferior', 
-      muscles: ['cadera', 'rodilla', 'tobillo', 'gluteo', 'pierna', 'pie', 'muslo', 'isquio', 'femoral',
-                'tibial', 'perone', 'sóleo', 'gemelos', 'aductor', 'abductor', 'cuadriceps', 'anca',
-                'pelvis', 'sacro', 'articulación', 'metatarso', 'tarso', 'calcáneo']
-    },
-    { 
-      label: 'Núcleo (Core)', 
-      muscles: ['core', 'abdomen', 'lumbar', 'columna', 'pelvis', 'transverso', 'recto',
-                'oblicuo', 'psoas', 'cuadrado', 'piso', 'esfinter', 'abdominales', 'tronco',
-                'tóracoabdominal', 'lumbosacra', 'sacroilíaca']
-    }
-  ];
+  /** De dónde vienen: todo, el banco base de Activa o Mis ejercicios */
+  readonly sources = [
+    { value: 'all', label: 'Todos' },
+    { value: 'base', label: 'Banco base' },
+    { value: 'mine', label: 'Mis ejercicios' },
+  ] as const;
+  selectedSource: 'all' | 'base' | 'mine' = 'all';
+  zones: string[] = [...BODY_ZONES];
+  selectedZone = '';
+  deletingId: number | string | null = null;
 
   patients: any[] = [];
   showAssignModal: boolean = false;
@@ -90,7 +79,8 @@ export class BancoEjerciciosComponent implements OnInit {
     private http: HttpClient,
     private messageService: MessageService,
     private cd: ChangeDetectorRef,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -100,8 +90,9 @@ export class BancoEjerciciosComponent implements OnInit {
 
   loadExercises(): void {
     this.loading = true;
-    this.exerciseUseCase.listExercises(1, 100).subscribe({
+    this.exerciseUseCase.listExercises(1, 500).subscribe({
       next: (result) => {
+        if (result.zones?.length) this.zones = result.zones;
         this.exercises = (result.rows || []).map((exercise: any) => {
           const videoUrl = exercise.videoUrl ?? exercise.video_url;
           const mediaUrl = resolveMediaUrl(videoUrl);
@@ -112,14 +103,15 @@ export class BancoEjerciciosComponent implements OnInit {
             bodyZone: exercise.bodyZone ?? exercise.body_zone,
             description: exercise.description,
             videoUrl,
+            scope: exercise.scope ?? 'base',
+            editable: Boolean(exercise.editable),
             mediaUrl,
             mediaKind: getMediaKind(mediaUrl),
             thumbnail: getMediaThumbnail(mediaUrl),
             embedUrl: embed ? this.sanitizer.bypassSecurityTrustResourceUrl(embed) : null,
           };
         });
-        // Se muestran todos inmediatamente al entrar
-        this.filteredExercises = [...this.exercises]; 
+        this.applyFilters();
         this.loading = false;
         this.cd.detectChanges(); // Forzar renderizado inicial
       },
@@ -139,96 +131,76 @@ export class BancoEjerciciosComponent implements OnInit {
     });
   }
 
-  /**
-   * Normalización avanzada con sinónimos y variaciones
-   * Maneja: tildes, plurales, singulares, variaciones comunes
-   */
+  /** Minúsculas y sin acentos, para buscar "rodilla" o "Rodílla" igual */
   private normalizeText(text: string): string {
-    if (!text) return '';
-    return text
+    return (text || '')
       .toLowerCase()
       .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '') // Quita acentos
-      .replace(/[^a-zA-Z\s]/g, '')    // Elimina números y caracteres especiales
+      .replace(/[\u0300-\u036f]/g, '')
       .trim();
   }
 
-  /**
-   * Genera variaciones de una palabra (plurales, singulares, etc)
-   */
-  private getWordVariations(word: string): string[] {
-    const normalized = this.normalizeText(word);
-    const variations = [normalized];
-    
-    // Agregar plural simple (agregar 's')
-    variations.push(normalized + 's');
-    
-    // Agregar singular (quitar 's' si termina en 's')
-    if (normalized.endsWith('s') && normalized.length > 2) {
-      variations.push(normalized.slice(0, -1));
-    }
-    
-    // Agregar variaciones comunes
-    if (normalized.endsWith('es')) {
-      variations.push(normalized.slice(0, -2)); // "coxalgia" de "coxalgias"
-    }
-    
-    return [...new Set(variations)]; // Eliminar duplicados
+  selectSource(source: 'all' | 'base' | 'mine'): void {
+    this.selectedSource = source;
+    this.applyFilters();
   }
 
-  /**
-   * Verifica si cualquier variación de la palabra se encuentra en el texto
-   */
-  private matchesKeyword(text: string, keyword: string): boolean {
-    const normalizedText = this.normalizeText(text);
-    const variations = this.getWordVariations(keyword);
-    
-    return variations.some(variation => normalizedText.includes(variation));
-  }
-
-  filterByZone(category: any): void {
-    this.selectedCategory = category.label;
-    this.searchTerm = '';
-    
-    if (category.label === 'Todos') {
-      this.filteredExercises = [...this.exercises];
-    } else {
-      this.filteredExercises = this.exercises.filter(ex => {
-        const zone = ex.bodyZone || '';
-        return category.muscles.some((m: string) => this.matchesKeyword(zone, m));
-      });
-    }
-    this.cd.detectChanges();
+  selectZone(zone: string): void {
+    this.selectedZone = this.selectedZone === zone ? '' : zone;
+    this.applyFilters();
   }
 
   onSearch(): void {
-    // Limpia el input de números o símbolos mientras escribes o pegas texto
-    this.searchTerm = this.searchTerm.replace(/[^a-zA-Z\s]/g, '');
-    
-    this.selectedCategory = 'Todos';
-    const term = this.normalizeText(this.searchTerm);
+    this.applyFilters();
+  }
 
-    if (!term) {
-      this.filteredExercises = [...this.exercises];
-    } else {
-      const searchTerms = term.split(/\s+/); // Dividir por espacios en blanco
-      
-      this.filteredExercises = this.exercises.filter(ex => {
-        const exerciseName = this.normalizeText(ex.name);
-        const exerciseZone = this.normalizeText(ex.bodyZone || '');
-        
-        // Buscar si TODOS los términos de búsqueda coinciden
-        return searchTerms.every(searchTerm => 
-          exerciseName.includes(searchTerm) || 
-          exerciseZone.includes(searchTerm) ||
-          // También buscar variaciones de keywords
-          this.categories.some(cat => 
-            cat.muscles.some((m: string) => this.matchesKeyword(ex.bodyZone || '', m))
-          )
-        );
-      });
-    }
+  get mineCount(): number {
+    return this.exercises.filter((e) => e.scope === 'mine').length;
+  }
+
+  /** Filtra por origen, zona y por todas las palabras escritas (en nombre, zona o descripción) */
+  applyFilters(): void {
+    const words = this.normalizeText(this.searchTerm).split(/\s+/).filter(Boolean);
+    this.filteredExercises = this.exercises.filter((ex) => {
+      if (this.selectedSource !== 'all' && ex.scope !== this.selectedSource) return false;
+      if (this.selectedZone && ex.bodyZone !== this.selectedZone) return false;
+      if (!words.length) return true;
+      const text = this.normalizeText(`${ex.name} ${ex.bodyZone || ''} ${ex.description || ''}`);
+      return words.every((w) => text.includes(w));
+    });
     this.cd.detectChanges();
+  }
+
+  /** Copia un ejercicio del banco base a Mis ejercicios y abre la copia para editarla */
+  copyToMine(exercise: BankExercise): void {
+    this.exerciseUseCase.copyToMine(exercise.id!).subscribe({
+      next: (resp: any) => {
+        const id = resp?.data?.id_exercise;
+        this.messageService.add({ severity: 'success', summary: 'Copiado', detail: 'Ahora está en Mis ejercicios. Puedes cambiarlo.' });
+        if (id) this.router.navigate(['/dashboard/ejercicios', id, 'editar']);
+      },
+      error: (err) => {
+        this.messageService.add({ severity: 'error', summary: 'No se pudo copiar', detail: err?.error?.message || 'Intenta de nuevo.' });
+      },
+    });
+  }
+
+  deleteExercise(exercise: BankExercise): void {
+    if (!confirm(`¿Borrar "${exercise.name}" de Mis ejercicios?`)) return;
+    this.deletingId = exercise.id!;
+    this.exerciseUseCase.deleteExercise(exercise.id!).subscribe({
+      next: () => {
+        this.deletingId = null;
+        this.exercises = this.exercises.filter((e) => e.id !== exercise.id);
+        this.applyFilters();
+        this.messageService.add({ severity: 'success', summary: 'Borrado', detail: `"${exercise.name}" ya no está en Mis ejercicios.` });
+      },
+      error: (err) => {
+        this.deletingId = null;
+        this.messageService.add({ severity: 'warn', summary: 'No se borró', detail: err?.error?.message || 'Intenta de nuevo.' });
+        this.cd.detectChanges();
+      },
+    });
   }
 
   openAssignModal(exercise: Exercise): void {
