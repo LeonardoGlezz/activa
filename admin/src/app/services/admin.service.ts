@@ -30,6 +30,13 @@ export interface AdminOverview {
     tarifa_por_cita: number;
   };
   generated_at: string;
+  usage: {
+    sessions_per_day: { date: string; sessions: number }[];
+    active_patients_7d: number;
+    sessions_7d: number;
+    sessions_30d: number;
+    new_patients_30d: number;
+  };
 }
 
 export type PhysioStatus = 'pending_profile' | 'pending_approval' | 'approved' | 'rejected';
@@ -43,9 +50,59 @@ export interface PhysioRow {
   curp?: string | null;
   ine_doc_url?: string | null;
   license_doc_url?: string | null;
+  birth_date?: string | null;
   status: PhysioStatus;
   created_at?: string;
   email: string | null;
+  patients?: number;
+}
+
+/** Datos que el admin captura al dar de alta o corregir a un fisio */
+export interface PhysioForm {
+  firstName: string;
+  lastNameP: string;
+  lastNameM?: string;
+  birthDate?: string;
+  email: string;
+  professionalLicense?: string;
+  curp?: string;
+  password?: string;
+}
+
+export interface PatientRow {
+  id_patient: number;
+  name: string;
+  email: string | null;
+  can_login: boolean;
+  id_physio: number;
+  physio_name: string;
+  created_at: string;
+  active_routines: number;
+  sessions: number;
+  last_session: string | null;
+}
+
+export interface PatientDetail {
+  id_patient: number;
+  name: string;
+  email: string | null;
+  can_login: boolean;
+  birth_date: string | null;
+  gender: string | null;
+  created_at: string;
+  id_physio: number;
+  physio_name: string;
+  routines: { id_routine: number; name: string; start_date: string | null; end_date: string | null }[];
+  sessions: { id: number; date: string; routine: string | null }[];
+}
+
+export type ActivityType = 'physio' | 'patient' | 'session' | 'appointment';
+
+export interface ActivityEvent {
+  type: ActivityType;
+  date: string;
+  text: string;
+  link: string;
 }
 
 @Injectable({
@@ -99,6 +156,61 @@ export class AdminService {
           return throwError(() => new Error(msg));
         })
       );
+  }
+
+  listAllPhysios(): Observable<PhysioRow[]> {
+    return this.request(this.http.get<PhysioRow[]>(`${this.baseUrl}/admin/physiotherapists`, { headers: this.getHeaders() }),
+      'No se pudo cargar la lista de fisioterapeutas.');
+  }
+
+  createPhysio(data: PhysioForm): Observable<{ id_physio: number; message: string }> {
+    return this.request(this.http.post<{ id_physio: number; message: string }>(`${this.baseUrl}/admin/physiotherapists`, data, { headers: this.getHeaders() }),
+      'No se pudo dar de alta al fisioterapeuta.');
+  }
+
+  updatePhysio(id: number, data: PhysioForm): Observable<{ message: string }> {
+    return this.request(this.http.put<{ message: string }>(`${this.baseUrl}/admin/physiotherapists/${id}`, data, { headers: this.getHeaders() }),
+      'No se pudieron guardar los datos.');
+  }
+
+  setPhysioPassword(id: number, password: string): Observable<{ message: string }> {
+    return this.request(this.http.put<{ message: string }>(`${this.baseUrl}/admin/physiotherapists/${id}/password`, { password }, { headers: this.getHeaders() }),
+      'No se pudo cambiar la contraseña.');
+  }
+
+  listPatients(): Observable<PatientRow[]> {
+    return this.request(this.http.get<PatientRow[]>(`${this.baseUrl}/admin/patients`, { headers: this.getHeaders() }),
+      'No se pudo cargar la lista de pacientes.');
+  }
+
+  getPatient(id: number): Observable<PatientDetail> {
+    return this.request(this.http.get<PatientDetail>(`${this.baseUrl}/admin/patients/${id}`, { headers: this.getHeaders() }),
+      'No se pudo cargar el paciente.');
+  }
+
+  setPatientPassword(id: number, password: string): Observable<{ message: string }> {
+    return this.request(this.http.put<{ message: string }>(`${this.baseUrl}/admin/patients/${id}/password`, { password }, { headers: this.getHeaders() }),
+      'No se pudo cambiar la contraseña.');
+  }
+
+  getActivity(days = 30): Observable<ActivityEvent[]> {
+    return this.request(this.http.get<ActivityEvent[]>(`${this.baseUrl}/admin/activity`, { headers: this.getHeaders(), params: { days } }),
+      'No se pudo cargar la actividad.');
+  }
+
+  updateEmail(email: string): Observable<{ message: string }> {
+    return this.request(this.http.patch<{ message: string }>(`${this.baseUrl}/auth/update-email`, { email }, { headers: this.getHeaders() }),
+      'No se pudo cambiar el correo.');
+  }
+
+  updatePassword(passwordActual: string, passwordNueva: string): Observable<{ message: string }> {
+    return this.request(this.http.patch<{ message: string }>(`${this.baseUrl}/auth/update-password`, { passwordActual, passwordNueva }, { headers: this.getHeaders() }),
+      'No se pudo cambiar la contraseña.');
+  }
+
+  /** Cambia el error HTTP por un Error con el mensaje del servidor (o uno genérico) */
+  private request<T>(obs: Observable<T>, fallback: string): Observable<T> {
+    return obs.pipe(catchError((error) => throwError(() => new Error(error?.error?.message || fallback))));
   }
 
   /** URL pública de un documento subido por el fisio (se guarda solo el nombre del archivo) */

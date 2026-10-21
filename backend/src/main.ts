@@ -102,6 +102,7 @@ import { GetDashboardStatsUseCase } from "./application/use-cases/GetDashboardSt
 
 // Admin
 import { GetAdminOverviewUseCase } from "./application/use-cases/GetAdminOverview.uc";
+import { AdminManagementUseCase } from "./application/use-cases/AdminManagement.uc";
 
 // 💳 NUEVO: Caso de uso y controlador de Suscripciones (Stripe)
 import { CreateCheckoutSessionUseCase } from "./application/use-cases/CreateCheckoutSession.uc";
@@ -147,7 +148,7 @@ async function bootstrap() {
 
     // En producción la cuenta de administrador sale de las variables de entorno.
     if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
-      await ensureAdmin(process.env.ADMIN_EMAIL, process.env.ADMIN_PASSWORD);
+      await ensureAdmin(process.env.ADMIN_EMAIL, process.env.ADMIN_PASSWORD, process.env.ADMIN_RESET_PASSWORD === "true");
     }
 
     // ============================================================
@@ -312,7 +313,7 @@ async function bootstrap() {
     // 🪄 NUEVO: Instanciamos el controlador del dashboard
     const dashboardController = new DashboardController(getDashboardStats);
     const documentController = new DocumentController();
-    const adminController = new AdminController(getAdminOverview);
+    const adminController = new AdminController(getAdminOverview, new AdminManagementUseCase());
 
     // 💳 NUEVO: Instanciamos el controlador de Suscripciones
     const subscriptionController = new SubscriptionController(createCheckoutSession);

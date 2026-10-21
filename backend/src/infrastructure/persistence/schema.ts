@@ -46,10 +46,14 @@ export async function findOrCreateUser(email: string, role: string, password: st
 
 /**
  * Crea el administrador si todavía no existe. Si el correo ya existe no toca
- * su contraseña, así cambiar ADMIN_PASSWORD después no tiene efecto.
+ * su contraseña, así cambiar ADMIN_PASSWORD después no tiene efecto, salvo
+ * con resetPassword (ADMIN_RESET_PASSWORD=true): así recupera el acceso si la olvida.
  */
-export async function ensureAdmin(email: string, password: string): Promise<void> {
+export async function ensureAdmin(email: string, password: string, resetPassword = false): Promise<void> {
   const user = await findOrCreateUser(email.trim().toLowerCase(), "admin", password);
+  if (resetPassword && user.getDataValue("role") === "admin") {
+    await user.update({ password: await bcrypt.hash(password, 10) });
+  }
   await AdminModel.findOrCreate({
     where: { id_user: user.id_user },
     defaults: { name: "Administrador", id_user: user.id_user },

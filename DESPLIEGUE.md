@@ -54,7 +54,7 @@ Con una sola app, las 750 horas gratis alcanzan para el mes completo. Si no quie
 ## 3. Primer uso
 
 1. Entra a `/admin/` con tu `ADMIN_EMAIL` y `ADMIN_PASSWORD`.
-2. Tu amigo fisioterapeuta se registra en `/fisio/` y tú lo apruebas desde `/admin/`.
+2. Da de alta a tu amigo desde `/admin/` → **Fisioterapeutas → Dar de alta un fisio**. El panel te da un mensaje con su dirección, correo y contraseña para que se lo mandes. (También puede registrarse él mismo en `/fisio/` y tú lo apruebas en la misma pantalla.)
 3. Él da de alta a sus pacientes con correo y contraseña y les comparte la dirección principal. Ellos entran con **Soy paciente**.
 
 Sin claves de Stripe no se cobra nada: los fisios aprobados usan todo. Si algún día vendes ACTIVA, agrega las variables `STRIPE_*` de `backend/.env.example`.
@@ -62,6 +62,7 @@ Sin claves de Stripe no se cobra nada: los fisios aprobados usan todo. Si algún
 ## Si algo falla
 
 - Render → servicio → **Logs**. `JWT_SECRET no está configurado`: falta la variable. Errores con `ECONNREFUSED`, `ENOTFOUND` o `Access denied`: revisa las variables `DB_*`. `No se pudo guardar el archivo`: revisa que la base de TiDB no esté llena.
+- Olvidaste la contraseña del admin: en Render → servicio → **Environment**, pon una nueva en `ADMIN_PASSWORD`, agrega `ADMIN_RESET_PASSWORD` con valor `true` y guarda. Al reiniciar ya entras con la nueva; después borra `ADMIN_RESET_PASSWORD`.
 - Respaldos: TiDB Cloud permite exportar la base desde su consola; hazlo de vez en cuando.
 
 ## Pasar a un plan de pago más adelante

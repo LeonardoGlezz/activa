@@ -16,6 +16,7 @@ export class LoginComponent {
   loading = false;
   submitted = false;
   showPassword = false;
+  showForgot = false;
   errorMessage = '';
 
   constructor(

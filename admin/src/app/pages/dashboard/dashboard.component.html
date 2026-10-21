@@ -1,204 +1,104 @@
-<div class="dashboard-wrapper">
-  <div class="dashboard-container">
-
-    <!-- Cargando -->
-    <div *ngIf="cargando" class="loading-state">
-      <p>⏳ Cargando datos...</p>
-    </div>
-
-    <!-- Error -->
-    <div *ngIf="error" class="error-state">
-      <p>❌ {{ error }}</p>
-      <button class="btn-small btn-warning" (click)="cargarOverview()">Reintentar</button>
-    </div>
-
-    <!-- Contenido principal -->
-    <ng-container *ngIf="!cargando && !error">
-
-      <!-- Header -->
-      <div class="dashboard-header">
-        <div class="header-content">
-          <h1>Panel de Administración</h1>
-          <p>Bienvenido, Administrador</p>
-        </div>
+<div class="page">
+  <div class="page-container">
+    <div class="page-header">
+      <div>
+        <h1>Panel</h1>
+        <p>Así va Activa hoy.</p>
       </div>
+      <button type="button" class="btn btn-outline" (click)="cargarOverview()" [disabled]="cargando">Actualizar</button>
+    </div>
 
-      <!-- Tarjetas de estadísticas principales -->
+    <p *ngIf="cargando && !overview" class="empty">⏳ Cargando datos...</p>
+
+    <div *ngIf="error" class="notice notice-error">
+      ❌ {{ error }}
+      <button type="button" class="btn btn-outline" (click)="cargarOverview()">Reintentar</button>
+    </div>
+
+    <ng-container *ngIf="overview">
+      <a *ngIf="porValidar > 0" routerLink="/fisioterapeuta" class="notice notice-warning alert-link">
+        ⏳ {{ porValidar === 1 ? 'Hay 1 fisioterapeuta esperando' : 'Hay ' + porValidar + ' fisioterapeutas esperando' }} que revises sus documentos.
+        <strong>Revisar ahora →</strong>
+      </a>
+
       <div class="stats-grid">
-        <div class="stat-card stat-primary">
-          <div class="stat-icon">👥</div>
-          <div class="stat-content">
-            <h3>Fisios Aprobados</h3>
-            <p class="stat-number">{{ fisiosSuscritos }}</p>
-          </div>
-        </div>
-
-        <div class="stat-card stat-warning">
-          <div class="stat-icon">⏳</div>
-          <div class="stat-content">
-            <h3>Por Validar</h3>
-            <p class="stat-number">{{ fisiosValidar }}</p>
-          </div>
-        </div>
-
-        <div class="stat-card stat-success">
-          <div class="stat-icon">🏥</div>
-          <div class="stat-content">
-            <h3>Pacientes Registrados</h3>
-            <p class="stat-number">{{ totalPacientes }}</p>
-          </div>
-        </div>
-
-        <div class="stat-card stat-info">
-          <div class="stat-icon">📅</div>
-          <div class="stat-content">
-            <h3>Total Citas</h3>
-            <p class="stat-number">{{ totalCitas }}</p>
-          </div>
-        </div>
-
-        <div class="stat-card stat-success">
-          <div class="stat-icon">💰</div>
-          <div class="stat-content">
-            <h3>Ganancias (MXN)</h3>
-            <p class="stat-number">${{ gananciasTotal | number:'1.2-2' }}</p>
-          </div>
-        </div>
-
-        <div class="stat-card stat-danger">
-          <div class="stat-icon">🚫</div>
-          <div class="stat-content">
-            <h3>Rechazados</h3>
-            <p class="stat-number">{{ fisiosRechazados }}</p>
-          </div>
-        </div>
+        <a class="stat" routerLink="/fisioterapeuta">
+          <span class="stat-label">Fisios con acceso</span>
+          <span class="stat-number">{{ overview.physiotherapists.approved }}</span>
+          <span class="stat-sub">{{ porValidar }} por validar</span>
+        </a>
+        <a class="stat" routerLink="/pacientes">
+          <span class="stat-label">Pacientes</span>
+          <span class="stat-number">{{ overview.patients_linked }}</span>
+          <span class="stat-sub">{{ overview.usage.new_patients_30d }} nuevos en 30 días</span>
+        </a>
+        <a class="stat" routerLink="/pacientes">
+          <span class="stat-label">Pacientes activos</span>
+          <span class="stat-number">{{ overview.usage.active_patients_7d }}</span>
+          <span class="stat-sub">hicieron ejercicio esta semana</span>
+        </a>
+        <a class="stat" routerLink="/actividad">
+          <span class="stat-label">Sesiones terminadas</span>
+          <span class="stat-number">{{ overview.usage.sessions_7d }}</span>
+          <span class="stat-sub">en 7 días · {{ overview.usage.sessions_30d }} en 30 días</span>
+        </a>
       </div>
 
-      <!-- Paneles de detalle -->
-      <div class="dashboard-content">
-        <div class="content-row">
-
-          <!-- Citas por estado -->
-          <div class="panel-card">
-            <div class="card-header">
-              <h2>Citas por Estado <span class="badge">{{ totalCitas }}</span></h2>
-            </div>
-            <div class="panel-list">
-              <div *ngFor="let item of overview?.appointments?.by_status | keyvalue" class="list-item">
-                <div class="item-info">
-                  <h4>{{ item.key }}</h4>
-                  <p>{{ item.value }} citas</p>
-                </div>
-              </div>
-              <div *ngIf="!overview?.appointments?.by_status || (overview?.appointments?.by_status | keyvalue)?.length === 0" class="list-item">
-                <p>Sin datos de citas aún.</p>
-              </div>
+      <div class="grid-2">
+        <section class="panel">
+          <h2>Sesiones por día <span class="muted small">(últimas 2 semanas)</span></h2>
+          <div class="bars" role="img" [attr.aria-label]="'Sesiones terminadas por día en las últimas dos semanas'">
+            <div class="bar-col" *ngFor="let b of barras" [title]="b.sessions + ' sesiones'">
+              <span class="bar-value">{{ b.sessions || '' }}</span>
+              <div class="bar" [style.height.%]="b.height" [class.zero]="b.sessions === 0"></div>
+              <span class="bar-label">{{ b.label }}</span>
             </div>
           </div>
+          <p class="muted small" *ngIf="overview.usage.sessions_30d === 0">
+            Todavía no hay sesiones. Aparecen cuando un paciente termina su rutina en la app.
+          </p>
+        </section>
 
-          <!-- Resumen de fisioterapeutas -->
-          <div class="panel-card">
-            <div class="card-header">
-              <h2>Fisioterapeutas <span class="badge">{{ overview?.physiotherapists?.total }}</span></h2>
-            </div>
-            <div class="panel-list">
-              <div class="list-item">
-                <div class="item-info">
-                  <h4>✅ Aprobados</h4>
-                  <p>{{ overview?.physiotherapists?.approved }}</p>
-                </div>
-              </div>
-              <div class="list-item">
-                <div class="item-info">
-                  <h4>⏳ Pendientes de validar</h4>
-                  <p>{{ overview?.physiotherapists?.pending_approval }}</p>
-                </div>
-                <div class="item-actions">
-                  <a routerLink="/fisioterapeuta" class="btn-small btn-warning">Ver lista</a>
-                </div>
-              </div>
-              <div class="list-item">
-                <div class="item-info">
-                  <h4>📝 Perfil incompleto</h4>
-                  <p>{{ overview?.physiotherapists?.pending_profile }}</p>
-                </div>
-              </div>
-              <div class="list-item">
-                <div class="item-info">
-                  <h4>❌ Rechazados</h4>
-                  <p>{{ overview?.physiotherapists?.rejected }}</p>
-                </div>
-              </div>
-            </div>
+        <section class="panel">
+          <div class="panel-title">
+            <h2>Actividad reciente</h2>
+            <a routerLink="/actividad" class="btn-link">Ver todo</a>
           </div>
-
-        </div>
-
-        <div class="content-row">
-
-          <!-- Ganancias detalle -->
-          <div class="panel-card">
-            <div class="card-header">
-              <h2>💰 Ganancias</h2>
-            </div>
-            <div class="panel-list">
-              <div class="list-item">
-                <div class="item-info">
-                  <h4>Total acumulado</h4>
-                  <p class="amount">${{ gananciasTotal | number:'1.2-2' }} MXN</p>
-                </div>
+          <ul class="event-list" *ngIf="activity.length > 0">
+            <li *ngFor="let e of activity">
+              <span class="icon">{{ icon(e.type) }}</span>
+              <div>
+                <a [routerLink]="e.link">{{ e.text }}</a>
+                <div class="when">{{ when(e.date) }}</div>
               </div>
-              <div class="list-item">
-                <div class="item-info">
-                  <h4>Citas completadas</h4>
-                  <p>{{ citasCompletadas }}</p>
-                </div>
-              </div>
-              <div class="list-item">
-                <div class="item-info">
-                  <h4>Tarifa por cita</h4>
-                  <p>${{ overview?.ganancias?.tarifa_por_cita | number:'1.2-2' }} MXN</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Cuentas de usuarios -->
-          <div class="panel-card">
-            <div class="card-header">
-              <h2>👤 Cuentas de Usuarios</h2>
-            </div>
-            <div class="panel-list">
-              <div class="list-item">
-                <div class="item-info">
-                  <h4>Pacientes</h4>
-                  <p>{{ overview?.users?.patient_accounts }}</p>
-                </div>
-              </div>
-              <div class="list-item">
-                <div class="item-info">
-                  <h4>Fisioterapeutas</h4>
-                  <p>{{ overview?.users?.physio_accounts }}</p>
-                </div>
-              </div>
-              <div class="list-item">
-                <div class="item-info">
-                  <h4>Administradores</h4>
-                  <p>{{ overview?.users?.admin_accounts }}</p>
-                </div>
-              </div>
-              <div class="list-item">
-                <div class="item-info">
-                  <h4>Pacientes vinculados</h4>
-                  <p>{{ overview?.patients_linked }}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div>
+            </li>
+          </ul>
+          <p class="muted" *ngIf="activity.length === 0">Sin actividad en los últimos 30 días.</p>
+        </section>
       </div>
 
+      <div class="grid-2">
+        <section class="panel">
+          <h2>Fisioterapeutas</h2>
+          <dl class="data-list">
+            <div><dt>Con acceso</dt><dd>{{ overview.physiotherapists.approved }}</dd></div>
+            <div><dt>Por validar</dt><dd>{{ overview.physiotherapists.pending_approval }}</dd></div>
+            <div><dt>Sin documentos</dt><dd>{{ overview.physiotherapists.pending_profile }}</dd></div>
+            <div><dt>Rechazados</dt><dd>{{ overview.physiotherapists.rejected }}</dd></div>
+          </dl>
+          <div class="form-actions">
+            <a routerLink="/fisioterapeuta" [queryParams]="{ alta: 1 }" class="btn btn-primary">+ Dar de alta un fisio</a>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>Citas</h2>
+          <dl class="data-list">
+            <div *ngFor="let c of citas"><dt>{{ c.label }}</dt><dd>{{ c.total }}</dd></div>
+          </dl>
+          <p class="muted small">Total: {{ overview.appointments.total }} citas agendadas por los fisios.</p>
+        </section>
+      </div>
     </ng-container>
   </div>
 </div>

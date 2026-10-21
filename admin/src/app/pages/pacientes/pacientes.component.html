@@ -1,0 +1,82 @@
+<div class="page">
+  <div class="page-container">
+    <div class="page-header">
+      <div>
+        <h1>Pacientes</h1>
+        <p>Todos los pacientes que los fisios dieron de alta. Los da de alta su fisio desde su panel.</p>
+      </div>
+    </div>
+
+    <div class="filters">
+      <input type="search" placeholder="Buscar por nombre o correo" [(ngModel)]="buscar" aria-label="Buscar paciente" />
+      <select [(ngModel)]="fisio" aria-label="Filtrar por fisioterapeuta">
+        <option value="">Todos los fisios</option>
+        <option *ngFor="let f of fisios" [value]="f.id">{{ f.name }}</option>
+      </select>
+    </div>
+
+    <div *ngIf="error" class="notice notice-error">
+      ❌ {{ error }}
+      <button type="button" class="btn btn-outline" (click)="cargar()">Reintentar</button>
+    </div>
+
+    <p *ngIf="cargando" class="empty">⏳ Cargando...</p>
+
+    <ng-container *ngIf="!cargando && !error">
+      <p *ngIf="all.length === 0" class="empty">Todavía no hay pacientes. Aparecen aquí cuando un fisio da de alta al primero.</p>
+      <p *ngIf="all.length > 0 && pacientes.length === 0" class="empty">Nadie coincide con la búsqueda.</p>
+
+      <ng-container *ngIf="pacientes.length > 0">
+        <p class="summary muted">
+          {{ pacientes.length }} {{ pacientes.length === 1 ? 'paciente' : 'pacientes' }}
+          <span *ngIf="sinRutina > 0"> · {{ sinRutina }} sin rutina vigente</span>
+        </p>
+
+        <div class="panel table-wrap desktop-only">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Paciente</th>
+                <th>Fisio</th>
+                <th>Rutina vigente</th>
+                <th>Sesiones</th>
+                <th>Última sesión</th>
+                <th>Acceso</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let p of pacientes" class="clickable" (click)="abrir(p)">
+                <td><a [routerLink]="['/pacientes', p.id_patient]" (click)="$event.stopPropagation()">{{ p.name }}</a><div class="muted small">{{ p.email }}</div></td>
+                <td>{{ p.physio_name }}</td>
+                <td>
+                  <span class="chip" [class.chip-success]="p.active_routines > 0" [class.chip-warning]="p.active_routines === 0">
+                    {{ p.active_routines > 0 ? 'Sí' : 'No' }}
+                  </span>
+                </td>
+                <td>{{ p.sessions }}</td>
+                <td>{{ when(p.last_session) }}</td>
+                <td>
+                  <span class="chip" [class.chip-success]="p.can_login" [class.chip-danger]="!p.can_login">
+                    {{ p.can_login ? 'Puede entrar' : 'Sin contraseña' }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mobile-only cards">
+          <a *ngFor="let p of pacientes" class="panel patient-card" [routerLink]="['/pacientes', p.id_patient]">
+            <strong>{{ p.name }}</strong>
+            <span class="muted small">{{ p.physio_name }}</span>
+            <span class="small">{{ p.sessions }} sesiones · última {{ when(p.last_session) }}</span>
+            <span>
+              <span class="chip" [class.chip-success]="p.active_routines > 0" [class.chip-warning]="p.active_routines === 0">{{ p.active_routines > 0 ? 'Con rutina' : 'Sin rutina' }}</span>
+              <span class="chip" [class.chip-danger]="!p.can_login" *ngIf="!p.can_login">Sin contraseña</span>
+            </span>
+          </a>
+        </div>
+      </ng-container>
+    </ng-container>
+  </div>
+</div>

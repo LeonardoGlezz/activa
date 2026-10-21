@@ -1,6 +1,6 @@
 import { Response, NextFunction } from "express";
 import { AuthRequest } from "./auth.middleware";
-import { PatientModel, RoutineModel } from "../../persistence/sequelize/client";
+import { AppointmentModel, NotificationModel, PatientModel, RoutineModel } from "../../persistence/sequelize/client";
 
 type AccessResult = { ok: true } | { ok: false; status: number; message: string };
 
@@ -84,4 +84,44 @@ export const requirePhysio = (req: AuthRequest, res: Response, next: NextFunctio
     return;
   }
   next();
+};
+
+/** Responde 404/403 según el resultado; si hay acceso, sigue */
+async function gateBy(req: AuthRequest, res: Response, next: NextFunction, row: any, notFound: string) {
+  if (!row) {
+    res.status(404).json({ success: false, message: notFound });
+    return;
+  }
+  const idPatient = row.getDataValue("id_patient");
+  if (idPatient == null) {
+    // Sin paciente (por ejemplo, un aviso solo para el fisio): solo su fisio
+    if (req.user?.role === "physio" && row.getDataValue("id_physio") === req.user.id_physio) return next();
+    res.status(403).json({ success: false, message: "No tienes permiso para esto." });
+    return;
+  }
+  const gate = await assertPatientAccess(req, Number(idPatient));
+  if (!gate.ok) {
+    res.status(gate.status).json({ success: false, message: gate.message });
+    return;
+  }
+  next();
+}
+
+/** Exige acceso al paciente de la cita en req.params.id */
+export const requireAppointmentAccess = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  const row = await AppointmentModel.findByPk(Number(req.params.id) || 0);
+  await gateBy(req, res, next, row, "Cita no encontrada.");
+};
+
+/** Exige acceso al paciente (o fisio) de la notificación en req.params.id */
+export const requireNotificationAccess = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  const row = await NotificationModel.findByPk(Number(req.params.id) || 0);
+  await gateBy(req, res, next, row, "Notificación no encontrada.");
+};
+
+/** Perfil de fisio: el admin ve cualquiera; un fisio, solo el suyo */
+export const requireOwnPhysioOrAdmin = (req: AuthRequest, res: Response, next: NextFunction): void => {
+  const u = req.user;
+  if (u?.role === "admin" || (u?.role === "physio" && Number(req.params.id) === u.id_physio)) return next();
+  res.status(403).json({ success: false, message: "No tienes permiso para ver este perfil." });
 };

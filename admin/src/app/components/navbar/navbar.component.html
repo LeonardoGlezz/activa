@@ -1,54 +1,90 @@
 <nav class="navbar">
   <div class="navbar-container">
-    <!-- Logo y nombre de la aplicación -->
-    <div class="navbar-brand" [routerLink]="isLoggedIn ? '/dashboard' : '/'">
+    <!-- Logo: con sesión va al panel; sin sesión, a la página principal de Activa -->
+    <a class="navbar-brand" *ngIf="isLoggedIn" routerLink="/dashboard">
       <div class="brand-logo">A</div>
-      <span class="brand-name">{{ applicationName }}</span>
-    </div>
+      <span class="brand-name">{{ applicationName }} <small>Admin</small></span>
+    </a>
+    <a class="navbar-brand" *ngIf="!isLoggedIn" [href]="siteUrl">
+      <div class="brand-logo">A</div>
+      <span class="brand-name">{{ applicationName }} <small>Admin</small></span>
+    </a>
 
-    <!-- Links públicos (cuando no está logueado) -->
-    <div class="navbar-links" [class.active]="isMenuOpen" *ngIf="!isLoggedIn">
-      <a routerLink="/" (click)="closeMenu()" routerLinkActive="active" class="nav-link">Inicio</a>
-      <a href="#caracteristicas" (click)="closeMenu()" class="nav-link">Características</a>
-      <a href="#perfiles" (click)="closeMenu()" class="nav-link">Perfiles</a>
-      <a href="#contacto" (click)="closeMenu()" class="nav-link">Contacto</a>
-    </div>
-
-    <!-- Links administrativos (cuando está logueado) -->
-    <div class="navbar-links" [class.active]="isMenuOpen" *ngIf="isLoggedIn">
-      <a routerLink="/dashboard" (click)="closeMenu()" routerLinkActive="active" class="nav-link">Panel</a>
-      <a routerLink="/fisioterapeuta" (click)="closeMenu()" routerLinkActive="active" class="nav-link">Gestión de Fisios</a>
-    </div>
-
-    <!-- Botones públicos (cuando no está logueado) -->
     <div class="navbar-auth" *ngIf="!isLoggedIn">
-      <a routerLink="/login" class="btn btn-login">Iniciar Sesión</a>
+      <a [href]="siteUrl" class="nav-link">← Volver a Activa</a>
     </div>
 
-    <!-- Acciones administrativas (cuando está logueado) -->
+    <!-- Secciones del panel -->
+    <div class="navbar-links" [class.active]="isMenuOpen" *ngIf="isLoggedIn">
+      <a routerLink="/dashboard" routerLinkActive="active" class="nav-link">Panel</a>
+      <a routerLink="/fisioterapeuta" routerLinkActive="active" class="nav-link">
+        Fisioterapeutas <span class="pill" *ngIf="pendientes > 0" [title]="pendientes + ' por validar'">{{ pendientes }}</span>
+      </a>
+      <a routerLink="/pacientes" routerLinkActive="active" class="nav-link">Pacientes</a>
+      <a routerLink="/actividad" routerLinkActive="active" class="nav-link">Actividad</a>
+      <a routerLink="/cuenta" routerLinkActive="active" class="nav-link mobile-only">Mi cuenta</a>
+      <button type="button" class="nav-link mobile-only as-button" (click)="logout()">Cerrar sesión</button>
+    </div>
+
     <div class="navbar-actions" *ngIf="isLoggedIn">
+      <!-- Búsqueda de fisios y pacientes -->
       <div class="search-box">
-        <input type="text" placeholder="Buscar..." class="search-input">
-        <span class="search-icon">🔍</span>
+        <span class="search-icon" aria-hidden="true">🔍</span>
+        <input type="search" placeholder="Buscar fisio o paciente" class="search-input" aria-label="Buscar fisio o paciente"
+          [(ngModel)]="query" (ngModelChange)="actualizarResultados()" (focus)="onSearchFocus()" (keydown.enter)="onSearchEnter()" />
+        <div class="dropdown search-results" *ngIf="open === 'search' && query.trim().length >= 2">
+          <p class="dropdown-empty" *ngIf="buscando">Buscando...</p>
+          <p class="dropdown-empty" *ngIf="!buscando && resultados.length === 0">Sin resultados para “{{ query }}”.</p>
+          <button type="button" class="dropdown-item" *ngFor="let r of resultados" (click)="irAResultado(r)">
+            <span class="chip">{{ r.kind }}</span>
+            <span><strong>{{ r.label }}</strong><br /><small>{{ r.detail }}</small></span>
+          </button>
+        </div>
       </div>
-      
-      <div class="admin-menu">
-        <div class="notifications">
-          <span class="notification-icon">🔔</span>
-          <span class="notification-count">7</span>
+
+      <!-- Campana: fisios por validar y lo nuevo de la última semana -->
+      <div class="menu-anchor">
+        <button type="button" class="icon-button" (click)="toggle('bell')" [attr.aria-expanded]="open === 'bell'"
+          [attr.aria-label]="badge ? 'Avisos: ' + badge + ' nuevos' : 'Avisos'">
+          <span aria-hidden="true">🔔</span>
+          <span class="notification-count" *ngIf="badge > 0">{{ badge > 9 ? '9+' : badge }}</span>
+        </button>
+        <div class="dropdown" *ngIf="open === 'bell'">
+          <h3>Avisos</h3>
+          <a routerLink="/fisioterapeuta" class="dropdown-item highlight" *ngIf="pendientes > 0">
+            <span>⏳</span>
+            <span>{{ pendientes === 1 ? '1 fisio espera' : pendientes + ' fisios esperan' }} tu validación</span>
+          </a>
+          <a [routerLink]="e.link" class="dropdown-item" *ngFor="let e of recientes">
+            <span>{{ icon(e.type) }}</span>
+            <span>{{ e.text }}<br /><small>{{ when(e.date) }}</small></span>
+          </a>
+          <p class="dropdown-empty" *ngIf="pendientes === 0 && recientes.length === 0">Nada nuevo esta semana.</p>
+          <a routerLink="/actividad" class="dropdown-footer">Ver toda la actividad</a>
         </div>
-        
-        <div class="user-menu" (click)="toggleMenu()">
-          <div class="user-avatar">👤</div>
-          <span class="user-name">Admin</span>
+      </div>
+
+      <!-- Perfil -->
+      <div class="menu-anchor">
+        <button type="button" class="user-menu" (click)="toggle('user')" [attr.aria-expanded]="open === 'user'">
+          <span class="user-avatar" aria-hidden="true">{{ (user?.name || 'A').charAt(0) }}</span>
+          <span class="user-name">{{ user?.name || 'Administrador' }}</span>
+          <span class="caret" aria-hidden="true">▾</span>
+        </button>
+        <div class="dropdown dropdown-user" *ngIf="open === 'user'">
+          <div class="dropdown-head">
+            <strong>{{ user?.name || 'Administrador' }}</strong>
+            <small>{{ user?.email }}</small>
+          </div>
+          <a routerLink="/cuenta" class="dropdown-item">⚙️ Mi cuenta y contraseña</a>
+          <a [href]="siteUrl" class="dropdown-item">🏠 Página principal de Activa</a>
+          <button type="button" class="dropdown-item danger" (click)="logout()">↩ Cerrar sesión</button>
         </div>
-        
-        <button (click)="logout()" class="btn-logout">Salir</button>
       </div>
     </div>
 
-    <!-- Hamburger menu para móvil -->
-    <button class="hamburger" [class.active]="isMenuOpen" (click)="toggleMenu()">
+    <!-- Menú para celular -->
+    <button type="button" class="hamburger" *ngIf="isLoggedIn" [class.active]="isMenuOpen" (click)="toggleMenu()" aria-label="Menú">
       <span></span>
       <span></span>
       <span></span>

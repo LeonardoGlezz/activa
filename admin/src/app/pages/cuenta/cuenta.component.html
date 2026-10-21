@@ -1,0 +1,33 @@
+<div class="page">
+  <div class="page-container narrow">
+    <div class="page-header">
+      <div>
+        <h1>Mi cuenta</h1>
+        <p>Entras como <strong>{{ email }}</strong>.</p>
+      </div>
+      <button type="button" class="btn btn-reject" (click)="cerrarSesion()">Cerrar sesión</button>
+    </div>
+
+    <section class="panel">
+      <h2>Cambiar contraseña</h2>
+      <form (ngSubmit)="guardarPassword()" class="form-grid">
+        <div class="field"><label for="pa">Contraseña actual</label><input id="pa" type="password" name="actual" [(ngModel)]="passwordActual" autocomplete="current-password" required /></div>
+        <div class="field"><label for="pn">Contraseña nueva</label><input id="pn" type="password" name="nueva" [(ngModel)]="passwordNueva" autocomplete="new-password" minlength="8" required /><small>Mínimo 8 caracteres.</small></div>
+        <div class="field"><label for="pc">Repite la nueva</label><input id="pc" type="password" name="confirmar" [(ngModel)]="passwordConfirmar" autocomplete="new-password" required /></div>
+      </form>
+      <div *ngIf="errorPassword" class="notice notice-error">❌ {{ errorPassword }}</div>
+      <div *ngIf="avisoPassword" class="notice notice-success">✅ {{ avisoPassword }}</div>
+      <div class="form-actions"><button type="button" class="btn btn-primary" [disabled]="guardando" (click)="guardarPassword()">Guardar contraseña</button></div>
+    </section>
+
+    <section class="panel">
+      <h2>Cambiar correo</h2>
+      <form (ngSubmit)="guardarEmail()" class="form-grid">
+        <div class="field"><label for="em">Correo para entrar</label><input id="em" type="email" name="email" [(ngModel)]="nuevoEmail" required /></div>
+      </form>
+      <div *ngIf="errorEmail" class="notice notice-error">❌ {{ errorEmail }}</div>
+      <div *ngIf="avisoEmail" class="notice notice-success">✅ {{ avisoEmail }}</div>
+      <div class="form-actions"><button type="button" class="btn btn-primary" [disabled]="guardando || nuevoEmail.trim().toLowerCase() === email" (click)="guardarEmail()">Guardar correo</button></div>
+    </section>
+  </div>
+</div>
