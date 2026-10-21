@@ -3,7 +3,8 @@ import { PhysiotherapistRepository } from "../ports/out/PhysiotherapistRepositor
 export class ListPendingPhysiotherapistsUseCase {
   constructor(private readonly physioRepo: PhysiotherapistRepository) {}
 
-  async execute(): Promise<any[]> {
-    return await this.physioRepo.findByStatus("pendiente");
+  /** Por defecto, los fisios que ya subieron documentos y esperan validación */
+  async execute(status = "pending_approval"): Promise<any[]> {
+    return await this.physioRepo.findByStatus(status);
   }
 }

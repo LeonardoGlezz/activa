@@ -1,3 +1,71 @@
-<div class="fisioterapeuta-container">
-  <p>Aquí va lo de Javi</p>
+<div class="fisios-wrapper">
+  <div class="fisios-container">
+    <div class="fisios-header">
+      <h1>Gestión de Fisioterapeutas</h1>
+      <p>Revisa los documentos de cada fisio y apruébalo para que pueda usar ACTIVA.</p>
+    </div>
+
+    <div class="tabs" role="tablist">
+      <button
+        *ngFor="let tab of tabs"
+        type="button"
+        role="tab"
+        class="tab"
+        [class.active]="tab.status === active"
+        [attr.aria-selected]="tab.status === active"
+        (click)="seleccionar(tab.status)">
+        {{ tab.label }}
+      </button>
+    </div>
+
+    <div *ngIf="aviso" class="notice notice-success">✅ {{ aviso }}</div>
+    <div *ngIf="error" class="notice notice-error">
+      ❌ {{ error }}
+      <button type="button" class="btn btn-outline" (click)="cargar()">Reintentar</button>
+    </div>
+
+    <p *ngIf="cargando" class="empty">⏳ Cargando...</p>
+
+    <p *ngIf="!cargando && !error && physios.length === 0" class="empty">
+      <ng-container [ngSwitch]="active">
+        <span *ngSwitchCase="'pending_approval'">No hay fisioterapeutas esperando validación.</span>
+        <span *ngSwitchCase="'approved'">Todavía no has aprobado a ningún fisioterapeuta.</span>
+        <span *ngSwitchCase="'rejected'">No hay fisioterapeutas rechazados.</span>
+        <span *ngSwitchDefault>Nadie está a medio registro.</span>
+      </ng-container>
+    </p>
+
+    <div class="cards" *ngIf="!cargando && physios.length > 0">
+      <article class="card" *ngFor="let p of physios">
+        <div class="card-main">
+          <h2>{{ nombre(p) }}</h2>
+          <dl>
+            <div><dt>Correo</dt><dd>{{ p.email || '—' }}</dd></div>
+            <div><dt>Cédula profesional</dt><dd>{{ p.professional_license || '—' }}</dd></div>
+            <div *ngIf="p.curp"><dt>CURP</dt><dd>{{ p.curp }}</dd></div>
+            <div *ngIf="p.created_at"><dt>Registro</dt><dd>{{ p.created_at | date: 'd MMM y' }}</dd></div>
+          </dl>
+          <div class="docs" *ngIf="active !== 'pending_profile'">
+            <a *ngIf="documento(p.ine_doc_url) as url" [href]="url" target="_blank" rel="noopener" class="btn btn-outline">Ver INE</a>
+            <a *ngIf="documento(p.license_doc_url) as url" [href]="url" target="_blank" rel="noopener" class="btn btn-outline">Ver cédula (PDF)</a>
+            <span *ngIf="!p.ine_doc_url && !p.license_doc_url" class="muted">Sin documentos</span>
+          </div>
+        </div>
+
+        <div class="card-actions" *ngIf="active === 'pending_approval' || active === 'rejected'">
+          <button type="button" class="btn btn-approve" [disabled]="procesando === p.id_physio" (click)="cambiarEstado(p, 'approved')">
+            Aprobar
+          </button>
+          <button *ngIf="active === 'pending_approval'" type="button" class="btn btn-reject" [disabled]="procesando === p.id_physio" (click)="cambiarEstado(p, 'rejected')">
+            Rechazar
+          </button>
+        </div>
+        <div class="card-actions" *ngIf="active === 'approved'">
+          <button type="button" class="btn btn-reject" [disabled]="procesando === p.id_physio" (click)="cambiarEstado(p, 'rejected')">
+            Quitar acceso
+          </button>
+        </div>
+      </article>
+    </div>
+  </div>
 </div>
