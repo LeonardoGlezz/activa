@@ -165,17 +165,17 @@ export function buildRoutes(controllers: {
   router.get("/tracking/patient/:patientId", authMiddleware, requireApproval, requireActivePlan, requirePatientAccess((req) => req.params.patientId), controllers.trackingController.listByPatient);
 
   // Rutinas
-  router.post("/routines",                           authMiddleware, requireActivePlan, requirePhysio, requirePatientAccess((req) => req.body?.patientId), controllers.routineController.create);
-  router.post("/routines/templates",                 authMiddleware, requireActivePlan, requirePhysio, controllers.routineController.createTemplate);
-  router.put("/routines/templates/:id",              authMiddleware, requireActivePlan, requirePhysio, controllers.routineController.updateTemplate);
-  router.get("/routines/templates",                  authMiddleware, requireActivePlan, requirePhysio, controllers.routineController.listTemplates);
-  router.get("/routines/templates/:id",              authMiddleware, requireActivePlan, requirePhysio, controllers.routineController.getTemplateById);
-  router.post("/routines/:id/template",              authMiddleware, requireActivePlan, requirePhysio, requireRoutineAccess, controllers.routineController.saveAsTemplate);
-  router.get("/routines/patient/:patientId",         authMiddleware, requireActivePlan, requirePatientAccess((req) => req.params.patientId), controllers.routineController.getByPatient);
-  router.get("/routines/history/patient/:patientId", authMiddleware, requireActivePlan, requirePatientAccess((req) => req.params.patientId), controllers.routineController.getHistoryByPatient);
-  router.get("/routines/:id",                        authMiddleware, requireActivePlan, requireRoutineAccess, controllers.routineController.getById);
-  router.put("/routines/:id",                        authMiddleware, requireActivePlan, requirePhysio, requireRoutineAccess, controllers.routineController.update);
-  router.delete("/routines/:id",                     authMiddleware, requireActivePlan, requirePhysio, requireRoutineAccess, controllers.routineController.remove);
+  router.post("/routines",                           authMiddleware, requireApproval, requireActivePlan, requirePhysio, requirePatientAccess((req) => req.body?.patientId), controllers.routineController.create);
+  router.post("/routines/templates",                 authMiddleware, requireApproval, requireActivePlan, requirePhysio, controllers.routineController.createTemplate);
+  router.put("/routines/templates/:id",              authMiddleware, requireApproval, requireActivePlan, requirePhysio, controllers.routineController.updateTemplate);
+  router.get("/routines/templates",                  authMiddleware, requireApproval, requireActivePlan, requirePhysio, controllers.routineController.listTemplates);
+  router.get("/routines/templates/:id",              authMiddleware, requireApproval, requireActivePlan, requirePhysio, controllers.routineController.getTemplateById);
+  router.post("/routines/:id/template",              authMiddleware, requireApproval, requireActivePlan, requirePhysio, requireRoutineAccess, controllers.routineController.saveAsTemplate);
+  router.get("/routines/patient/:patientId",         authMiddleware, requireApproval, requireActivePlan, requirePatientAccess((req) => req.params.patientId), controllers.routineController.getByPatient);
+  router.get("/routines/history/patient/:patientId", authMiddleware, requireApproval, requireActivePlan, requirePatientAccess((req) => req.params.patientId), controllers.routineController.getHistoryByPatient);
+  router.get("/routines/:id",                        authMiddleware, requireApproval, requireActivePlan, requireRoutineAccess, controllers.routineController.getById);
+  router.put("/routines/:id",                        authMiddleware, requireApproval, requireActivePlan, requirePhysio, requireRoutineAccess, controllers.routineController.update);
+  router.delete("/routines/:id",                     authMiddleware, requireApproval, requireActivePlan, requirePhysio, requireRoutineAccess, controllers.routineController.remove);
 
   // Citas
   router.post("/appointments",                   authMiddleware, requireApproval, requireActivePlan, controllers.appointmentController.create);
