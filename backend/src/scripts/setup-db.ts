@@ -66,16 +66,7 @@ async function seed() {
   });
   const idPatient = patient.getDataValue("id_patient");
 
-  // --- Banco de ejercicios ---
-  if ((await ExerciseModel.count()) === 0) {
-    await ExerciseModel.bulkCreate([
-      { name: "Sentadilla a silla", body_zone: "Rodilla", description: "Siéntate y levántate de una silla sin usar las manos." },
-      { name: "Puente de glúteo", body_zone: "Cadera", description: "Boca arriba, eleva la cadera apretando glúteos." },
-      { name: "Elevación de pierna recta", body_zone: "Rodilla", description: "Boca arriba, eleva la pierna estirada a 45°." },
-      { name: "Estiramiento de hombro cruzado", body_zone: "Hombro", description: "Cruza el brazo frente al pecho y sostén 30 s." },
-      { name: "Gato-camello", body_zone: "Columna", description: "En cuatro apoyos, alterna arquear y redondear la espalda." },
-    ]);
-  }
+  // El banco base de ejercicios lo agrega ensureSchema() (seed/base-exercises.ts)
 
   // --- Rutina de ejemplo para el paciente ---
   const hasRoutine = await RoutineModel.count({ where: { id_patient: idPatient } });
@@ -89,7 +80,7 @@ async function seed() {
       id_patient: idPatient,
       id_physio: idPhysio,
     });
-    const exercises: any[] = await ExerciseModel.findAll({ limit: 3, order: [["id_exercise", "ASC"]] });
+    const exercises: any[] = await ExerciseModel.findAll({ where: { body_zone: "Rodilla", id_physio: null }, limit: 3, order: [["id_exercise", "ASC"]] });
     await RoutineExerciseModel.bulkCreate(
       exercises.map((e, i) => ({
         id_routine: routine.getDataValue("id_routine"),

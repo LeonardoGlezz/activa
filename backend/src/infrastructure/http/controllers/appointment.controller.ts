@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { ZodError } from "zod";
 import { CreateAppointmentUseCase } from "../../../application/use-cases/CreateAppointment.uc";
 import { GetAppointmentsByPatientUseCase } from "../../../application/use-cases/GetAppointmentsByPatient.uc";
 import { UpdateAppointmentUseCase } from "../../../application/use-cases/UpdateAppointment.uc";
@@ -39,26 +40,15 @@ export class AppointmentController {
 
   async create(req: any, res: Response): Promise<void> {
     try {
-      // 1. Usamos la función de tu compañero que ya hace toda la magia
       const physioId = await this.resolvePhysioId(req);
-
       if (!physioId) {
         res.status(401).json({ message: "No autorizado. No se pudo resolver el fisioterapeuta autenticado." });
         return;
       }
-
-      // 2. Armamos el paquete combinando lo que manda Angular + el ID seguro
-      const appointmentData = {
-        ...req.body,
-        id_physio: physioId // Usamos el ID que la función ya nos trajo limpiecito
-      };
-
-      // 3. Ejecutamos el caso de uso
-      const result = await this.createAppointment.execute(appointmentData);
+      const result = await this.createAppointment.execute(req.body, physioId);
       res.status(201).json(result);
-      
     } catch (err: any) {
-      res.status(400).json({ message: err.message });
+      res.status(400).json({ message: errorMessage(err) });
     }
   }
 
@@ -76,7 +66,7 @@ export class AppointmentController {
       const result = await this.updateAppointment.execute(Number(req.params.id), req.body);
       res.status(200).json(result);
     } catch (err: any) {
-      res.status(400).json({ message: err.message });
+      res.status(400).json({ message: errorMessage(err) });
     }
   }
 
@@ -94,4 +84,8 @@ export class AppointmentController {
       res.status(400).json({ message: err.message });
     }
   }
+}
+
+function errorMessage(err: any): string {
+  return err instanceof ZodError ? err.issues[0]?.message || "Datos de la cita inválidos." : err?.message || "No se pudo guardar la cita.";
 }

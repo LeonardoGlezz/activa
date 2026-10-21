@@ -7,6 +7,8 @@ import { MessageService } from 'primeng/api';
 
 import { AppointmentUseCase } from '../../../../../core/appointment/application/appointment.use-case';
 
+import { appointmentStatusLabel, appointmentStatusTone, isClosedStatus, whatsappReminderUrl } from '../../../../../core/appointment/appointment-status';
+
 @Component({
   selector: 'app-appointment-detail',
   standalone: true,
@@ -68,8 +70,7 @@ export class AppointmentDetailComponent implements OnInit {
         const email = p.email || p.User?.email || p.user?.email || 'Sin correo registrado';
 
         const serviceName = this.extraerServicio(citaEncontrada.notes);
-        const fechaFinObj = new Date(`${citaEncontrada.date}T${citaEncontrada.end_time || citaEncontrada.start_time || '00:00:00'}`);
-        const ahora = new Date();
+        const inicio = new Date(`${citaEncontrada.date}T${citaEncontrada.start_time || '00:00:00'}`);
 
         this.appointmentData = {
           id: id,
@@ -79,9 +80,14 @@ export class AppointmentDetailComponent implements OnInit {
           time: this.formatearHora(citaEncontrada.start_time),
           duration: this.calcularDuracion(citaEncontrada.start_time, citaEncontrada.end_time),
           service: serviceName,
-          isPast: (fechaFinObj < ahora) || (citaEncontrada.status === 'cancelled' || citaEncontrada.status === 'completed'), 
+          // Abierta = ni cancelada ni con asistencia registrada
+          isClosed: isClosedStatus(citaEncontrada.status),
+          // Ya empezó: se puede marcar si asistió o no
+          started: inicio.getTime() <= Date.now(),
+          whatsappUrl: whatsappReminderUrl(p.phone, nombre, citaEncontrada.date, citaEncontrada.start_time),
+          patientId: citaEncontrada.id_patient,
           patient: {
-            name: nombreCompleto || 'Paciente Desconocido',
+            name: nombreCompleto || 'Paciente',
             email: email,
           },
           notes: citaEncontrada.notes || 'No hay notas registradas.'
@@ -96,12 +102,17 @@ export class AppointmentDetailComponent implements OnInit {
     });
   }
   
-  iniciarConsulta() {
-    this.cambiarEstadoCita('completed', 'Consulta Iniciada', 'La cita ha cambiado su estado a "Asistió/Completada".');
+  marcarAsistio() {
+    this.cambiarEstadoCita('completed', 'Listo', 'Quedó registrado que el paciente asistió.');
+  }
+
+  marcarNoAsistio() {
+    this.cambiarEstadoCita('no_show', 'Listo', 'Quedó registrado que el paciente no asistió.');
   }
 
   cancelarCita() {
-    this.cambiarEstadoCita('cancelled', 'Cita Cancelada', 'La cita ha cambiado su estado a "Cancelada".');
+    if (!confirm('¿Cancelar esta cita? El paciente verá el aviso en su app.')) return;
+    this.cambiarEstadoCita('cancelled', 'Cita cancelada', 'El paciente verá el aviso en su app.');
   }
 
   private cambiarEstadoCita(nuevoStatus: string, tituloExito: string, mensajeExito: string) {
@@ -114,8 +125,7 @@ export class AppointmentDetailComponent implements OnInit {
         this.appointmentData.status = this.traducirStatus(nuevoStatus);
         this.appointmentData.statusColor = this.asignarColorStatus(nuevoStatus);
         
-        // Al actualizar el estado, bloqueamos los botones de acción
-        this.appointmentData.isPast = true; 
+        this.appointmentData.isClosed = isClosedStatus(nuevoStatus);
         
         this.messageService.add({ severity: 'success', summary: tituloExito, detail: mensajeExito });
         this.cdr.detectChanges();
@@ -134,19 +144,16 @@ export class AppointmentDetailComponent implements OnInit {
   }
 
   private traducirStatus(status: string): string {
-    const s = status?.toLowerCase();
-    if (s === 'pending' || s === 'scheduled') return 'Confirmada';
-    if (s === 'completed') return 'Completada';
-    if (s === 'cancelled') return 'Cancelada';
-    return 'Pendiente';
+    return appointmentStatusLabel(status);
   }
 
   private asignarColorStatus(status: string): string {
-    const s = status?.toLowerCase();
-    if (s === 'pending' || s === 'scheduled') return 'bordered-teal bg-teal-50 text-teal-600 border-teal-500';
-    if (s === 'completed') return 'bg-teal-500 text-white border-teal-500';
-    if (s === 'cancelled') return 'bordered-red bg-red-50 text-red-600 border-red-500';
-    return 'bordered-teal bg-teal-50 text-teal-600 border-teal-500';
+    switch (appointmentStatusTone(status)) {
+      case 'completed': return 'bg-teal-500 text-white border-teal-500';
+      case 'missed': return 'bg-yellow-50 text-yellow-800 border-yellow-500';
+      case 'cancelled': return 'bordered-red bg-red-50 text-red-600 border-red-500';
+      default: return 'bordered-teal bg-teal-50 text-teal-600 border-teal-500';
+    }
   }
 
   private calcularDuracion(inicio: string, fin: string): string {

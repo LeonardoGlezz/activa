@@ -81,18 +81,11 @@ export class LoginFisioComponent implements OnInit {
           localStorage.setItem('id_physio', String(idPhysio));
         }
 
-        // Extraemos el estatus real que nos acaba de mandar el backend
-        const estatusUsuario = respuesta.fisio.status;
-
         this.messageService.add({ severity: 'success', summary: 'Bienvenido', detail: 'Credenciales verificadas con éxito.' });
         
         // REDIRIGIMOS DEPENDIENDO DEL ESTATUS
         setTimeout(() => {
-          if (estatusUsuario === 'pending_profile') {
-            this.router.navigate(['/verificar-datos']);
-          } else {
-            this.router.navigate(['/dashboard/inicio']); 
-          }
+          this.router.navigate(['/dashboard/inicio']);
         }, 1500);
 
       },

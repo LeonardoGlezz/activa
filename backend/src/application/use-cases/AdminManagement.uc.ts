@@ -28,27 +28,20 @@ export class AdminError extends Error {
 }
 
 const optionalText = z.string().trim().optional().transform((v) => (v ? v : null));
-const optionalDate = z
+const optionalPhone = z
   .string()
-  .trim()
   .optional()
-  .refine((v) => !v || /^\d{4}-\d{2}-\d{2}$/.test(v), "La fecha de nacimiento debe ser AAAA-MM-DD")
+  .transform((v) => (v ? v.replace(/\D/g, "") : ""))
+  .refine((v) => !v || v.length === 10, "El celular debe tener 10 números")
   .transform((v) => (v ? v : null));
-const optionalCurp = z
-  .string()
-  .trim()
-  .optional()
-  .refine((v) => !v || v.length === 18, "La CURP debe tener 18 caracteres")
-  .transform((v) => (v ? v.toUpperCase() : null));
 
 const PhysioDataSchema = z.object({
   firstName: z.string().trim().min(2, "Escribe el nombre"),
   lastNameP: z.string().trim().min(2, "Escribe el apellido paterno"),
   lastNameM: optionalText,
-  birthDate: optionalDate,
   email: z.string().trim().toLowerCase().email("El correo no es válido"),
   professionalLicense: optionalText,
-  curp: optionalCurp,
+  phone: optionalPhone,
 });
 
 const PasswordSchema = z.string().min(8, "La contraseña debe tener al menos 8 caracteres");
@@ -76,7 +69,6 @@ function friendlyUniqueError(error: any): never {
   if (error?.name === "SequelizeUniqueConstraintError") {
     const field = String(error.errors?.[0]?.path ?? "");
     if (field.includes("email")) throw new AdminError(409, "Ese correo ya está en uso por otra cuenta.");
-    if (field.includes("curp")) throw new AdminError(409, "Esa CURP ya está registrada.");
     if (field.includes("license")) throw new AdminError(409, "Esa cédula profesional ya está registrada.");
     throw new AdminError(409, "Uno de los datos ya está registrado en otra cuenta.");
   }
@@ -130,7 +122,7 @@ export class AdminManagementUseCase {
         { transaction: t }
       );
       const physio: any = await PhysiotherapistModel.create(
-        { ...this.physioColumns(data), status: "approved", id_user: user.getDataValue("id_user") },
+        { ...this.physioColumns(data), status: "approved", license_verified_at: new Date(), id_user: user.getDataValue("id_user") },
         { transaction: t }
       );
       await t.commit();
@@ -174,9 +166,8 @@ export class AdminManagementUseCase {
       first_name: data.firstName,
       last_name_paternal: data.lastNameP,
       last_name_maternal: data.lastNameM,
-      birth_date: data.birthDate,
       professional_license: data.professionalLicense,
-      curp: data.curp,
+      phone: data.phone,
     };
   }
 
@@ -229,8 +220,9 @@ export class AdminManagementUseCase {
   }
 
   /**
-   * Detalle para revisar la actividad del paciente. No incluye datos de salud
-   * (dolor, comentarios): el aviso de privacidad limita al operador a soporte.
+   * Detalle para soporte: cuenta, fisio y cuánto usa la app. Como encargado,
+   * el operador no ve datos clínicos: ni nombres de rutinas, ni ejercicios,
+   * ni dolor, notas o citas. Esos solo los ve el fisio del paciente.
    */
   async getPatient(id: number) {
     const patient: any = await PatientModel.findByPk(id, {
@@ -238,37 +230,32 @@ export class AdminManagementUseCase {
     });
     if (!patient) throw new AdminError(404, "Paciente no encontrado.");
     const { User, ...plain } = patient.get({ plain: true });
-    const [physio, routines, sessions] = await Promise.all([
+    const today = dateOnly(new Date());
+    const [physio, routines, activeRoutines, sessions, lastSession] = await Promise.all([
       PhysiotherapistModel.findByPk(plain.id_physio),
-      RoutineModel.findAll({
-        where: { id_patient: id },
-        attributes: ["id_routine", "name", "start_date", "end_date", "created_at"],
-        order: [["start_date", "DESC"]],
+      RoutineModel.count({ where: { id_patient: id } }),
+      RoutineModel.count({
+        where: {
+          id_patient: id,
+          start_date: { [Op.lte]: today },
+          [Op.or]: [{ end_date: null }, { end_date: { [Op.gte]: today } }],
+        },
       }),
-      TrackingModel.findAll({
-        where: { id_patient: id },
-        attributes: ["id_tracking", "date", "id_routine"],
-        order: [["date", "DESC"], ["id_tracking", "DESC"]],
-        limit: 30,
-      }),
+      TrackingModel.count({ where: { id_patient: id } }),
+      TrackingModel.max("date", { where: { id_patient: id } }),
     ]);
-    const routineNames = new Map(routines.map((r: any) => [r.getDataValue("id_routine"), r.getDataValue("name")]));
     return {
       id_patient: plain.id_patient,
       name: fullName(plain),
       email: User?.email ?? null,
       can_login: Boolean(User?.password && String(User.password).startsWith("$2")),
-      birth_date: plain.birth_date,
-      gender: plain.gender,
       created_at: plain.created_at,
       id_physio: plain.id_physio,
       physio_name: physio ? fullName(physio.get({ plain: true })) : "—",
-      routines: routines.map((r: any) => r.get({ plain: true })),
-      sessions: sessions.map((s: any) => ({
-        id: s.getDataValue("id_tracking"),
-        date: s.getDataValue("date"),
-        routine: routineNames.get(s.getDataValue("id_routine")) ?? null,
-      })),
+      routines,
+      active_routines: activeRoutines,
+      sessions,
+      last_session: lastSession ?? null,
     };
   }
 

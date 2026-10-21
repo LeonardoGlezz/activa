@@ -1,3 +1,4 @@
+import { isStripeConfigured } from "../../config/env";
 /**
  * **************************************************************************
  * CONTROLADOR: Suscripciones (Stripe)
@@ -62,7 +63,8 @@ export class SubscriptionController {
 
   getPublicPlans = async (_req: Request, res: Response): Promise<void> => {
     const planes = Object.values(PLANES).map(({ price_id: _p, ...rest }) => rest);
-    res.status(200).json({ data: planes });
+    // Sin llaves de Stripe Activa es gratis: el panel oculta "Membresía"
+    res.status(200).json({ data: planes, billingEnabled: isStripeConfigured() });
   };
 
   getPlans = async (_req: Request, res: Response): Promise<void> => {

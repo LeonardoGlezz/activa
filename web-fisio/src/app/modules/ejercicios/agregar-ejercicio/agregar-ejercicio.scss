@@ -170,3 +170,28 @@ small.text-danger {
     padding: 1rem;
   }
 }
+
+.base-note {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.alert-info {
+  background: #ecfeff;
+  color: #155e75;
+  border: 1px solid #a5f3fc;
+}
+
+.rights-check {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 4px 0 18px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: #334155;
+
+  input { margin-top: 3px; width: 18px; height: 18px; flex-shrink: 0; }
+}

@@ -1,6 +1,7 @@
 import { Response, NextFunction } from "express";
 import { AuthRequest } from "./auth.middleware";
-import { AppointmentModel, NotificationModel, PatientModel, RoutineModel } from "../../persistence/sequelize/client";
+import { AppointmentModel, NotificationModel, PatientModel, RoutineModel, RoutineTemplateModel } from "../../persistence/sequelize/client";
+import { exercisesNotUsableBy } from "../controllers/exercise.controller";
 
 type AccessResult = { ok: true } | { ok: false; status: number; message: string };
 
@@ -86,6 +87,15 @@ export const requirePhysio = (req: AuthRequest, res: Response, next: NextFunctio
   next();
 };
 
+/** Solo pacientes (p. ej. para ver el contacto de su propio fisio) */
+export const requirePatient = (req: AuthRequest, res: Response, next: NextFunction): void => {
+  if (req.user?.role !== "patient") {
+    res.status(403).json({ success: false, message: "Solo para pacientes." });
+    return;
+  }
+  next();
+};
+
 /** Responde 404/403 según el resultado; si hay acceso, sigue */
 async function gateBy(req: AuthRequest, res: Response, next: NextFunction, row: any, notFound: string) {
   if (!row) {
@@ -124,4 +134,31 @@ export const requireOwnPhysioOrAdmin = (req: AuthRequest, res: Response, next: N
   const u = req.user;
   if (u?.role === "admin" || (u?.role === "physio" && Number(req.params.id) === u.id_physio)) return next();
   res.status(403).json({ success: false, message: "No tienes permiso para ver este perfil." });
+};
+
+/** Plantilla de rutina en req.params.id: solo el fisio que la creó */
+export const requireTemplateAccess = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  const row: any = await RoutineTemplateModel.findByPk(Number(req.params.id) || 0, { attributes: ["id_physio"] });
+  if (!row || req.user?.role !== "physio" || row.id_physio !== req.user.id_physio) {
+    res.status(404).json({ success: false, message: "Plantilla no encontrada." });
+    return;
+  }
+  next();
+};
+
+/**
+ * Los ejercicios del cuerpo (exerciseIds / exerciseItems) deben ser del banco
+ * base o de "Mis ejercicios" del fisio, no de otro fisio.
+ */
+export const requireUsableExercises = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  const ids = [
+    ...(Array.isArray(req.body?.exerciseIds) ? req.body.exerciseIds : []),
+    ...(Array.isArray(req.body?.exerciseItems) ? req.body.exerciseItems.map((i: any) => i?.exerciseId) : []),
+  ].map(Number);
+  const blocked = await exercisesNotUsableBy(Number(req.user?.id_physio ?? 0), ids);
+  if (blocked.length) {
+    res.status(404).json({ success: false, message: "Uno de los ejercicios no existe en tu banco." });
+    return;
+  }
+  next();
 };

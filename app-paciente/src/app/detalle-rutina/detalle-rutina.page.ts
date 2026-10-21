@@ -1,3 +1,4 @@
+import { EXERCISE_PLACEHOLDER } from '../core/placeholder';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { RouteAnimationService } from '../core/services/route-animation.service';
@@ -93,14 +94,9 @@ export class DetalleRutinaPage implements OnInit {
     return this.getExerciseDemoImage(ex);
   }
 
-  /** Imagen fija del ejercicio para el modal (nunca muestra el logo ACTIVA) */
+  /** Imagen del ejercicio o un dibujo neutro si no tiene */
   getExerciseDemoImage(ex: RoutineExercise): string {
-    const img = (ex as any).imageUrl;
-    if (img) return img;
-    const name = (ex.name || '').toLowerCase();
-    if (name.includes('elevación') && name.includes('pierna')) return 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=600';
-    if (name.includes('estiramiento') && name.includes('hombro')) return 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=600';
-    return 'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=600';
+    return (ex as any).imageUrl || EXERCISE_PLACEHOLDER;
   }
 
   getExerciseVideoUrl = getExerciseVideoUrl;

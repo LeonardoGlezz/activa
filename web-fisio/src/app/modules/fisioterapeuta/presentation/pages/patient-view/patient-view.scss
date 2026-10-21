@@ -188,6 +188,16 @@ $white: #ffffff;
     object-fit: cover;
     box-shadow: 0 4px 14px rgba(13, 148, 136, 0.25);
     flex-shrink: 0;
+
+    &.initials {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0d8b97;
+      color: #fff;
+      font-weight: 700;
+      font-size: 1.3rem;
+    }
   }
 
   .patient-info-text {
@@ -388,6 +398,11 @@ $white: #ffffff;
   &.status-cancelled {
     background: $red-light;
     color: #991b1b;
+  }
+
+  &.status-missed {
+    background: #fef3c7;
+    color: #92400e;
   }
 }
 

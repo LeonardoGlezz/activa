@@ -15,6 +15,7 @@ import { PatientUseCase } from '../../../../../core/patient/application/patient.
 import { environment } from '../../../../../../environments/environment';
 import { resolveMediaUrl } from '../../../../../core/exercises/domain/exercise-media';
 
+import { EXERCISE_PLACEHOLDER } from '../../../../../core/placeholder';
 @Component({
   selector: 'app-routine-library',
   standalone: true,
@@ -59,7 +60,7 @@ export class RoutineLibraryComponent implements OnInit {
     name: '',
     tag: 'General'
   };
-  placeholderImg = 'https://placehold.co/1000x600/0d9488/ffffff?text=ACTIVA+Fisio';
+  placeholderImg = EXERCISE_PLACEHOLDER;
 
   constructor(
     private http: HttpClient,

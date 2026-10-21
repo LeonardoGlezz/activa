@@ -56,45 +56,14 @@
         <section class="panel">
           <h2>Uso de la app</h2>
           <dl class="data-list">
-            <div><dt>Sesiones en 30 días</dt><dd>{{ sesiones30 }}</dd></div>
-            <div><dt>Última sesión</dt><dd>{{ when(ultimaSesion) }}</dd></div>
-            <div><dt>Rutinas</dt><dd>{{ paciente.routines.length }}</dd></div>
+            <div><dt>Sesiones terminadas</dt><dd>{{ paciente.sessions }}</dd></div>
+            <div><dt>Última sesión</dt><dd>{{ when(paciente.last_session) }}</dd></div>
+            <div><dt>Rutinas</dt><dd>{{ paciente.routines }} ({{ paciente.active_routines }} vigente{{ paciente.active_routines === 1 ? '' : 's' }})</dd></div>
           </dl>
         </section>
       </div>
 
-      <section class="panel">
-        <h2>Rutinas</h2>
-        <p class="muted" *ngIf="paciente.routines.length === 0">Su fisio todavía no le asigna una rutina.</p>
-        <ul class="event-list" *ngIf="paciente.routines.length > 0">
-          <li *ngFor="let r of paciente.routines">
-            <span class="icon">📋</span>
-            <div>
-              <strong>{{ r.name || 'Rutina sin nombre' }}</strong>
-              <span class="chip chip-success" *ngIf="vigente(r)">Vigente</span>
-              <div class="when">
-                Del {{ r.start_date ? (r.start_date | date: 'd MMM y') : '—' }}
-                {{ r.end_date ? 'al ' + (r.end_date | date: 'd MMM y') : 'sin fecha de fin' }}
-              </div>
-            </div>
-          </li>
-        </ul>
-      </section>
-
-      <section class="panel">
-        <h2>Últimas sesiones</h2>
-        <p class="muted" *ngIf="paciente.sessions.length === 0">Todavía no termina ninguna sesión en la app.</p>
-        <ul class="event-list" *ngIf="paciente.sessions.length > 0">
-          <li *ngFor="let s of paciente.sessions">
-            <span class="icon">✅</span>
-            <div>
-              {{ s.routine || 'Sesión' }}
-              <div class="when">{{ s.date | date: 'EEEE d MMM y' }}</div>
-            </div>
-          </li>
-        </ul>
-        <p class="muted small">El dolor y los comentarios del paciente solo los ve su fisio.</p>
-      </section>
+      <p class="muted small">Las rutinas, el dolor, las notas y las citas del paciente son datos de salud: solo los ve su fisio.</p>
     </ng-container>
   </div>
 </div>

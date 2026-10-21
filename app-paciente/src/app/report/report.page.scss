@@ -32,33 +32,46 @@ ion-toolbar {
   line-height: 1.55;
 }
 
-.emoji-btn {
-  height: auto;
-  --padding-start: 0;
-  --padding-end: 0;
-  --border-radius: 16px;
+.pain-scale {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  margin: 0 0 8px;
+}
 
-  ion-label {
-    font-size: 36px;
+.pain-btn {
+  height: 48px;
+  border-radius: 12px;
+  border: 2px solid transparent;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--activa-text);
+  background: #f1f5f9;
 
-    small {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--activa-text);
-      line-height: 1.25;
-      display: block;
-      margin-top: 8px;
-    }
-  }
+  &.tone-low { background: #dcfce7; }
+  &.tone-mid { background: #fef3c7; }
+  &.tone-high { background: #fee2e2; }
 
   &.selected {
-    --background: var(--activa-primary-light);
-    border: 2px solid rgba(13, 148, 136, 0.25);
-
-    ion-label small {
-      color: var(--activa-primary);
-    }
+    border-color: var(--activa-primary);
+    background: var(--activa-primary);
+    color: #fff;
   }
+}
+
+.pain-legend {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--activa-text);
+  margin-bottom: 12px;
+}
+
+.pain-choice {
+  text-align: center;
+  color: var(--activa-text);
+  margin: 0 0 20px;
 }
 
 .comment-card {

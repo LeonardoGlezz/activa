@@ -1,14 +1,14 @@
 <ion-header class="ion-no-border">
   <ion-toolbar class="header-toolbar">
     <div class="header-content">
-      <!-- Icono de usuario decorativo -->
+      <!-- Ir al perfil -->
       <button class="avatar-btn" (click)="goToProfile()" aria-label="Ver perfil">
         <ion-icon name="person-circle" class="avatar-icon"></ion-icon>
       </button>
 
       <!-- Saludo -->
       <div class="header-text">
-        <p class="greeting">BUENOS DÍAS</p>
+        <p class="greeting">{{ greeting() }}</p>
         <h1 class="name">¡Hola, {{ user().fullName }}!</h1>
       </div>
 
@@ -79,6 +79,18 @@
         </div>
       }
     </section>
+
+    <!-- CONTACTO CON EL FISIO -->
+    @if (whatsappUrl()) {
+      <section class="section">
+        <h3 class="section-title">¿Dudas con tus ejercicios?</h3>
+        <a class="whatsapp-btn" [href]="whatsappUrl()" target="_blank" rel="noopener">
+          <ion-icon name="logo-whatsapp"></ion-icon>
+          Escribir a {{ physioName() || 'mi fisio' }}
+        </a>
+        <p class="emergency-note">No es para urgencias. Si tienes un dolor fuerte o una lesión nueva, llama al 911.</p>
+      </section>
+    }
 
   </div>
 </ion-content>

@@ -25,9 +25,7 @@ export class AuthController {
         const field = error.errors[0]?.path; 
         let friendlyMessage = "Un dato proporcionado ya se encuentra registrado.";
         
-        if (field === 'curp') {
-          friendlyMessage = "La CURP ingresada ya se encuentra registrada en el sistema.";
-        } else if (field === 'professional_license' || field === 'professionalLicense') {
+        if (field === 'professional_license' || field === 'professionalLicense') {
           friendlyMessage = "La Cédula Profesional ingresada ya está vinculada a otra cuenta.";
         } else if (field === 'email' || field === 'users.email') {
           friendlyMessage = "El correo electrónico ya está en uso. Por favor, inicia sesión.";
@@ -43,6 +41,16 @@ export class AuthController {
   login = async (req: Request, res: Response): Promise<void> => {
     try {
       const result = await this.loginUseCase.execute(req.body);
+      res.status(200).json(result);
+    } catch (error: any) {
+      res.status(401).json({ message: error.message });
+    }
+  };
+
+  /** El panel del fisio lo llama al abrir: si el admin ya lo aprobó, entra sin cerrar sesión */
+  refresh = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const result = await this.loginUseCase.refresh(Number((req as any).user?.id));
       res.status(200).json(result);
     } catch (error: any) {
       res.status(401).json({ message: error.message });

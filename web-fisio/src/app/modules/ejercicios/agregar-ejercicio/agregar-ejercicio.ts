@@ -4,7 +4,7 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ExerciseUseCase } from '../../../core/exercises/application/exercise.use-case';
-import { Exercise } from '../../../core/exercises/domain/exercise.model';
+import { BODY_ZONES, CreateExerciseDTO } from '../../../core/exercises/domain/exercise.model';
 import { ExerciseMediaKind, getEmbedUrl, getMediaKind, resolveMediaUrl } from '../../../core/exercises/domain/exercise-media';
 import { environment } from '../../../../environments/environment';
 
@@ -28,6 +28,12 @@ export class AgregarEjercicio implements OnInit {
   /** Si viene en la ruta, el formulario edita ese ejercicio */
   exerciseId: string | null = null;
   readonly maxUploadMb = MAX_UPLOAD_MB;
+  readonly zones = BODY_ZONES;
+  /** Ejercicio del banco base: no se edita, se copia a Mis ejercicios */
+  isBase = false;
+  copying = false;
+  /** Foto o video con el que se cargó el ejercicio (si no cambia, no se pide confirmar derechos) */
+  private originalMedia = '';
 
   constructor(
     private fb: FormBuilder,
@@ -50,6 +56,7 @@ export class AgregarEjercicio implements OnInit {
       bodyZone: ['', [Validators.required, Validators.minLength(2)]],
       description: ['', [Validators.required, Validators.minLength(10)]],
       videoUrl: ['', [Validators.pattern(MEDIA_URL_PATTERN)]],
+      rightsConfirmed: [false],
     });
     this.videoUrl?.valueChanges.subscribe(() => this.updatePreview());
   }
@@ -59,6 +66,9 @@ export class AgregarEjercicio implements OnInit {
     this.exerciseUseCase.getExercise(id).subscribe({
       next: (resp: any) => {
         const e = resp?.data ?? resp;
+        this.isBase = e.editable === false;
+        this.originalMedia = e.videoUrl ?? e.video_url ?? '';
+        if (this.isBase) this.form.disable();
         this.form.patchValue({
           name: e.name ?? '',
           bodyZone: e.bodyZone ?? e.body_zone ?? '',
@@ -123,7 +133,41 @@ export class AgregarEjercicio implements OnInit {
     this.embedUrl = embed ? this.sanitizer.bypassSecurityTrustResourceUrl(embed) : null;
   }
 
+  /** Hay foto o video nuevo: el fisio debe confirmar que puede usarlo */
+  get needsRights(): boolean {
+    const media = String(this.videoUrl?.value || '').trim();
+    return !!media && media !== this.originalMedia;
+  }
+
+  copyToMine(): void {
+    if (!this.exerciseId) return;
+    this.copying = true;
+    this.exerciseUseCase.copyToMine(this.exerciseId).subscribe({
+      next: (resp: any) => {
+        this.copying = false;
+        const id = resp?.data?.id_exercise;
+        this.router.navigate(['/dashboard/ejercicios', id, 'editar']).then(() => {
+          this.isBase = false;
+          this.exerciseId = String(id);
+          this.form.enable();
+          this.successMessage = 'Copiado a Mis ejercicios. Ya puedes cambiarlo.';
+          this.cd.detectChanges();
+        });
+      },
+      error: (err: any) => {
+        this.copying = false;
+        this.errorMessage = err?.error?.message || 'No se pudo copiar el ejercicio.';
+        this.cd.detectChanges();
+      },
+    });
+  }
+
   onSubmit(): void {
+    if (this.isBase) return;
+    if (this.needsRights && !this.form.value.rightsConfirmed) {
+      this.errorMessage = 'Confirma que la foto o el video es tuyo o que tienes permiso de usarlo.';
+      return;
+    }
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       this.errorMessage = 'Por favor completa todos los campos correctamente';
@@ -134,7 +178,11 @@ export class AgregarEjercicio implements OnInit {
     this.successMessage = '';
     this.errorMessage = '';
 
-    const exercise: Exercise = { ...this.form.value, videoUrl: (this.form.value.videoUrl || '').trim() || null };
+    const exercise: CreateExerciseDTO = {
+      ...this.form.value,
+      videoUrl: (this.form.value.videoUrl || '').trim() || null,
+      rightsConfirmed: Boolean(this.form.value.rightsConfirmed),
+    };
     const request = this.exerciseId
       ? this.exerciseUseCase.updateExercise(this.exerciseId, exercise)
       : this.exerciseUseCase.addExercise(exercise);
@@ -146,8 +194,8 @@ export class AgregarEjercicio implements OnInit {
           this.router.navigate(['/dashboard/ejercicios']);
           return;
         }
-        this.successMessage = `Ejercicio "${exercise.name}" creado exitosamente`;
-        this.form.reset({ name: '', bodyZone: '', description: '', videoUrl: '' });
+        this.successMessage = `"${exercise.name}" se guardó en Mis ejercicios`;
+        this.form.reset({ name: '', bodyZone: '', description: '', videoUrl: '', rightsConfirmed: false });
         this.cd.detectChanges();
         setTimeout(() => {
           this.successMessage = '';
@@ -157,7 +205,6 @@ export class AgregarEjercicio implements OnInit {
       error: (err: any) => {
         this.loading = false;
         this.errorMessage = err?.error?.message || 'Error al guardar el ejercicio';
-        console.error('Error:', err);
         this.cd.detectChanges();
       },
     });

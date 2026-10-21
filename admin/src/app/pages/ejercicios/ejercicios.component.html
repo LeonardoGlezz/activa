@@ -1,0 +1,72 @@
+<div class="page">
+  <div class="page-container">
+    <div class="page-header">
+      <div>
+        <h1>Banco base de ejercicios</h1>
+        <p>{{ exercises.length }} ejercicios que ven todos los fisios. Ellos no pueden cambiarlos: si quieren otra versión, la copian a "Mis ejercicios".</p>
+      </div>
+      <button type="button" class="btn btn-primary" (click)="newExercise()">+ Nuevo ejercicio</button>
+    </div>
+
+    <div *ngIf="error" class="notice notice-error">❌ {{ error }}</div>
+    <div *ngIf="notice" class="notice notice-success">{{ notice }}</div>
+
+    <section class="panel" *ngIf="showForm">
+      <h2>{{ editingId ? 'Editar ejercicio' : 'Nuevo ejercicio del banco base' }}</h2>
+      <form class="form-grid" (ngSubmit)="save()">
+        <div class="field"><label for="ex-name">Nombre</label><input id="ex-name" name="name" [(ngModel)]="form.name" required /></div>
+        <div class="field">
+          <label for="ex-zone">Zona del cuerpo</label>
+          <select id="ex-zone" name="zone" [(ngModel)]="form.bodyZone" required>
+            <option value="" disabled>Elige una zona</option>
+            <option *ngFor="let z of zones" [value]="z">{{ z }}</option>
+            <option *ngIf="form.bodyZone && !zones.includes(form.bodyZone)" [value]="form.bodyZone">{{ form.bodyZone }}</option>
+          </select>
+        </div>
+        <div class="field full"><label for="ex-desc">Cómo se hace</label><textarea id="ex-desc" name="description" rows="4" [(ngModel)]="form.description" required></textarea></div>
+        <div class="field full">
+          <label for="ex-video">Video de YouTube (opcional)</label>
+          <input id="ex-video" name="video" [(ngModel)]="form.videoUrl" placeholder="https://youtu.be/..." />
+          <small>Usa solo videos tuyos o con permiso de su autor. Puedes subirlos a YouTube como "No listado".</small>
+        </div>
+      </form>
+      <div *ngIf="formError" class="notice notice-error">❌ {{ formError }}</div>
+      <div class="form-actions">
+        <button type="button" class="btn btn-primary" [disabled]="saving" (click)="save()">{{ saving ? 'Guardando...' : 'Guardar' }}</button>
+        <button type="button" class="btn btn-outline" (click)="showForm = false">Cancelar</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="form-grid">
+        <div class="field"><label for="ex-search">Buscar</label><input id="ex-search" type="search" [(ngModel)]="search" placeholder="rodilla, puente, liga..." /></div>
+        <div class="field">
+          <label for="ex-filter">Zona</label>
+          <select id="ex-filter" [(ngModel)]="zone">
+            <option value="">Todas</option>
+            <option *ngFor="let z of zones" [value]="z">{{ z }}</option>
+          </select>
+        </div>
+      </div>
+
+      <p *ngIf="loading">Cargando...</p>
+      <div class="table-wrap" *ngIf="!loading">
+        <table class="table">
+          <thead><tr><th>Ejercicio</th><th>Zona</th><th>Video</th><th></th></tr></thead>
+          <tbody>
+            <tr *ngFor="let e of filtered">
+              <td><strong>{{ e.name }}</strong><br /><small>{{ e.description }}</small></td>
+              <td>{{ e.body_zone }}</td>
+              <td>{{ e.video_url ? 'Sí' : '—' }}</td>
+              <td class="actions">
+                <button type="button" class="btn btn-link" (click)="edit(e)">Editar</button>
+                <button type="button" class="btn btn-link danger" (click)="remove(e)">Borrar</button>
+              </td>
+            </tr>
+            <tr *ngIf="filtered.length === 0"><td colspan="4">No hay ejercicios con esos filtros.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</div>

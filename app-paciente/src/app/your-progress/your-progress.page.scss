@@ -218,3 +218,26 @@ ion-toolbar.header-toolbar {
   font-weight: 700;
   margin: 0;
 }
+
+.whatsapp-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 54px;
+  border-radius: 16px;
+  background: #16a34a;
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 1.05rem;
+  text-decoration: none;
+
+  ion-icon { font-size: 24px; }
+}
+
+.emergency-note {
+  margin: 8px 4px 0;
+  font-size: 0.8rem;
+  color: #64748b;
+  text-align: center;
+}

@@ -10,6 +10,7 @@ import { MessageService, ConfirmationService } from 'primeng/api';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { PasswordModule } from 'primeng/password';
 import { API_ROOT } from '../../../../../core/api-url';
+import { readTokenPayload } from '../../../../../core/auth/application/token-payload';
 
 @Component({
   selector: 'app-perfil',
@@ -38,6 +39,10 @@ export class PerfilComponent implements OnInit {
   passwordNueva: string = '';
   passwordConfirmar: string = '';
 
+  telefono: string = '';
+  mostrarWhatsapp: boolean = true;
+  isSavingContact: boolean = false;
+
   isSavingEmail: boolean = false;
   isSavingPass: boolean = false;
 
@@ -49,6 +54,37 @@ export class PerfilComponent implements OnInit {
 
   ngOnInit() {
     this.cargarDatosDelToken();
+    this.cargarContacto();
+  }
+
+  cargarContacto() {
+    this.http.get<any>(`${API_ROOT}/physiotherapists/me/contact`).subscribe({
+      next: (res) => {
+        this.telefono = res?.phone || '';
+        this.mostrarWhatsapp = res?.showWhatsapp !== false;
+      },
+      error: () => {}
+    });
+  }
+
+  guardarContacto() {
+    const limpio = (this.telefono || '').replace(/\D/g, '');
+    if (limpio && limpio.length !== 10) {
+      this.messageService.add({ severity: 'warn', summary: 'Revisa el celular', detail: 'Escribe los 10 números, sin lada.' });
+      return;
+    }
+    this.isSavingContact = true;
+    this.http.put<any>(`${API_ROOT}/physiotherapists/me/contact`, { phone: limpio, showWhatsapp: this.mostrarWhatsapp }).subscribe({
+      next: (res) => {
+        this.isSavingContact = false;
+        this.telefono = limpio;
+        this.messageService.add({ severity: 'success', summary: 'Guardado', detail: res?.message || 'Datos de contacto guardados.' });
+      },
+      error: (err) => {
+        this.isSavingContact = false;
+        this.messageService.add({ severity: 'error', summary: 'No se guardó', detail: err.error?.message || 'Intenta de nuevo.' });
+      }
+    });
   }
   enfocarSiguiente(idDelInput: string) {
     const elemento = document.getElementById(idDelInput);
@@ -60,11 +96,11 @@ export class PerfilComponent implements OnInit {
     const token = localStorage.getItem('token');
     if (token) {
       try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
+        const payload = readTokenPayload(token) || {};
         const firstName = payload.first_name || payload.firstName || '';
-        const lastName = payload.last_name_paternal || payload.lastNameP || '';
+        const lastName = [payload.last_name_paternal, payload.last_name_maternal].filter(Boolean).join(' ');
 
-        this.nombreCompleto = `Dr(a). ${firstName} ${lastName}`.trim();
+        this.nombreCompleto = `${firstName} ${lastName}`.trim();
         
         // 🪄 Guardamos el editable y respaldamos el original
         this.correoEditable = payload.email || '';

@@ -83,7 +83,7 @@
           <span *ngIf="!isDesktopCollapsed || isMobileMenuOpen" class="text-sm fadein" [class.font-bold]="rlaRutinas.isActive" [class.font-medium]="!rlaRutinas.isActive">Rutinas</span>
         </a>
 
-        <a routerLink="/dashboard/subscription" routerLinkActive #rlaPlanes="routerLinkActive" (click)="closeMenu()" 
+        <a *ngIf="billingEnabled" routerLink="/dashboard/subscription" routerLinkActive #rlaPlanes="routerLinkActive" (click)="closeMenu()" 
            [ngClass]="(isDesktopCollapsed && !isMobileMenuOpen) ? 'justify-content-center' : 'gap-3'"
            class="flex align-items-center p-3 border-round-md cursor-pointer no-underline transition-colors"
            [class.bg-activa-primary-light]="rlaPlanes.isActive"
@@ -112,15 +112,10 @@
     </div>
 
     <div class="flex-1 flex flex-column h-full overflow-hidden">
-      <div class="bg-activa-surface h-5rem px-4 flex justify-content-between align-items-center border-bottom-1 z-1 flex-shrink-0" style="border-color: #E2E8F0 !important;">
+      <div class="bg-activa-surface h-4rem px-4 flex justify-content-between align-items-center border-bottom-1 z-1 flex-shrink-0" style="border-color: #E2E8F0 !important;">
         <div class="flex align-items-center gap-3">
           <p-button icon="pi pi-bars" styleClass="p-button-text p-button-secondary md:hidden" (onClick)="toggleMenu()"></p-button>
-          <h2 class="m-0 text-6xl font-bold hidden sm:block" style="color: #13afdaa8;">Activa</h2>
-        </div>
-        <div class="flex align-items-center gap-4">
-          <i class="pi pi-bell text-color-secondary text-xl cursor-pointer hover:text-activa-primary transition-colors relative">
-            <span class="absolute top-0 right-0 bg-red-500 border-circle w-0.5rem h-0.5rem"></span>
-          </i>
+          <h2 class="m-0 text-2xl font-bold hidden sm:block" style="color: #0D8B97;">Activa</h2>
         </div>
       </div>
      <div class="flex-1 overflow-y-auto p-4 md:p-6 bg-activa-surface">
@@ -135,18 +130,18 @@
     <div class="absolute top-0 left-0 w-full h-1rem bg-activa-primary" style="background-color: #009688;"></div>
     <div class="mb-5">
     </div>
-    <h2 class="text-3xl font-bold text-color m-0 mb-3">Estamos revisando tu perfil</h2>
+    <h2 class="text-3xl font-bold text-color m-0 mb-3">Estamos revisando tu cédula</h2>
     <p class="text-x text-color-secondary m-0 mb-5 line-height-3">
-      Hemos recibido tus documentos correctamente. Nuestro equipo de administración está verificando tu identidad para garantizar la seguridad de la plataforma.
+      Tu cuenta ya está creada. Revisamos tu número de cédula en el Registro Nacional de Profesionistas de la SEP para confirmar que eres fisioterapeuta. No necesitas enviar documentos.
     </p>
     <div class="bg-blue-50 border-round-lg p-4 mb-5 text-left flex align-items-start gap-3 border-1 border-blue-100">
       <i class="pi pi-info-circle text-blue-600 text-2xl mt-1"></i>
       <div>
         <span class="block font-bold text-blue-900 text-lg mb-2">¿Qué sigue ahora?</span>
         <ul class="text-blue-800 m-0 pl-3 line-height-3">
-          <li>El proceso de validación suele tomar entre <strong>24 y 48 horas hábiles</strong>.</li>
-          <li>Te enviaremos una notificación en cuanto tu cuenta sea activada.</li>
-          <li>Una vez activado, tendrás acceso total para gestionar a tus pacientes y rutinas.</li>
+          <li>La revisión suele tomar entre <strong>24 y 48 horas hábiles</strong>.</li>
+          <li>Vuelve a entrar cuando quieras: en cuanto tu cuenta esté aprobada, verás tu panel sin hacer nada más.</li>
+          <li>Ya aprobado, podrás registrar a tus pacientes, asignar rutinas y agendar citas.</li>
         </ul>
       </div>
     </div>
@@ -171,16 +166,16 @@
     </div>
     <h2 class="text-3xl font-bold m-0 mb-2" style="color: #1e293b;">Solicitud No Aprobada</h2>
     <p class="text-lg m-0 mb-4 line-height-3" style="color: #64748b;">
-      Lamentablemente, nuestro equipo de administración no pudo validar la autenticidad de los documentos proporcionados o estos no cumplen con los requisitos mínimos de la plataforma.
+      No pudimos confirmar tu cédula en el Registro Nacional de Profesionistas de la SEP con los datos que registraste.
     </p>
     <div class="border-round-lg p-3 mb-4 text-left flex align-items-start gap-3 border-1" style="background-color: #fecaca; border-color: #fca5a5;">
       <i class="pi pi-exclamation-triangle text-xl mt-1" style="color: #b91c1c;"></i>
       <div>
         <span class="block font-bold text-base mb-2" style="color: #991b1b;">¿Qué puedo hacer ahora?</span>
         <ul class="m-0 pl-3 line-height-3 text-sm sm:text-base" style="color: #7f1d1d;">
-          <li class="mb-1">Asegúrate de que tu Cédula Profesional sea visible y vigente.</li>
-          <li class="mb-1">Revisa que las identificaciones subidas correspondan a tus datos.</li>
-          <li>Si crees que esto es un error, ponte en contacto con SupportActiva&#64;gmail.com para aclarar la situación.</li>
+          <li class="mb-1">Revisa que el número de cédula sea el correcto y que esté a tu nombre.</li>
+          <li class="mb-1">Tu nombre en Activa debe ser igual al de tu cédula.</li>
+          <li>Si crees que es un error, contacta al administrador de Activa.</li>
         </ul>
       </div>
     </div>

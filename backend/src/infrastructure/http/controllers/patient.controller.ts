@@ -10,6 +10,24 @@ import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import { PatientModel, UserModel, PhysiotherapistModel } from "../../../infrastructure/persistence/sequelize/client"; 
 
+/** El formulario manda "sex" (M/F) y el modelo guarda "gender" (M/F/Other) */
+function normalizeGender(raw: any): "M" | "F" | "Other" | undefined {
+  const v = String(raw?.gender ?? raw?.sex ?? "").trim().toUpperCase();
+  if (!v) return undefined;
+  if (v === "M" || v.startsWith("MASC") || v === "H") return "M";
+  if (v === "F" || v.startsWith("FEM")) return "F";
+  return "Other";
+}
+
+/** Solo números; 10 dígitos o nada */
+function normalizePhone(raw: any): string | null | undefined {
+  if (raw === undefined) return undefined;
+  const digits = String(raw ?? "").replace(/\D/g, "");
+  if (!digits) return null;
+  if (digits.length !== 10) throw new Error("El celular del paciente debe tener 10 números.");
+  return digits;
+}
+
 export class PatientController {
   
   constructor(
@@ -54,7 +72,7 @@ export class PatientController {
       // 3. EMPAQUETAMOS LOS DATOS PARA LA TRANSACCIÓN
       const payloadTransaccion = {
         userData: {
-          email: rawData.email,
+          email: String(rawData.email ?? "").trim().toLowerCase(),
           password: hashedPassword,
           role: 'patient',
           status: 'approved'
@@ -63,10 +81,9 @@ export class PatientController {
           first_name: rawData.firstName,
           last_name_paternal: rawData.lastNameP, 
           last_name_maternal: rawData.lastNameM, 
-          email: rawData.email,
-          phone: rawData.phone,
-          birth_date: rawData.birthYear ? `${rawData.birthYear}-01-01` : null,        
-          gender: rawData.gender,
+          phone: normalizePhone(rawData.phone) ?? null,
+          birth_date: rawData.birthYear ? `${rawData.birthYear}-01-01` : null,
+          gender: normalizeGender(rawData) ?? null,
           height: rawData.height,
           weight: rawData.weight,
           id_physio: idPhysioReal // 🪄 USAMOS EL ID TRADUCIDO
@@ -130,7 +147,7 @@ export class PatientController {
 
       if (rawData.email && idUsuarioMovil) {
         await UserModel.update(
-          { email: rawData.email },
+          { email: String(rawData.email).trim().toLowerCase() },
           { where: { id_user: idUsuarioMovil } }
         );
       }
@@ -140,6 +157,8 @@ export class PatientController {
         last_name_paternal: rawData.lastNameP,
         last_name_maternal: rawData.lastNameM,
         birth_date: rawData.birthYear ? `${rawData.birthYear}-01-01` : undefined,
+        gender: normalizeGender(rawData),
+        phone: normalizePhone(rawData.phone),
         height: rawData.height,
         weight: rawData.weight
       };
@@ -160,6 +179,10 @@ export class PatientController {
     } catch (error: any) {
       if (error.name === 'SequelizeUniqueConstraintError') {
         res.status(409).json({ success: false, message: "Ese correo ya está en uso por otro paciente." });
+        return;
+      }
+      if (String(error.message).startsWith("El celular")) {
+        res.status(400).json({ success: false, message: error.message });
         return;
       }
       res.status(500).json({ success: false, message: "Error al actualizar: " + error.message });
@@ -188,9 +211,10 @@ export class PatientController {
 
       const idPhysioReal = (physioRecord as any).id_physio;
 
-      const limit = Math.min(Number(req.query.limit ?? 20), 100);
+      // Sin ?limit= se devuelven todos los pacientes del fisio (antes se cortaba en 20)
+      const limit = req.query.limit ? Math.min(Math.max(Number(req.query.limit) || 20, 1), 100) : undefined;
       const page = Math.max(Number(req.query.page ?? 1), 1);
-      const offset = (page - 1) * limit;
+      const offset = limit ? (page - 1) * limit : 0;
 
       const result = await this.listPatients.execute({ limit, offset, id_physio: idPhysioReal });
       

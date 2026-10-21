@@ -29,7 +29,7 @@ import { Patient } from '../../../../../core/patient/domain/patient.model';
 export class PatientCreateComponent implements OnInit {
   generos: any[] | undefined;
 
-  regexLetras: RegExp = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
+  regexLetras: RegExp = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ' -]+$/;
   regexEmail: RegExp = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
   nuevoPaciente: Patient = {
@@ -58,13 +58,9 @@ export class PatientCreateComponent implements OnInit {
     ];
   }
 
+  /** Quita espacios de más; respeta acentos y ñ (José Ángel Muñoz, no Jose Angel Munoz) */
   private limpiarTexto(texto: string | undefined): string {
-    if (!texto) return '';
-    return texto
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .trim();
+    return (texto || '').replace(/\s+/g, ' ').trim();
   }
 
   guardarPaciente() {
@@ -91,6 +87,13 @@ export class PatientCreateComponent implements OnInit {
     // 3. Validación de Correo
     if (!this.regexEmail.test(p.email)) {
       this.messageService.add({ severity: 'warn', summary: 'Correo inválido', detail: 'Por favor, proporciona un correo electrónico válido.' });
+      return;
+    }
+
+    // 3a. Celular opcional, para recordatorios por WhatsApp
+    const telefono = String(p.phone || '').replace(/\D/g, '');
+    if (telefono && telefono.length !== 10) {
+      this.messageService.add({ severity: 'warn', summary: 'Celular', detail: 'El celular debe tener 10 números (o déjalo vacío).' });
       return;
     }
 
@@ -144,11 +147,9 @@ export class PatientCreateComponent implements OnInit {
       height: alturaNum,
       weight: pesoNum,
       email: p.email.toLowerCase().trim(),
+      phone: telefono,
       password: p.password,
-      physiotherapistId: 1 
     };
-
-    console.log(`📦 Enviando POST al backend:`, payloadParaBackend);
 
     this.patientUseCase.executeCreate(payloadParaBackend as any).subscribe({
       next: (respuesta: any) => {

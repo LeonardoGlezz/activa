@@ -75,19 +75,40 @@ export class SequelizeRoutineRepository implements RoutineRepository {
   }
 
   async findActiveByPatientId(patientId: number): Promise<any | null> {
-    const routine = await RoutineModel.findOne({
-      where: { id_patient: patientId },
-      // Aquí ocurre la magia: le decimos que incluya los ejercicios asociados
-      include: [
-        {
-          model: ExerciseModel,
-          as: "exercises",
-          attributes: ['id_exercise', 'name', 'body_zone', 'description', 'video_url'],
-          through: { attributes: ['repetitions', 'sets', 'exercise_order', 'notes'] }
-        }
-      ],
-      order: [['id_routine', 'DESC']] // Traemos la rutina más reciente
+    const include = [
+      {
+        model: ExerciseModel,
+        as: "exercises",
+        attributes: ['id_exercise', 'name', 'body_zone', 'description', 'video_url'],
+        through: { attributes: ['repetitions', 'sets', 'exercise_order', 'notes'] }
+      }
+    ];
+    const today = todayInAppTimezone();
+
+    // Primero la rutina vigente hoy (entre su inicio y su fin); si no hay,
+    // la próxima por empezar; si tampoco, la más reciente.
+    const current = await RoutineModel.findOne({
+      where: {
+        id_patient: patientId,
+        [Op.and]: [
+          { [Op.or]: [{ start_date: null }, { start_date: { [Op.lte]: today } }] },
+          { [Op.or]: [{ end_date: null }, { end_date: { [Op.gte]: today } }] },
+        ],
+      },
+      include,
+      order: [['start_date', 'DESC'], ['id_routine', 'DESC']],
     });
+    const routine = current
+      ?? await RoutineModel.findOne({
+        where: { id_patient: patientId, start_date: { [Op.gt]: today } },
+        include,
+        order: [['start_date', 'ASC']],
+      })
+      ?? await RoutineModel.findOne({
+        where: { id_patient: patientId },
+        include,
+        order: [['id_routine', 'DESC']],
+      });
 
     return routine ? sortRoutineExercises(routine.toJSON()) : null;
   }
@@ -423,4 +444,11 @@ export class SequelizeRoutineRepository implements RoutineRepository {
 
     return template ? template.toJSON() : null;
   }
+}
+
+/** Fecha de hoy (YYYY-MM-DD) en la zona horaria de la app */
+function todayInAppTimezone(): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: process.env.APP_TIMEZONE || "America/Mexico_City",
+  }).format(new Date());
 }

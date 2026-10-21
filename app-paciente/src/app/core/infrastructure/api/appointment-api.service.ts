@@ -11,6 +11,7 @@ export interface Appointment {
   appointmentDate: string;
   appointmentTime: string;
   type: string;
+  status: string;
   notes?: string;
   createdAt?: string;
 }
@@ -21,44 +22,30 @@ export class AppointmentApiService {
 
   constructor(private http: HttpClient) {}
 
+  /** Próxima cita que no esté cancelada ni cerrada (el servidor devuelve una lista) */
   getNext(patientId: number): Observable<Appointment | null> {
-    return this.http
-      .get<{ success: boolean; rows?: any[] }>(`${this.baseUrl}/patient/${patientId}`)
-      .pipe(
-        map((res) => {
-          const rows = res.rows ?? [];
-          if (rows.length === 0) return null;
-          const today = new Date();
-          today.setHours(0, 0, 0, 0);
-          // Mapear, filtrar solo citas de hoy en adelante, ordenar por fecha
-          const sorted = rows
-            .map((d) => this.mapAppointment(d))
-            .filter((a) => {
-              if (!a.appointmentDate) return false;
-              const d = new Date(a.appointmentDate + 'T12:00:00');
-              return d >= today;
-            })
-            .sort((a, b) => new Date(a.appointmentDate + 'T12:00:00').getTime() - new Date(b.appointmentDate + 'T12:00:00').getTime());
-          return sorted[0] ?? null;
-        }),
-        catchError(() => of(null))
-      );
+    return this.list(patientId).pipe(
+      map((rows) => {
+        const now = Date.now();
+        return rows
+          .filter((a) => a.appointmentDate && (a.status === 'pending' || a.status === 'confirmed'))
+          .filter((a) => this.startsAt(a) >= now)
+          .sort((a, b) => this.startsAt(a) - this.startsAt(b))[0] ?? null;
+      })
+    );
   }
 
-  list(patientId: number, limit = 50): Observable<Appointment[]> {
+  list(patientId: number): Observable<Appointment[]> {
     return this.http
-      .get<{ success: boolean; rows?: any[] }>(`${this.baseUrl}/patient/${patientId}`)
+      .get<any>(`${this.baseUrl}/patient/${patientId}`)
       .pipe(
-        map((res) => (res.rows ?? []).map((d) => this.mapAppointment(d))),
+        map((res) => (Array.isArray(res) ? res : res?.rows ?? []).map((d: any) => this.mapAppointment(d))),
         catchError(() => of([]))
       );
   }
 
-  create(data: { patientId: number; physiotherapistId: number; appointmentDate: string; appointmentTime: string; type?: string; notes?: string }): Observable<Appointment | null> {
-    return this.http.post<{ success: boolean; data?: any }>(`${this.baseUrl}`, data).pipe(
-      map((res) => (res.data ? this.mapAppointment(res.data) : null)),
-      catchError(() => of(null))
-    );
+  private startsAt(a: Appointment): number {
+    return new Date(`${a.appointmentDate}T${a.appointmentTime || '00:00:00'}`).getTime();
   }
 
   private mapAppointment(d: any): Appointment {
@@ -70,7 +57,9 @@ export class AppointmentApiService {
       appointmentDate:    d.appointmentDate   ?? d.appointment_date   ?? d.date ?? '',
       // El back puede devolver: appointmentTime, appointment_time, starttime, start_time
       appointmentTime:    d.appointmentTime   ?? d.appointment_time   ?? d.starttime ?? d.start_time ?? '',
-      type:               d.type ?? d.notes ?? 'Consulta',
+      // El servicio se guarda al inicio de las notas: "Servicio: Terapia física"
+      type:               (String(d.notes ?? '').match(/Servicio:\s*(.+?)(?=\n|$)/)?.[1] ?? 'Consulta').trim(),
+      status:             d.status ?? 'pending',
       notes:              d.notes,
       createdAt:          d.createdAt ?? d.created_at ?? d.createdat ?? '',
     };

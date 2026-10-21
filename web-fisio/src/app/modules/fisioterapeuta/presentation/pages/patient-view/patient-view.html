@@ -78,12 +78,16 @@
       </div>
 
       <div class="patient-profile">
-        <img [src]="patient.avatar" alt="{{ patient.name }}" class="patient-avatar">
+        <div class="patient-avatar initials" aria-hidden="true">{{ patient.initials }}</div>
         <div class="patient-info-text">
           <h2>{{ patient.name }}</h2>
           <p class="patient-email">
             <i class="pi pi-envelope"></i>
             {{ patient.email || '—' }}
+          </p>
+          <p class="patient-email" *ngIf="patient.phone">
+            <i class="pi pi-phone"></i>
+            {{ patient.phone }}
           </p>
         </div>
       </div>
@@ -104,12 +108,12 @@
       </div>
     </div>
 
-    <!-- ===== Q2 TOP-RIGHT: BITÁCORAS ===== -->
+    <!-- ===== Q2 TOP-RIGHT: NOTAS DE SEGUIMIENTO ===== -->
     <div class="quadrant q-logs">
       <div class="quadrant-header">
         <span class="quadrant-title">
           <i class="pi pi-book"></i>
-          Bitácoras
+          Notas de seguimiento
           <span class="count-badge">{{ logbooks.length }}</span>
         </span>
         <button class="icon-action-btn primary" (click)="openNewLog()" type="button">
@@ -140,8 +144,8 @@
         <ng-template #emptyLogs>
           <div class="empty-card">
             <i class="pi pi-book"></i>
-            <p>Sin bitácoras registradas</p>
-            <button class="empty-create-btn" (click)="openNewLog()" type="button">Crear primera bitácora</button>
+            <p>Sin notas todavía</p>
+            <button class="empty-create-btn" (click)="openNewLog()" type="button">Escribir primera nota</button>
           </div>
         </ng-template>
       </div>
@@ -152,7 +156,7 @@
       <div class="quadrant-header">
         <span class="quadrant-title">
           <i class="pi pi-calendar"></i>
-          Citas Programadas
+          Citas
           <span class="count-badge" *ngIf="!loadingAppointments">{{ appointments.length }}</span>
         </span>
         <button class="icon-action-btn primary" (click)="openNewAppointment()" type="button">
@@ -165,12 +169,30 @@
         <ng-container *ngIf="appointments.length > 0; else emptyApt">
           <div class="apt-card" *ngFor="let apt of appointments">
             <div class="card-row">
-              <span [class]="'status-tag ' + getStatusClass(apt.status)">{{ apt.status || 'Programada' }}</span>
-              <span class="date-text">{{ formatDate(apt.date) }}</span>
+              <span [class]="'status-tag status-' + statusTone(apt.status)">{{ statusLabel(apt.status) }}</span>
+              <span class="date-text">{{ formatDate(apt.date) }} · {{ (apt.start_time || '').slice(0, 5) }}</span>
             </div>
-            <p class="card-title">{{ apt.reason }}</p>
-            <p class="card-body" *ngIf="apt.notes">{{ apt.notes }}</p>
+            <p class="card-title">{{ serviceOf(apt) }}</p>
+            <p class="card-body" *ngIf="notesOf(apt)">{{ notesOf(apt) }}</p>
             <div class="card-actions">
+              <ng-container *ngIf="!isClosed(apt.status)">
+                <ng-container *ngIf="hasStarted(apt); else upcoming">
+                  <button class="link-btn" (click)="setAppointmentStatus(apt, 'completed')" type="button">
+                    <i class="pi pi-check"></i> Asistió
+                  </button>
+                  <button class="link-btn danger" (click)="setAppointmentStatus(apt, 'no_show')" type="button">
+                    <i class="pi pi-user-minus"></i> No asistió
+                  </button>
+                </ng-container>
+                <ng-template #upcoming>
+                  <a *ngIf="reminderUrl(apt) as url" class="link-btn" [href]="url" target="_blank" rel="noopener">
+                    <i class="pi pi-whatsapp"></i> Recordar por WhatsApp
+                  </a>
+                  <button class="link-btn danger" (click)="setAppointmentStatus(apt, 'cancelled')" type="button">
+                    <i class="pi pi-times"></i> Cancelar
+                  </button>
+                </ng-template>
+              </ng-container>
               <button class="link-btn" (click)="openEditAppointment(apt)" type="button">
                 <i class="pi pi-pencil"></i> Editar
               </button>
@@ -285,6 +307,10 @@
       <label>Correo Electrónico</label>
       <input pInputText type="email" [(ngModel)]="editingPatient.email" placeholder="correo@ejemplo.com" class="field-input">
     </div>
+    <div class="field-group">
+      <label>Celular (para recordatorios por WhatsApp)</label>
+      <input pInputText type="tel" maxlength="14" [(ngModel)]="editingPatient.phone" placeholder="10 números" class="field-input">
+    </div>
     <div class="field-row">
       <div class="field-group">
         <label>Año de Nacimiento</label>
@@ -368,27 +394,31 @@
     <div class="dialog-header-content">
       <div class="dialog-icon-wrap teal"><i class="pi pi-calendar"></i></div>
       <div>
-        <h3>Editar Cita</h3>
-        <p>Modifica los datos de la cita</p>
+        <h3>Editar cita</h3>
+        <p>Si cambias la fecha u hora, el paciente recibe un aviso en su app</p>
       </div>
     </div>
   </ng-template>
   <div class="dialog-body">
-    <div class="field-group">
-      <label>Motivo / Servicio</label>
-      <input pInputText [(ngModel)]="editingAppointment.reason" placeholder="Motivo" class="field-input">
-    </div>
     <div class="field-row">
       <div class="field-group">
         <label>Fecha</label>
         <input pInputText type="date" [(ngModel)]="editingAppointment.date" class="field-input">
       </div>
       <div class="field-group">
-        <label>Estado</label>
-        <p-dropdown [options]="[{label:'Programada',value:'programada'},{label:'Completada',value:'completada'},{label:'Cancelada',value:'cancelada'}]"
-          [(ngModel)]="editingAppointment.status" styleClass="w-full field-dropdown" optionLabel="label" optionValue="value">
-        </p-dropdown>
+        <label>Hora de inicio</label>
+        <input pInputText type="time" [(ngModel)]="editingAppointment.start" class="field-input">
       </div>
+      <div class="field-group">
+        <label>Hora de fin</label>
+        <input pInputText type="time" [(ngModel)]="editingAppointment.end" class="field-input">
+      </div>
+    </div>
+    <div class="field-group">
+      <label>Estado</label>
+      <p-dropdown [options]="statusOptions" [(ngModel)]="editingAppointment.status" styleClass="w-full field-dropdown"
+        optionLabel="label" optionValue="value" appendTo="body">
+      </p-dropdown>
     </div>
     <div class="field-group">
       <label>Notas</label>
@@ -405,7 +435,7 @@
   </ng-template>
 </p-dialog>
 
-<!-- MODAL: Bitácora -->
+<!-- MODAL: Nota de seguimiento -->
 <p-dialog [(visible)]="showLogModal" [modal]="true" [closable]="false"
   [style]="{ width: '90vw', maxWidth: '520px' }" styleClass="custom-dialog">
   <ng-template pTemplate="header">
@@ -413,7 +443,7 @@
       <div class="dialog-icon-wrap"><i class="pi pi-book"></i></div>
       <div>
         <h3>{{ logModalTitle }}</h3>
-        <p>Registro clínico del paciente</p>
+        <p>Solo tú puedes ver estas notas</p>
       </div>
     </div>
   </ng-template>
@@ -444,7 +474,7 @@
     <div class="dialog-footer">
       <button class="btn-cancel" (click)="showLogModal = false" type="button">Cancelar</button>
       <button class="btn-save" (click)="saveLog()" type="button">
-        <i class="pi pi-check"></i> Guardar Bitácora
+        <i class="pi pi-check"></i> Guardar nota
       </button>
     </div>
   </ng-template>

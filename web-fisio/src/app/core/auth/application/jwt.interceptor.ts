@@ -27,7 +27,6 @@ export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
         
         // 1. Limpiamos la basura del navegador
         localStorage.removeItem('token');
-        localStorage.removeItem('documentos_subidos');
         
         // 2. Mostramos el mensaje (durará 3 segundos en pantalla)
         messageService.add({ 

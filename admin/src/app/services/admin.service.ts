@@ -39,6 +39,22 @@ export interface AdminOverview {
   };
 }
 
+/** Ejercicio del banco base de Activa (lo ven todos los fisios) */
+export interface BaseExercise {
+  id_exercise: number;
+  name: string;
+  body_zone: string;
+  description: string;
+  video_url: string | null;
+}
+
+export interface BaseExerciseForm {
+  name: string;
+  bodyZone: string;
+  description: string;
+  videoUrl: string | null;
+}
+
 export type PhysioStatus = 'pending_profile' | 'pending_approval' | 'approved' | 'rejected';
 
 export interface PhysioRow {
@@ -47,10 +63,9 @@ export interface PhysioRow {
   last_name_paternal?: string | null;
   last_name_maternal?: string | null;
   professional_license?: string | null;
-  curp?: string | null;
-  ine_doc_url?: string | null;
-  license_doc_url?: string | null;
-  birth_date?: string | null;
+  phone?: string | null;
+  license_verified_at?: string | null;
+  license_verified_by?: string | null;
   status: PhysioStatus;
   created_at?: string;
   email: string | null;
@@ -62,10 +77,9 @@ export interface PhysioForm {
   firstName: string;
   lastNameP: string;
   lastNameM?: string;
-  birthDate?: string;
   email: string;
   professionalLicense?: string;
-  curp?: string;
+  phone?: string;
   password?: string;
 }
 
@@ -87,13 +101,14 @@ export interface PatientDetail {
   name: string;
   email: string | null;
   can_login: boolean;
-  birth_date: string | null;
-  gender: string | null;
   created_at: string;
   id_physio: number;
   physio_name: string;
-  routines: { id_routine: number; name: string; start_date: string | null; end_date: string | null }[];
-  sessions: { id: number; date: string; routine: string | null }[];
+  /** Solo conteos: el admin no ve nombres de rutinas, ejercicios, dolor ni notas */
+  routines: number;
+  active_routines: number;
+  sessions: number;
+  last_session: string | null;
 }
 
 export type ActivityType = 'physio' | 'patient' | 'session' | 'appointment';
@@ -209,12 +224,27 @@ export class AdminService {
   }
 
   /** Cambia el error HTTP por un Error con el mensaje del servidor (o uno genérico) */
-  private request<T>(obs: Observable<T>, fallback: string): Observable<T> {
-    return obs.pipe(catchError((error) => throwError(() => new Error(error?.error?.message || fallback))));
+  listBaseExercises(): Observable<{ rows: BaseExercise[]; zones: string[] }> {
+    return this.request(this.http.get<{ rows: BaseExercise[]; zones: string[] }>(`${this.baseUrl}/admin/exercises`, { headers: this.getHeaders() }),
+      'No se pudo cargar el banco de ejercicios.');
   }
 
-  /** URL pública de un documento subido por el fisio (se guarda solo el nombre del archivo) */
-  documentUrl(fileName: string): string {
-    return `${this.baseUrl.replace(/\/api\/?$/, '')}/uploads/documents/${encodeURIComponent(fileName)}`;
+  createBaseExercise(data: BaseExerciseForm): Observable<{ data: BaseExercise }> {
+    return this.request(this.http.post<{ data: BaseExercise }>(`${this.baseUrl}/admin/exercises`, data, { headers: this.getHeaders() }),
+      'No se pudo guardar el ejercicio.');
+  }
+
+  updateBaseExercise(id: number, data: BaseExerciseForm): Observable<{ data: BaseExercise }> {
+    return this.request(this.http.put<{ data: BaseExercise }>(`${this.baseUrl}/admin/exercises/${id}`, data, { headers: this.getHeaders() }),
+      'No se pudo guardar el ejercicio.');
+  }
+
+  deleteBaseExercise(id: number): Observable<{ message: string }> {
+    return this.request(this.http.delete<{ message: string }>(`${this.baseUrl}/admin/exercises/${id}`, { headers: this.getHeaders() }),
+      'No se pudo borrar el ejercicio.');
+  }
+
+  private request<T>(obs: Observable<T>, fallback: string): Observable<T> {
+    return obs.pipe(catchError((error) => throwError(() => new Error(error?.error?.message || fallback))));
   }
 }

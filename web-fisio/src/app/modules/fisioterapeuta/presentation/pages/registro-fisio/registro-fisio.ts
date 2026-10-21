@@ -1,9 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 
-import { CalendarModule } from 'primeng/calendar';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
@@ -16,35 +15,12 @@ import { AuthRepository } from '../../../../../core/auth/domain/auth.repository'
 import { AuthHttpRepository } from '../../../../../core/auth/infrastructure/auth-http.repository';
 import { LegalService, LEGAL_URLS } from '../../../../../core/legal/legal.service';
 
-// =================================================================
-// VALIDADOR PERSONALIZADO: Mayor de 18 años
-// =================================================================
-export function mayorDeEdadValidator(control: AbstractControl): ValidationErrors | null {
-  if (!control.value) return null;
-
-  const fechaNacimiento = new Date(control.value);
-  const hoy = new Date();
-  
-  let edad = hoy.getFullYear() - fechaNacimiento.getFullYear();
-  const mes = hoy.getMonth() - fechaNacimiento.getMonth();
-  
-  if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNacimiento.getDate())) {
-    edad--;
-  }
-
-  if (edad < 18 || edad > 100) {
-    return { edadInvalida: true };
-  }
-  
-  return null;
-}
-
 @Component({
   selector: 'app-registro-fisio',
   standalone: true, 
   imports: [
     CommonModule, ReactiveFormsModule, RouterModule,
-    CalendarModule, ButtonModule, InputTextModule,
+    ButtonModule, InputTextModule,
     PasswordModule, ToastModule
   ],
   providers: [
@@ -71,18 +47,17 @@ export class RegistroFisioComponent implements OnInit {
   }
 
   private initForm(): void {
-    const soloLetrasRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
-    const curpRegex = /^[A-Z]{4}\d{6}[HM][A-Z]{5}[A-Z0-9]\d$/; 
-    const cedulaRegex = /^\d{7,8}$/; 
+    // Letras con acentos, ñ, ü, espacios, apóstrofo y guion (O'Brien, Pérez-Gil)
+    const soloLetrasRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ' -]+$/;
+    const cedulaRegex = /^\d{7,8}$/;
 
     this.perfilForm = this.fb.group({
-      nombres: ['', [Validators.required, Validators.minLength(3), Validators.pattern(soloLetrasRegex)]],
-      apellidos: ['', [Validators.required, Validators.pattern(soloLetrasRegex)]],
+      nombres: ['', [Validators.required, Validators.minLength(2), Validators.pattern(soloLetrasRegex)]],
+      apellidos: ['', [Validators.required, Validators.minLength(2), Validators.pattern(soloLetrasRegex)]],
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
+      password: ['', [Validators.required, Validators.minLength(8)]],
       cedula: ['', [Validators.required, Validators.pattern(cedulaRegex)]],
-      curp: ['', [Validators.required, Validators.pattern(curpRegex)]],
-      fechaNacimiento: [null, [Validators.required, mayorDeEdadValidator]],
+      telefono: ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
       aceptaAvisos: [false, Validators.requiredTrue]
     });
   }
@@ -92,7 +67,7 @@ export class RegistroFisioComponent implements OnInit {
   // =================================================================
   permitirSoloLetras(event: Event, controlName: string) {
     const input = event.target as HTMLInputElement;
-    const newValue = input.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
+    const newValue = input.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ' -]/g, '');
     this.perfilForm.get(controlName)?.setValue(newValue, { emitEvent: false });
   }
 
@@ -100,12 +75,6 @@ export class RegistroFisioComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     const newValue = input.value.replace(/[^0-9]/g, '');
     this.perfilForm.get(controlName)?.setValue(newValue, { emitEvent: false });
-  }
-
-  formatearCurp(event: Event) {
-    const input = event.target as HTMLInputElement;
-    const newValue = input.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
-    this.perfilForm.get('curp')?.setValue(newValue, { emitEvent: false });
   }
 
   // =================================================================
@@ -118,22 +87,18 @@ export class RegistroFisioComponent implements OnInit {
       this.isLoading = true; 
 
       const formValues = this.perfilForm.value;
-      const apellidosArray = formValues.apellidos.trim().split(' ');
+      const apellidosArray = formValues.apellidos.trim().split(/\s+/);
       const lastNameP = apellidosArray[0] || '';
       const lastNameM = apellidosArray.slice(1).join(' ') || '';
 
-      const fecha: Date = formValues.fechaNacimiento;
-      const birthDateString = fecha.toISOString().split('T')[0];
-
       const payload: RegisterPhysioDTO = {
-        firstName: formValues.nombres,
+        firstName: formValues.nombres.trim(),
         lastNameP: lastNameP,
         lastNameM: lastNameM,
-        birthDate: birthDateString,
-        email: formValues.email,
+        email: formValues.email.trim().toLowerCase(),
         password: formValues.password,
         professionalLicense: formValues.cedula,
-        curp: formValues.curp.toUpperCase() 
+        phone: formValues.telefono
       };
 
       this.authUseCase.registerPhysio(payload).subscribe({
@@ -151,12 +116,12 @@ export class RegistroFisioComponent implements OnInit {
               }
 
               this.isLoading = false;
-              this.messageService.add({ severity: 'success', summary: '¡Éxito!', detail: 'Cuenta creada. Redirigiendo a subir documentos...' });
+              this.messageService.add({ severity: 'success', summary: '¡Éxito!', detail: 'Cuenta creada. Revisaremos tu cédula y te avisaremos.' });
               
-              // 3. GUARDAMOS LA ACEPTACIÓN DE LOS AVISOS Y VAMOS A LOS PDFs
+              // 3. GUARDAMOS LA ACEPTACIÓN DE LOS AVISOS Y VAMOS A LA SALA DE ESPERA
               // Si no se pudo guardar, la pantalla de avisos se la vuelve a pedir.
-              const irADocumentos = () => setTimeout(() => this.router.navigate(['/verificar-datos']), 1500);
-              this.legal.acceptAll().subscribe({ next: irADocumentos, error: irADocumentos });
+              const irAlPanel = () => setTimeout(() => this.router.navigate(['/dashboard']), 1500);
+              this.legal.acceptAll().subscribe({ next: irAlPanel, error: irAlPanel });
             },
             error: (err) => {
               // Si por algo falla el auto-login, lo mandamos al login normal

@@ -5,6 +5,7 @@ import { PatientRepository } from '../../core/domain/repositories/patient.reposi
 import { RoutineApiService } from '../core/infrastructure/api/routine-api.service';
 import { AppointmentApiService } from '../core/infrastructure/api/appointment-api.service';
 import { NotificationApiService } from '../core/infrastructure/api/notification-api.service';
+import { PhysiotherapistApiService } from '../core/infrastructure/api/physiotherapist-api.service';
 import { Storage } from '@ionic/storage-angular';
 
 @Component({
@@ -22,6 +23,9 @@ export class Tab4Page implements OnInit {
 
   nextAppointment = signal<{ fecha: string; hora: string; tipo: string } | null>(null);
   unreadCount = signal(0);
+  greeting = signal(greetingFor(new Date()));
+  physioName = signal('');
+  whatsappUrl = signal<string | null>(null);
 
   constructor(
     private router: Router,
@@ -30,6 +34,7 @@ export class Tab4Page implements OnInit {
     private routineApi: RoutineApiService,
     private appointmentApi: AppointmentApiService,
     private notificationApi: NotificationApiService,
+    private physioApi: PhysiotherapistApiService,
     private storage: Storage
   ) {}
 
@@ -45,11 +50,15 @@ export class Tab4Page implements OnInit {
         const fullName = [patient.firstName, patient.lastNameP, patient.lastNameM]
           .filter(Boolean).join(' ') || 'Paciente';
         this.user.update(u => ({ ...u, fullName }));
+        this.physioApi.getMine().subscribe((ph) => {
+          this.physioName.set(ph?.firstName || ph?.fullName || '');
+          this.whatsappUrl.set(this.physioApi.whatsappUrl(ph, fullName));
+        });
       },
       error: () => this.user.update(u => ({ ...u, fullName: 'Inicia sesión' }))
     });
 
-    // Rutina real asignada por el fisio
+    // Rutina vigente hoy (el servidor elige la que está entre su inicio y su fin)
     this.routineApi.getRoutines(id).subscribe((routines) => {
       if (routines.length > 0) {
         this.user.update(u => ({ ...u, routineName: routines[0].name }));
@@ -68,7 +77,7 @@ export class Tab4Page implements OnInit {
         const hora = apt.appointmentTime
           ? apt.appointmentTime.substring(0, 5)   // HH:MM
           : '';
-        const tipo = (apt.notes && apt.notes.length < 60) ? apt.notes : 'Sesión de fisioterapia';
+        const tipo = apt.type && apt.type !== 'Consulta' ? apt.type : 'Sesión de fisioterapia';
         this.nextAppointment.set({ fecha: fechaCap, hora, tipo });
       } else {
         this.nextAppointment.set(null);
@@ -79,6 +88,7 @@ export class Tab4Page implements OnInit {
   }
 
   ionViewWillEnter() {
+    this.greeting.set(greetingFor(new Date()));
     this.storage.get('currentPatientId').then((id) => {
       if (id) this.notificationApi.getUnreadCount(id).subscribe((c) => this.unreadCount.set(c));
     });
@@ -95,4 +105,11 @@ export class Tab4Page implements OnInit {
   ionViewWillLeave() {
     if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
   }
+}
+
+function greetingFor(now: Date): string {
+  const h = now.getHours();
+  if (h < 12) return 'BUENOS DÍAS';
+  if (h < 19) return 'BUENAS TARDES';
+  return 'BUENAS NOCHES';
 }

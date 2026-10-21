@@ -1,7 +1,16 @@
 <div class="container">
   <div class="form-card">
     <a routerLink="/dashboard/ejercicios" class="back-link">&larr; Volver al banco de ejercicios</a>
-    <h2>{{ exerciseId ? 'Editar Ejercicio' : 'Agregar Nuevo Ejercicio' }}</h2>
+    <h2>{{ isBase ? 'Ejercicio del banco base' : exerciseId ? 'Editar ejercicio' : 'Nuevo ejercicio' }}</h2>
+    <p class="hint" *ngIf="!exerciseId">Se guarda en <strong>Mis ejercicios</strong>. Solo tú lo ves.</p>
+
+    <div *ngIf="isBase" class="alert alert-info base-note">
+      Este ejercicio es del banco base de Activa y no se puede cambiar. Si quieres otra descripción o agregarle tu video,
+      haz una copia en Mis ejercicios.
+      <button type="button" class="btn btn-primary" (click)="copyToMine()" [disabled]="copying">
+        {{ copying ? 'Copiando...' : 'Copiar a Mis ejercicios' }}
+      </button>
+    </div>
 
     <!-- Mensajes de éxito/error -->
     <div *ngIf="successMessage" class="alert alert-success">
@@ -20,7 +29,7 @@
           type="text"
           class="form-control"
           formControlName="name"
-          placeholder="Ej: Sentadilla, Flexiones..."
+          placeholder="Ej: Puente de glúteo con liga"
           [class.is-invalid]="name?.invalid && name?.touched"
         />
         <small *ngIf="name?.errors?.['required'] && name?.touched" class="text-danger">
@@ -34,14 +43,16 @@
       <!-- Zona del cuerpo -->
       <div class="form-group">
         <label for="bodyZone">Zona del Cuerpo *</label>
-        <input
+        <select
           id="bodyZone"
-          type="text"
           class="form-control"
           formControlName="bodyZone"
-          placeholder="Ej: Piernas, Pecho, Espalda..."
           [class.is-invalid]="bodyZone?.invalid && bodyZone?.touched"
-        />
+        >
+          <option value="" disabled>Elige una zona</option>
+          <option *ngFor="let z of zones" [value]="z">{{ z }}</option>
+          <option *ngIf="bodyZone?.value && !zones.includes(bodyZone?.value)" [value]="bodyZone?.value">{{ bodyZone?.value }}</option>
+        </select>
         <small *ngIf="bodyZone?.errors?.['required'] && bodyZone?.touched" class="text-danger">
           La zona del cuerpo es obligatoria
         </small>
@@ -78,7 +89,7 @@
           Es opcional, pero el paciente lo verá al hacer su rutina.
         </p>
 
-        <div class="media-actions">
+        <div class="media-actions" *ngIf="!isBase">
           <label class="btn btn-secondary upload-btn" [class.disabled]="uploading">
             {{ uploading ? 'Subiendo...' : 'Subir archivo' }}
             <input type="file" accept="video/mp4,video/webm,video/quicktime,image/gif,image/jpeg,image/png,image/webp"
@@ -107,13 +118,18 @@
         </div>
       </div>
 
+      <label class="rights-check" *ngIf="needsRights">
+        <input type="checkbox" formControlName="rightsConfirmed" />
+        Confirmo que esta foto o video es mío o que tengo permiso de usarlo, y que si aparece un paciente tengo su autorización por escrito.
+      </label>
+
       <!-- Botón submit -->
-      <button
+      <button *ngIf="!isBase"
         type="submit"
         class="btn btn-primary"
-        [disabled]="form.invalid || loading || uploading"
+        [disabled]="form.invalid || loading || uploading || (needsRights && !form.value.rightsConfirmed)"
       >
-        {{ loading ? 'Guardando...' : 'Guardar Ejercicio' }}
+        {{ loading ? 'Guardando...' : 'Guardar ejercicio' }}
       </button>
     </form>
   </div>

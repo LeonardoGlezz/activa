@@ -61,7 +61,7 @@ export class RegisterPainLevelUseCase {
           id_patient: patientId,
           id_physio: idPhysio != null ? Number(idPhysio) : undefined,
           message:
-            `Alerta: el paciente reportó dolor ${data.painLevel}/10 tras la sesión.` +
+            `Aviso: el paciente reportó dolor ${data.painLevel}/10 al terminar su rutina.` +
             (data.postObservations?.trim() ? ` Comentario: ${data.postObservations.trim()}` : ""),
           type: "mensaje",
         });

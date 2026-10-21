@@ -12,7 +12,6 @@ import { AppointmentListComponent } from './modules/fisioterapeuta/presentation/
 import { PatientViewComponent } from './modules/fisioterapeuta/presentation/pages/patient-view/patient-view';
 import { RoutineLibraryComponent } from './modules/fisioterapeuta/presentation/pages/routine-library/routine-library';
 import { LoginFisioComponent } from './modules/fisioterapeuta/presentation/pages/login-fisio/login-fisio'; 
-import { VerifyDataComponent } from './modules/fisioterapeuta/presentation/pages/verify-data/verify-data'; 
 import { HomeComponent } from './modules/fisioterapeuta/presentation/pages/home/home';
 import { PerfilComponent } from './modules/fisioterapeuta/presentation/pages/profile/profile';
 import { SubscriptionComponent } from './modules/fisioterapeuta/presentation/pages/subscription/subscription';
@@ -37,16 +36,10 @@ export const routes: Routes = [
   // =========================================================
   // Aviso de privacidad y términos: se aceptan una vez por versión
   { path: 'aceptar-avisos', component: AceptarAvisosComponent, canActivate: [authGuard] },
-  {
-    path: 'fisioterapeuta',
-    loadChildren: () => import('./modules/fisioterapeuta/fisioterapeuta.routes').then(m => m.FISIOTERAPEUTA_ROUTES),
-    canActivate: [authGuard] // Protegemos el módulo lazy load
-  },
-  { 
-    path: 'verificar-datos', 
-    component: VerifyDataComponent,
-    canActivate: [authGuard, legalGuard] // Protegido: Solo fisios registrados suben documentos
-  },
+  // Pantallas viejas de registro (con Google y "prueba gratuita") → registro real
+  { path: 'fisioterapeuta', children: [{ path: '**', redirectTo: '/registro-fisio' }] },
+  // Activa ya no pide documentos: la dirección vieja lleva al panel
+  { path: 'verificar-datos', redirectTo: 'dashboard', pathMatch: 'full' },
   { 
     path: 'Ejercicios', 
     component: BancoEjerciciosComponent,

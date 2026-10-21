@@ -37,17 +37,17 @@
     </div>
   </div>
 
-  <!-- MI PLAN -->
-  <p class="section-title">MI PLAN</p>
+  <!-- MI FISIO -->
+  <p class="section-title">MI FISIOTERAPEUTA</p>
 
   <div class="plan-card" (click)="goToPhysioProfile()">
     <div class="plan-icon-wrap">
-      <ion-icon name="business"></ion-icon>
+      <ion-icon name="medkit"></ion-icon>
     </div>
     <div class="plan-info">
-      <span class="plan-name">{{ clinicName }}</span>
-      <span class="plan-sub">Fisioterapeuta: {{ physio?.fullName || '—' }}</span>
-      <span class="plan-link" *ngIf="physio">Ver información general</span>
+      <span class="plan-name">{{ physio?.fullName || 'Mi fisioterapeuta' }}</span>
+      <span class="plan-sub">Tu fisioterapeuta en Activa</span>
+      <span class="plan-link" *ngIf="physio">{{ physio.whatsapp ? 'Contactar por WhatsApp' : 'Ver datos' }}</span>
     </div>
     <ion-icon name="chevron-forward" class="plan-chevron"></ion-icon>
   </div>

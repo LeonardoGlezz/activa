@@ -10,7 +10,7 @@
                 styleClass="p-button-rounded p-button-text text-color-secondary bg-white shadow-1"></p-button>
       <div>
         <h1 class="text-2xl md:text-3xl font-bold text-color m-0 mb-1">Detalles de la Cita</h1>
-        <p class="text-color-secondary m-0 text-sm">Información y expediente de la sesión programada.</p>
+        <p class="text-color-secondary m-0 text-sm">Fecha, paciente y estado de la cita.</p>
       </div>
     </div>
 
@@ -56,22 +56,25 @@
 
       <div class="flex flex-column md:flex-row justify-content-end gap-3 pt-4 border-top-1 surface-border mt-4">
         
-        <p-button *ngIf="!appointmentData.isPast"
-                  label="Cancelar Cita" icon="pi pi-times" 
-                  (onClick)="cancelarCita()"
-                  styleClass="p-button-outlined p-button-danger border-round-lg px-4 py-2 font-bold w-full md:w-auto"></p-button>
-        
-        <p-button *ngIf="!appointmentData.isPast"
-                  label="Reprogramar" icon="pi pi-calendar-plus" 
-                  [routerLink]="['/dashboard/nueva-cita']"
-                  [queryParams]="{ edit: appointmentData.id }"
-                  styleClass="p-button-outlined text-color-secondary border-round-lg px-4 py-2 font-bold w-full md:w-auto"></p-button>
-        
-        <p-button *ngIf="!appointmentData.isPast"
-                  label="Iniciar Consulta" 
-                  icon="pi pi-play" 
-                  (onClick)="iniciarConsulta()"
-                  styleClass="bg-activa-primary border-none hover:bg-activa-primary-hover text-white border-round-lg px-5 py-2 font-bold shadow-2 w-full md:w-auto"></p-button>
+        <ng-container *ngIf="!appointmentData.isClosed">
+          <ng-container *ngIf="appointmentData.started; else proxima">
+            <p-button label="No asistió" icon="pi pi-user-minus" (onClick)="marcarNoAsistio()"
+                      styleClass="p-button-outlined p-button-warning border-round-lg px-4 py-2 font-bold w-full md:w-auto"></p-button>
+            <p-button label="Asistió" icon="pi pi-check" (onClick)="marcarAsistio()"
+                      styleClass="bg-activa-primary border-none text-white border-round-lg px-5 py-2 font-bold shadow-2 w-full md:w-auto"></p-button>
+          </ng-container>
+          <ng-template #proxima>
+            <p-button label="Cancelar cita" icon="pi pi-times" (onClick)="cancelarCita()"
+                      styleClass="p-button-outlined p-button-danger border-round-lg px-4 py-2 font-bold w-full md:w-auto"></p-button>
+            <p-button label="Cambiar fecha u hora" icon="pi pi-calendar-plus"
+                      [routerLink]="['/dashboard/ver-paciente', appointmentData.patientId]"
+                      styleClass="p-button-outlined text-color-secondary border-round-lg px-4 py-2 font-bold w-full md:w-auto"></p-button>
+            <a *ngIf="appointmentData.whatsappUrl" [href]="appointmentData.whatsappUrl" target="_blank" rel="noopener"
+               class="p-button bg-green-500 border-none text-white border-round-lg px-4 py-2 font-bold no-underline justify-content-center">
+              <i class="pi pi-whatsapp mr-2"></i>Recordar por WhatsApp
+            </a>
+          </ng-template>
+        </ng-container>
       </div>
 
     </div>
