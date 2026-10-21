@@ -26,7 +26,6 @@ import { LoginAdminUseCase } from "./application/use-cases/LoginAdmin.uc";
 
 // Repositorios nuevos
 import { SequelizeAppointmentRepository } from "./infrastructure/persistence/repositories/SequelizeAppointmentRepository";
-import { SequelizeLogbookRepository } from "./infrastructure/persistence/repositories/SequelizeLogbookRepository";
 import { SequelizeNotificationRepository } from "./infrastructure/persistence/repositories/SequelizeNotificationRepository";
 
 // 1. INFRAESTRUCTURA CORE
@@ -59,9 +58,6 @@ import { GetAppointmentsByPatientUseCase } from "./application/use-cases/GetAppo
 import { UpdateAppointmentUseCase } from "./application/use-cases/UpdateAppointment.uc";
 import { GetAppointmentsByPhysioUseCase } from './application/use-cases/GetAppointmentsByPhysio.uc';
 
-// Use Cases — Bitácora
-import { CreateLogbookUseCase } from "./application/use-cases/CreateLogbook.uc";
-import { GetLogbookByAppointmentUseCase } from "./application/use-cases/GetLogbookByAppointment.uc";
 
 // Use Cases — Notificaciones
 import { CreateNotificationUseCase } from "./application/use-cases/CreateNotification.uc";
@@ -117,14 +113,14 @@ import { RoutineController } from "./infrastructure/http/controllers/routine.con
 
 // Controladores nuevos
 import { AppointmentController } from "./infrastructure/http/controllers/appointment.controller";
-import { LogbookController } from "./infrastructure/http/controllers/logbook.controller";
 import { NotificationController } from "./infrastructure/http/controllers/notification.controller";
 
 // 🪄 NUEVO: Controlador del Dashboard
 import { DashboardController } from "./infrastructure/http/controllers/dashboard.controller";
-import { DocumentController } from "./infrastructure/http/controllers/document.controller";
 import { AdminController } from "./infrastructure/http/controllers/admin.controller";
 import { LegalController } from "./infrastructure/http/controllers/legal.controller";
+import { PatientNoteController } from "./infrastructure/http/controllers/patient-note.controller";
+import { PhysioContactController } from "./infrastructure/http/controllers/physio-contact.controller";
 
 // Cargar variables de entorno (.env)
 dotenv.config();
@@ -161,7 +157,6 @@ async function bootstrap() {
     const routineRepo = new SequelizeRoutineRepository();
     const authRepo = new SequelizeAuthRepository();
     const appointmentRepo = new SequelizeAppointmentRepository();
-    const logbookRepo = new SequelizeLogbookRepository();
     const notificationRepo = new SequelizeNotificationRepository();
 
     // 🪄 NUEVO: Instanciamos el repo del dashboard
@@ -215,9 +210,6 @@ async function bootstrap() {
     const getAppointmentsByPatient = new GetAppointmentsByPatientUseCase(appointmentRepo);
     const updateAppointment = new UpdateAppointmentUseCase(appointmentRepo);
 
-    // Bitácora
-    const createLogbook = new CreateLogbookUseCase(logbookRepo);
-    const getLogbookByAppointment = new GetLogbookByAppointmentUseCase(logbookRepo);
 
     // Notificaciones
     const createNotification = new CreateNotificationUseCase(notificationRepo);
@@ -299,10 +291,6 @@ async function bootstrap() {
       getAppointmentsByPhysioUseCase
     );
 
-    const logbookController = new LogbookController(
-      createLogbook,
-      getLogbookByAppointment
-    );
 
     const notificationController = new NotificationController(
       createNotification,
@@ -312,7 +300,6 @@ async function bootstrap() {
 
     // 🪄 NUEVO: Instanciamos el controlador del dashboard
     const dashboardController = new DashboardController(getDashboardStats);
-    const documentController = new DocumentController();
     const adminController = new AdminController(getAdminOverview, new AdminManagementUseCase());
 
     // 💳 NUEVO: Instanciamos el controlador de Suscripciones
@@ -328,6 +315,11 @@ async function bootstrap() {
     app.set("trust proxy", 1);
     app.use(cors());
     app.use(express.json());
+    // Solo las imágenes y videos de ejercicios son públicos (no tienen datos personales).
+    // Activa ya no guarda documentos de identidad ni médicos; cualquier otra ruta da 404.
+    app.use("/uploads", (req, res, next) =>
+      req.path.startsWith("/exercise-media/") && !req.path.includes("..") ? next() : res.status(404).end()
+    );
     app.use("/uploads", express.static(path.join(process.cwd(), "uploads")), serveUploadsFromStorage);
     // Aviso de privacidad y términos de uso (páginas públicas)
     app.use("/legal", express.static(path.join(process.cwd(), "legal")));
@@ -343,13 +335,13 @@ async function bootstrap() {
       routineController,
       authController,
       appointmentController,
-      logbookController,
       notificationController,
       dashboardController,
-      documentController,
       subscriptionController,
       adminController,
       legalController,
+      patientNoteController: new PatientNoteController(),
+      physioContactController: new PhysioContactController(),
     }));
 
     // ============================================================

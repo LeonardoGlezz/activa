@@ -19,18 +19,15 @@ interface Credentials {
   password: string;
 }
 
-const CURP_RE =
-  /^[A-Z][AEIOUX][A-Z]{2}\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])[HM](AS|BC|BS|CC|CL|CM|CS|CH|DF|DG|GT|GR|HG|JC|MC|MN|MS|NT|NL|OC|PL|QT|QR|SP|SL|SR|TC|TS|TL|VZ|YN|ZS|NE)[B-DF-HJ-NP-TV-Z]{3}[0-9A-Z]\d$/;
-
 const STATUS_LABELS: Record<PhysioStatus, string> = {
   pending_approval: 'Por validar',
   approved: 'Con acceso',
   rejected: 'Rechazado',
-  pending_profile: 'Sin documentos',
+  pending_profile: 'Por validar',
 };
 
 function emptyForm(): PhysioForm {
-  return { firstName: '', lastNameP: '', lastNameM: '', birthDate: '', email: '', professionalLicense: '', curp: '', password: '' };
+  return { firstName: '', lastNameP: '', lastNameM: '', email: '', professionalLicense: '', phone: '', password: '' };
 }
 
 @Component({
@@ -45,12 +42,12 @@ export class FisioterapeutaComponent implements OnInit {
     { key: 'pending_approval', label: 'Por validar' },
     { key: 'approved', label: 'Con acceso' },
     { key: 'rejected', label: 'Rechazados' },
-    { key: 'pending_profile', label: 'Sin documentos' },
     { key: 'all', label: 'Todos' },
   ];
   readonly statusLabels = STATUS_LABELS;
-  /** Consulta oficial de cédulas profesionales (SEP) */
-  readonly sepUrl = 'https://www.cedulaprofesional.sep.gob.mx/';
+  /** Consulta oficial de cédulas profesionales (Registro Nacional de Profesionistas, SEP) */
+  readonly sepUrl = 'https://cedulaprofesional.sep.gob.mx/';
+  cedulaCopiada: number | null = null;
   readonly fisioUrl = `${location.origin}/fisio/`;
 
   active: TabKey = 'pending_approval';
@@ -118,7 +115,7 @@ export class FisioterapeutaComponent implements OnInit {
     return this.all.filter(
       (p) =>
         (this.active === 'all' || p.status === this.active) &&
-        (!q || this.normalize(`${this.nombre(p)} ${p.email ?? ''} ${p.professional_license ?? ''} ${p.curp ?? ''}`).includes(q))
+        (!q || this.normalize(`${this.nombre(p)} ${p.email ?? ''} ${p.professional_license ?? ''} ${p.phone ?? ''}`).includes(q))
     );
   }
 
@@ -131,22 +128,19 @@ export class FisioterapeutaComponent implements OnInit {
     return [p.first_name, p.last_name_paternal, p.last_name_maternal].filter(Boolean).join(' ');
   }
 
-  documento(fileName?: string | null): string | null {
-    return fileName ? this.adminService.documentUrl(fileName) : null;
+  /** Copia la cédula para pegarla en el buscador de la SEP */
+  copiarCedula(p: PhysioRow): void {
+    navigator.clipboard?.writeText(p.professional_license ?? '').then(() => {
+      this.cedulaCopiada = p.id_physio;
+      setTimeout(() => (this.cedulaCopiada = null), 2500);
+    });
   }
 
   /** Avisos para validar los datos antes de aprobar */
   revisiones(p: PhysioRow): string[] {
     const out: string[] = [];
-    const curp = (p.curp ?? '').toUpperCase();
     if (!p.professional_license) out.push('No tiene cédula profesional capturada.');
-    if (!curp) out.push('No tiene CURP capturada.');
-    else if (!CURP_RE.test(curp)) out.push('La CURP no tiene un formato válido.');
-    else if (p.birth_date) {
-      const [y, m, d] = p.birth_date.slice(0, 10).split('-');
-      if (curp.slice(4, 10) !== `${y.slice(2)}${m}${d}`) out.push('La fecha de nacimiento no coincide con la CURP.');
-    }
-    if (p.status === 'pending_approval' && (!p.ine_doc_url || !p.license_doc_url)) out.push('Falta algún documento.');
+    else if (!/^\d{7,8}$/.test(p.professional_license)) out.push('La cédula no tiene 7 u 8 números.');
     return out;
   }
 
@@ -212,10 +206,9 @@ export class FisioterapeutaComponent implements OnInit {
       firstName: p.first_name ?? '',
       lastNameP: p.last_name_paternal ?? '',
       lastNameM: p.last_name_maternal ?? '',
-      birthDate: p.birth_date?.slice(0, 10) ?? '',
       email: p.email ?? '',
       professionalLicense: p.professional_license ?? '',
-      curp: p.curp ?? '',
+      phone: p.phone ?? '',
     };
   }
 
@@ -233,10 +226,9 @@ export class FisioterapeutaComponent implements OnInit {
           first_name: data.firstName,
           last_name_paternal: data.lastNameP,
           last_name_maternal: data.lastNameM || null,
-          birth_date: data.birthDate || null,
           email: data.email,
           professional_license: data.professionalLicense || null,
-          curp: data.curp || null,
+          phone: data.phone || null,
         });
       },
       error: (err) => {
@@ -290,7 +282,8 @@ export class FisioterapeutaComponent implements OnInit {
     if (f.firstName.trim().length < 2) return 'Escribe el nombre.';
     if (f.lastNameP.trim().length < 2) return 'Escribe el apellido paterno.';
     if (!/^\S+@\S+\.\S+$/.test(f.email.trim())) return 'Escribe un correo válido.';
-    if (f.curp && f.curp.trim().length !== 18) return 'La CURP debe tener 18 caracteres (o déjala vacía).';
+    const tel = (f.phone ?? '').replace(/\D/g, '');
+    if (tel && tel.length !== 10) return 'El celular debe tener 10 números (o déjalo vacío).';
     if (conPassword && (f.password ?? '').length < 8) return 'La contraseña debe tener al menos 8 caracteres.';
     return '';
   }
@@ -303,7 +296,7 @@ export class FisioterapeutaComponent implements OnInit {
       lastNameM: f.lastNameM?.trim(),
       email: f.email.trim().toLowerCase(),
       professionalLicense: f.professionalLicense?.trim(),
-      curp: f.curp?.trim().toUpperCase(),
+      phone: (f.phone ?? '').replace(/\D/g, ''),
     };
   }
 

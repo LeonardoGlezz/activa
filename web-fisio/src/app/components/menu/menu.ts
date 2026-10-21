@@ -5,6 +5,9 @@ import { ButtonModule } from 'primeng/button';
 import { MenuModule } from 'primeng/menu';
 import { MenuItem } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
+import { readTokenPayload } from '../../core/auth/application/token-payload';
 
 @Component({
   selector: 'app-menu',
@@ -29,7 +32,7 @@ export class Menu implements OnInit {
   userName: string = 'Cargando...';
   userMenuItems: MenuItem[] = [];
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private http: HttpClient) {}
 
   ngOnInit() {
     this.checkScreenSize();
@@ -84,51 +87,41 @@ export class Menu implements OnInit {
 
   verificarEstadoCuenta() {
     const token = localStorage.getItem('token');
-    const acabaDeSubirDocs = localStorage.getItem('documentos_subidos') === 'true';
-    
-    if (token) {
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        
-        const rawFirstName = payload.first_name || payload.firstName || payload.name || '';
-        const rawLastName = payload.last_name_paternal || payload.lastNameP || payload.lastName || '';
-        
-        const capitalize = (str: string) => str ? str.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : '';
+    if (!token) return;
+    this.aplicarToken(token);
+    // El estado del token puede ser viejo (p. ej. el admin lo aprobó después de entrar).
+    // Se pide un token nuevo con el estado real de la base.
+    this.http.post<any>(`${environment.webservice.baseUrl}/api/auth/refresh`, {}).subscribe({
+      next: (res) => {
+        if (res?.token) {
+          localStorage.setItem('token', res.token);
+          this.aplicarToken(res.token);
+        }
+      },
+      error: () => {}
+    });
+  }
 
-        if (rawFirstName) {
-          const nombreLimpio = capitalize(rawFirstName.trim());
-          const inicialApellido = rawLastName ? ` ${rawLastName.charAt(0).toUpperCase()}.` : '';
-          
-          this.userName = `Dr. ${nombreLimpio}${inicialApellido}`;
-        } else if (payload.email) {
-          this.userName = payload.email.split('@')[0]; 
-        } else {
-          this.userName = 'Fisioterapeuta';
-        }
-
-        // 🪄 2. LÓGICA DE RUTEO BASADA EN STATUS
-        if (payload.status === 'approved') {
-          this.estadoCuenta = 'approved'; 
-        } 
-        else if (payload.status === 'rejected') {
-          this.estadoCuenta = 'rejected'; // <-- ATRAPAMOS EL RECHAZO
-        }
-        else if (payload.status === 'pending_approval' || acabaDeSubirDocs) {
-          this.estadoCuenta = 'pending_approval'; 
-        } 
-        else if (payload.status === 'pending_profile') {
-          this.router.navigate(['/verificar-datos']);
-        }
-      } catch (error) {
-        console.error('Error leyendo el token', error);
-        this.estadoCuenta = 'pending_approval'; 
-      }
+  private aplicarToken(token: string) {
+    const payload = readTokenPayload(token);
+    if (!payload) {
+      this.estadoCuenta = 'pending_approval';
+      return;
     }
+    const capitalize = (str: string) => str ? str.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : '';
+    const rawFirstName = payload.first_name || '';
+    const rawLastName = payload.last_name_paternal || '';
+    if (rawFirstName) {
+      const inicialApellido = rawLastName ? ` ${rawLastName.charAt(0).toUpperCase()}.` : '';
+      this.userName = `${capitalize(rawFirstName.trim())}${inicialApellido}`;
+    } else {
+      this.userName = payload.email ? payload.email.split('@')[0] : 'Fisioterapeuta';
+    }
+    this.estadoCuenta = payload.status === 'approved' || payload.status === 'rejected' ? payload.status : 'pending_approval';
   }
 
   cerrarSesion() {
     localStorage.removeItem('token');
-    localStorage.removeItem('documentos_subidos');
     this.router.navigate(['/login']);
   }
 }

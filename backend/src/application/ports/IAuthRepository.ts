@@ -4,11 +4,10 @@ export interface IAuthRepository {
     firstName: string;
     lastNameP: string;
     lastNameM: string;
-    birthDate: string;   // ← cambiar birthYear: number → birthDate: string
     email: string;
     password: string;
     professionalLicense: string;
-    curp: string;
+    phone: string;
   }): Promise<any>;
   findById(idUser: number): Promise<any | null>;
   updateEmail(idUser: number, newEmail: string): Promise<void>;

@@ -115,7 +115,7 @@ export class PhysiotherapistController {
       return;
     }
 
-    const result = await this.approveUseCase.execute(id, action);
+    const result = await this.approveUseCase.execute(id, action, (req as any).user?.email);
     res.status(200).json(result);
   } catch (error: any) {
     res.status(400).json({ message: error.message });
@@ -126,7 +126,7 @@ export class PhysiotherapistController {
 
 listPending = async (req: Request, res: Response): Promise<void> => {
   try {
-    const allowed = ["pending_profile", "pending_approval", "approved", "rejected"];
+    const allowed = ["pending_approval", "approved", "rejected"];
     const status = String(req.query.status ?? "pending_approval");
     if (!allowed.includes(status)) {
       res.status(400).json({ message: "Estado inválido." });

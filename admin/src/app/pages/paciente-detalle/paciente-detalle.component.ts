@@ -47,20 +47,6 @@ export class PacienteDetalleComponent implements OnInit {
     });
   }
 
-  vigente(r: { start_date: string | null; end_date: string | null }): boolean {
-    const hoy = new Date().toLocaleDateString('en-CA');
-    return (!r.start_date || r.start_date <= hoy) && (!r.end_date || r.end_date >= hoy);
-  }
-
-  get ultimaSesion(): string | null {
-    return this.paciente?.sessions.length ? this.paciente.sessions[0].date : null;
-  }
-
-  get sesiones30(): number {
-    const desde = new Date(Date.now() - 29 * 86400000).toLocaleDateString('en-CA');
-    return this.paciente?.sessions.filter((s) => s.date >= desde).length ?? 0;
-  }
-
   abrirPassword(): void {
     this.cambiandoPassword = true;
     this.passwordNueva = temporaryPassword();

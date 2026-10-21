@@ -104,12 +104,12 @@
       </div>
     </div>
 
-    <!-- ===== Q2 TOP-RIGHT: BITÁCORAS ===== -->
+    <!-- ===== Q2 TOP-RIGHT: NOTAS DE SEGUIMIENTO ===== -->
     <div class="quadrant q-logs">
       <div class="quadrant-header">
         <span class="quadrant-title">
           <i class="pi pi-book"></i>
-          Bitácoras
+          Notas de seguimiento
           <span class="count-badge">{{ logbooks.length }}</span>
         </span>
         <button class="icon-action-btn primary" (click)="openNewLog()" type="button">
@@ -140,8 +140,8 @@
         <ng-template #emptyLogs>
           <div class="empty-card">
             <i class="pi pi-book"></i>
-            <p>Sin bitácoras registradas</p>
-            <button class="empty-create-btn" (click)="openNewLog()" type="button">Crear primera bitácora</button>
+            <p>Sin notas todavía</p>
+            <button class="empty-create-btn" (click)="openNewLog()" type="button">Escribir primera nota</button>
           </div>
         </ng-template>
       </div>
@@ -405,7 +405,7 @@
   </ng-template>
 </p-dialog>
 
-<!-- MODAL: Bitácora -->
+<!-- MODAL: Nota de seguimiento -->
 <p-dialog [(visible)]="showLogModal" [modal]="true" [closable]="false"
   [style]="{ width: '90vw', maxWidth: '520px' }" styleClass="custom-dialog">
   <ng-template pTemplate="header">
@@ -413,7 +413,7 @@
       <div class="dialog-icon-wrap"><i class="pi pi-book"></i></div>
       <div>
         <h3>{{ logModalTitle }}</h3>
-        <p>Registro clínico del paciente</p>
+        <p>Solo tú puedes ver estas notas</p>
       </div>
     </div>
   </ng-template>
@@ -444,7 +444,7 @@
     <div class="dialog-footer">
       <button class="btn-cancel" (click)="showLogModal = false" type="button">Cancelar</button>
       <button class="btn-save" (click)="saveLog()" type="button">
-        <i class="pi pi-check"></i> Guardar Bitácora
+        <i class="pi pi-check"></i> Guardar nota
       </button>
     </div>
   </ng-template>

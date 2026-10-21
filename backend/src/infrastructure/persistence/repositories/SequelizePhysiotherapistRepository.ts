@@ -18,8 +18,11 @@ export class SequelizePhysiotherapistRepository implements PhysiotherapistReposi
     return fisio ? fisio.get({ plain: true }) : null;
   }
 
-  async updateStatus(id: number, status: "pending_profile" | "pending_approval" | "approved" | "rejected"): Promise<void> {
-    await PhysiotherapistModel.update({ status }, { where: { id_physio: id } });
+  async updateStatus(id: number, status: "pending_profile" | "pending_approval" | "approved" | "rejected", verifiedBy?: string): Promise<void> {
+    const verification = status === "approved"
+      ? { license_verified_at: new Date(), license_verified_by: verifiedBy ?? null }
+      : {};
+    await PhysiotherapistModel.update({ status, ...verification }, { where: { id_physio: id } });
   }
 
   async findByStatus(status: string): Promise<any[]> {

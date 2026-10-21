@@ -48,13 +48,7 @@ export class AceptarAvisosComponent {
     this.router.navigate(['/login'], { replaceUrl: true });
   }
 
-  /** Un fisio que aún no completa su perfil va a subir documentos; los demás al panel. */
   private siguienteRuta(): string {
-    try {
-      const payload = JSON.parse(atob((localStorage.getItem('token') || '').split('.')[1]));
-      return payload.status === 'pending_profile' ? '/verificar-datos' : '/dashboard/inicio';
-    } catch {
-      return '/dashboard/inicio';
-    }
+    return '/dashboard/inicio';
   }
 }

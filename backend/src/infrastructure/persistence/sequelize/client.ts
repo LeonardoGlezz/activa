@@ -61,10 +61,16 @@ export const PhysiotherapistModel = sequelize.define("Physiotherapist", {
   license_doc_url: { type: DataTypes.TEXT, allowNull: true },
   curp: { type: DataTypes.STRING },
   ine_doc_url: { type: DataTypes.TEXT, allowNull: true },
-  status: { type: DataTypes.ENUM("pending_profile", "pending_approval", "approved", "rejected"), defaultValue: "pending_profile" },
+  status: { type: DataTypes.ENUM("pending_profile", "pending_approval", "approved", "rejected"), defaultValue: "pending_approval" },
   created_at: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
   id_user: { type: DataTypes.INTEGER, allowNull: false, unique: true },
-  id_admin: { type: DataTypes.INTEGER, allowNull: true }
+  id_admin: { type: DataTypes.INTEGER, allowNull: true },
+  // Celular del consultorio; el paciente lo ve en "Contactar a mi fisio" si show_whatsapp está activo
+  phone: { type: DataTypes.STRING(20), allowNull: true },
+  show_whatsapp: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
+  // Revisión de la cédula en el Registro Nacional de Profesionistas (SEP)
+  license_verified_at: { type: DataTypes.DATE, allowNull: true },
+  license_verified_by: { type: DataTypes.STRING, allowNull: true }
 }, { tableName: "physiotherapist" });
 
 // --- PATIENT ---
@@ -112,6 +118,20 @@ export const LogbookModel = sequelize.define("Logbook", {
   date: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
   id_appointment: { type: DataTypes.INTEGER, allowNull: false, unique: true }
 }, { tableName: "logbook" });
+
+// --- PATIENT NOTE (notas de seguimiento del fisio; antes "bitácoras" en el navegador) ---
+// Solo las ve el fisio del paciente. No son el expediente clínico del consultorio.
+export const PatientNoteModel = sequelize.define("PatientNote", {
+  id_note: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  id_patient: { type: DataTypes.INTEGER, allowNull: false },
+  id_physio: { type: DataTypes.INTEGER, allowNull: false },
+  title: { type: DataTypes.STRING(150), allowNull: false },
+  note_type: { type: DataTypes.STRING(40), allowNull: true },
+  note_date: { type: DataTypes.DATEONLY, allowNull: false },
+  content: { type: DataTypes.TEXT, allowNull: false },
+  created_at: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
+  updated_at: { type: DataTypes.DATE, defaultValue: DataTypes.NOW }
+}, { tableName: "patient_note", indexes: [{ fields: ["id_patient"] }] });
 
 // --- EXERCISE ---
 export const ExerciseModel = sequelize.define("Exercise", {
@@ -189,16 +209,6 @@ export const NotificationModel = sequelize.define("Notification", {
   id_physio: { type: DataTypes.INTEGER, allowNull: true }
 }, { tableName: "notification" });
 
-// --- PATIENT MEDICAL DOCUMENT (PDFs subidos desde la app del paciente) ---
-export const PatientMedicalDocumentModel = sequelize.define("PatientMedicalDocument", {
-  id_document: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-  id_patient: { type: DataTypes.INTEGER, allowNull: false },
-  name: { type: DataTypes.STRING, allowNull: false },
-  doc_type: { type: DataTypes.STRING, allowNull: true },
-  file_url: { type: DataTypes.TEXT, allowNull: false },
-  created_at: { type: DataTypes.DATE, defaultValue: DataTypes.NOW }
-}, { tableName: "patient_medical_document" });
-
 // --- CONSENTIMIENTO DE AVISOS LEGALES ---
 // Registra qué versión del aviso de privacidad y de los términos aceptó cada cuenta.
 // subject_id es el `id` del token: id_patient para pacientes, id_user para fisios.
@@ -253,6 +263,10 @@ PhysiotherapistModel.hasMany(AppointmentModel, { foreignKey: "id_physio", as: "a
 PatientModel.hasMany(AppointmentModel, { foreignKey: "id_patient", as: "appointments" });
 AppointmentModel.belongsTo(PatientModel, { foreignKey: "id_patient" });
 AppointmentModel.belongsTo(PhysiotherapistModel, { foreignKey: "id_physio" });
+
+// Notas de seguimiento
+PatientModel.hasMany(PatientNoteModel, { foreignKey: "id_patient", as: "notes" });
+PatientNoteModel.belongsTo(PatientModel, { foreignKey: "id_patient" });
 
 // Logbook → Appointment
 AppointmentModel.hasOne(LogbookModel, { foreignKey: "id_appointment", as: "logbook" });
@@ -309,5 +323,3 @@ PhysiotherapistModel.hasMany(NotificationModel, { foreignKey: "id_physio", as: "
 NotificationModel.belongsTo(PatientModel, { foreignKey: "id_patient" });
 NotificationModel.belongsTo(PhysiotherapistModel, { foreignKey: "id_physio" });
 
-PatientModel.hasMany(PatientMedicalDocumentModel, { foreignKey: "id_patient", as: "medicalDocuments" });
-PatientMedicalDocumentModel.belongsTo(PatientModel, { foreignKey: "id_patient" });

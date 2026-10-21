@@ -468,58 +468,90 @@ export class PatientViewComponent implements OnInit {
       this.messageService.add({ severity: 'warn', summary: 'Campos requeridos', detail: 'Título y contenido son obligatorios.' });
       return;
     }
-    if (this.editingLog) {
-      const idx = this.logbooks.findIndex(l => l.id === this.editingLog.id);
-      if (idx > -1) this.logbooks[idx] = { ...this.logForm, id: this.editingLog.id };
-    } else {
-      this.logbooks.unshift({ ...this.logForm, id: Date.now() });
-    }
-    this.persistLogbooks();
-    this.showLogModal = false;
-    this.messageService.add({ severity: 'success', summary: 'Bitácora guardada', detail: '' });
-    this.cdr.detectChanges();
+    const body = { title: this.logForm.title, type: this.logForm.type || '', date: this.logForm.date || this.getTodayDate(), content: this.logForm.content };
+    const request = this.editingLog
+      ? this.http.put<any>(`${this.notesApi}/notes/${this.editingLog.id}`, body)
+      : this.http.post<any>(`${this.notesApi}/patients/${this.patientId}/notes`, body);
+    request.subscribe({
+      next: () => {
+        this.showLogModal = false;
+        this.messageService.add({ severity: 'success', summary: 'Nota guardada', detail: '' });
+        this.loadLogbooks();
+      },
+      error: (err: any) => {
+        this.messageService.add({ severity: 'error', summary: 'No se guardó', detail: err.error?.message || 'Intenta de nuevo.' });
+      }
+    });
   }
 
   deleteLog(id: number): void {
     this.confirmationService.confirm({
       header: 'Confirmar eliminación',
-      message: '¿Deseas eliminar esta bitácora? Esta acción no se puede deshacer.',
+      message: '¿Deseas eliminar esta nota? Esta acción no se puede deshacer.',
       icon: 'pi pi-exclamation-triangle',
       acceptLabel: 'Sí, eliminar',
       rejectLabel: 'Cancelar',
       acceptButtonStyleClass: 'p-button-danger',
       rejectButtonStyleClass: 'p-button-text',
       accept: () => {
-        this.logbooks = this.logbooks.filter(l => l.id !== id);
-        this.persistLogbooks();
-        this.messageService.add({ severity: 'info', summary: 'Eliminada', detail: 'Bitácora eliminada.' });
+        this.http.delete(`${this.notesApi}/notes/${id}`).subscribe({
+          next: () => {
+            this.messageService.add({ severity: 'info', summary: 'Eliminada', detail: 'Nota eliminada.' });
+            this.loadLogbooks();
+          },
+          error: (err: any) => {
+            this.messageService.add({ severity: 'error', summary: 'No se eliminó', detail: err.error?.message || 'Intenta de nuevo.' });
+          }
+        });
       }
     });
   }
 
+  private get notesApi(): string {
+    return `${environment.webservice.baseUrl}/api`;
+  }
+
+  /** Las notas viven en la base de datos: se ven igual desde cualquier computadora. */
   private loadLogbooks(): void {
-    const key = this.getLogbookStorageKey();
-    const saved = localStorage.getItem(key);
-    if (!saved) {
-      this.logbooks = [];
+    this.http.get<any[]>(`${this.notesApi}/patients/${this.patientId}/notes`).subscribe({
+      next: (rows) => {
+        this.logbooks = Array.isArray(rows) ? rows : [];
+        this.cdr.detectChanges();
+        this.migrateBrowserNotes();
+      },
+      error: () => {
+        this.logbooks = [];
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  /**
+   * Antes las notas se guardaban solo en este navegador. Si quedan algunas,
+   * se suben una vez a la base y se borran del navegador.
+   */
+  private migrateBrowserNotes(): void {
+    const key = `activa_logbooks_patient_${this.patientId}`;
+    let saved: any[] = [];
+    try {
+      saved = JSON.parse(localStorage.getItem(key) || '[]');
+    } catch {
+      saved = [];
+    }
+    const notes = (Array.isArray(saved) ? saved : [])
+      .filter((n) => n && n.title && n.content)
+      .map((n) => ({ title: String(n.title), type: n.type || '', date: /^\d{4}-\d{2}-\d{2}$/.test(n.date) ? n.date : this.getTodayDate(), content: String(n.content) }));
+    if (!notes.length) {
+      localStorage.removeItem(key);
       return;
     }
-
-    try {
-      const parsed = JSON.parse(saved);
-      this.logbooks = Array.isArray(parsed) ? parsed : [];
-    } catch {
-      this.logbooks = [];
-    }
-  }
-
-  private persistLogbooks(): void {
-    const key = this.getLogbookStorageKey();
-    localStorage.setItem(key, JSON.stringify(this.logbooks || []));
-  }
-
-  private getLogbookStorageKey(): string {
-    return `activa_logbooks_patient_${this.patientId}`;
+    this.http.post(`${this.notesApi}/patients/${this.patientId}/notes/import`, { notes }).subscribe({
+      next: () => {
+        localStorage.removeItem(key);
+        this.messageService.add({ severity: 'success', summary: 'Notas recuperadas', detail: `Se guardaron ${notes.length} nota(s) que estaban solo en este navegador.` });
+        this.loadLogbooks();
+      }
+    });
   }
 
   // ===================================================
@@ -1051,7 +1083,7 @@ export class PatientViewComponent implements OnInit {
   }
 
   get logModalTitle(): string {
-    return this.editingLog ? 'Editar Bitácora' : 'Nueva Bitácora';
+    return this.editingLog ? 'Editar nota' : 'Nueva nota';
   }
 
   get routineModalTitle(): string {

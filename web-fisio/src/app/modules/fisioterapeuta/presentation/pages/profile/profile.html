@@ -30,7 +30,7 @@
         <div class="field mb-3">
           <label class="block font-medium text-color-secondary mb-2">Cédula Profesional</label>
           <div class="p-inputgroup">
-            <span class="p-inputgroup-addon bg-gray-50"><i class="pi pi-verified text-green-500"></i></span>
+            <span class="p-inputgroup-addon bg-gray-50"><i class="pi pi-id-card text-gray-500"></i></span>
             <input type="text" pInputText [value]="cedula" [disabled]="true" class="w-full bg-gray-50 text-green-600 font-bold" />
           </div>
         </div>
@@ -55,6 +55,35 @@
           </button>
         </div>
 
+      </div>
+    </div>
+
+    <div class="col-12 lg:col-6 p-2">
+      <div class="bg-activa-surface border-round-xl shadow-2 p-4 h-full flex flex-column" style="background-color: #ffffff;">
+        <div class="flex align-items-center mb-3 gap-3">
+          <div class="border-circle bg-green-50 flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
+            <i class="pi pi-whatsapp text-xl text-green-600"></i>
+          </div>
+          <h2 class="text-xl font-bold text-color m-0">Contacto con tus pacientes</h2>
+        </div>
+        <p class="text-color-secondary text-sm line-height-3 mt-0">
+          Tus pacientes verán un botón "Contactar a mi fisio" que abre WhatsApp con este número.
+        </p>
+        <div class="field mb-3">
+          <label for="telefonoFisio" class="block font-bold text-color mb-2">Celular (10 números)</label>
+          <div class="p-inputgroup">
+            <span class="p-inputgroup-addon"><i class="pi pi-phone text-activa-primary"></i></span>
+            <input id="telefonoFisio" type="tel" pInputText [(ngModel)]="telefono" maxlength="14" placeholder="5512345678" class="w-full" />
+          </div>
+        </div>
+        <label class="flex align-items-center gap-2 mb-3 cursor-pointer">
+          <input type="checkbox" [(ngModel)]="mostrarWhatsapp" style="width:18px;height:18px;accent-color:#009688" />
+          <span>Mostrar mi WhatsApp a mis pacientes</span>
+        </label>
+        <div class="flex justify-content-end mt-auto pt-2">
+          <button pButton label="Guardar contacto" icon="pi pi-save" [loading]="isSavingContact" (click)="guardarContacto()"
+                  class="p-button-primary font-bold shadow-1 border-none" style="background-color: #009688;"></button>
+        </div>
       </div>
     </div>
 

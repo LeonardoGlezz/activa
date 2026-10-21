@@ -16,11 +16,10 @@ export class SequelizeAuthRepository implements IAuthRepository {
     firstName: string;
     lastNameP: string;
     lastNameM: string;
-    birthDate: string;
     email: string;
     password: string;
     professionalLicense: string;
-    curp: string;
+    phone: string;
   }): Promise<any> {
 
     // 1. Iniciamos la transacción
@@ -42,10 +41,10 @@ export class SequelizeAuthRepository implements IAuthRepository {
         first_name:           data.firstName,
         last_name_paternal:   data.lastNameP,
         last_name_maternal:   data.lastNameM,
-        birth_date:           data.birthDate,
         professional_license: data.professionalLicense,
-        curp:                 data.curp,
-        status:               "pending_profile",
+        phone:                data.phone,
+        // Sin documentos: el admin revisa la cédula en el registro de la SEP y aprueba
+        status:               "pending_approval",
         id_user:              userId,
       }, { transaction: t }); // <-- Y le pasamos la transacción aquí
 

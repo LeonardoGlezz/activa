@@ -47,10 +47,9 @@ export interface PhysioRow {
   last_name_paternal?: string | null;
   last_name_maternal?: string | null;
   professional_license?: string | null;
-  curp?: string | null;
-  ine_doc_url?: string | null;
-  license_doc_url?: string | null;
-  birth_date?: string | null;
+  phone?: string | null;
+  license_verified_at?: string | null;
+  license_verified_by?: string | null;
   status: PhysioStatus;
   created_at?: string;
   email: string | null;
@@ -62,10 +61,9 @@ export interface PhysioForm {
   firstName: string;
   lastNameP: string;
   lastNameM?: string;
-  birthDate?: string;
   email: string;
   professionalLicense?: string;
-  curp?: string;
+  phone?: string;
   password?: string;
 }
 
@@ -87,13 +85,14 @@ export interface PatientDetail {
   name: string;
   email: string | null;
   can_login: boolean;
-  birth_date: string | null;
-  gender: string | null;
   created_at: string;
   id_physio: number;
   physio_name: string;
-  routines: { id_routine: number; name: string; start_date: string | null; end_date: string | null }[];
-  sessions: { id: number; date: string; routine: string | null }[];
+  /** Solo conteos: el admin no ve nombres de rutinas, ejercicios, dolor ni notas */
+  routines: number;
+  active_routines: number;
+  sessions: number;
+  last_session: string | null;
 }
 
 export type ActivityType = 'physio' | 'patient' | 'session' | 'appointment';
@@ -211,10 +210,5 @@ export class AdminService {
   /** Cambia el error HTTP por un Error con el mensaje del servidor (o uno genérico) */
   private request<T>(obs: Observable<T>, fallback: string): Observable<T> {
     return obs.pipe(catchError((error) => throwError(() => new Error(error?.error?.message || fallback))));
-  }
-
-  /** URL pública de un documento subido por el fisio (se guarda solo el nombre del archivo) */
-  documentUrl(fileName: string): string {
-    return `${this.baseUrl.replace(/\/api\/?$/, '')}/uploads/documents/${encodeURIComponent(fileName)}`;
   }
 }

@@ -2,11 +2,10 @@ export interface RegisterPhysiotherapistDto {
   firstName: string;
   lastNameP: string;
   lastNameM: string;
-  birthDate: string;
   email: string;
   password: string;
   professionalLicense: string;
-  curp: string;
+  phone: string;
 }
 
 export interface LoginPhysiotherapistDto {

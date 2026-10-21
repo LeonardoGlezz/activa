@@ -5,7 +5,8 @@ export class ApprovePhysiotherapistUseCase {
 
   async execute(
     id: number,
-    action: "approved" | "rejected"
+    action: "approved" | "rejected",
+    verifiedBy?: string
   ): Promise<{ message: string }> {
 
     const fisio = await this.physioRepo.findById(id);
@@ -13,7 +14,7 @@ export class ApprovePhysiotherapistUseCase {
       throw new Error("Fisioterapeuta no encontrado.");
     }
 
-    await this.physioRepo.updateStatus(id, action);
+    await this.physioRepo.updateStatus(id, action, verifiedBy);
 
     const msg = action === "approved"
       ? "Fisioterapeuta aprobado exitosamente."

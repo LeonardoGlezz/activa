@@ -188,9 +188,10 @@ export class PatientController {
 
       const idPhysioReal = (physioRecord as any).id_physio;
 
-      const limit = Math.min(Number(req.query.limit ?? 20), 100);
+      // Sin ?limit= se devuelven todos los pacientes del fisio (antes se cortaba en 20)
+      const limit = req.query.limit ? Math.min(Math.max(Number(req.query.limit) || 20, 1), 100) : undefined;
       const page = Math.max(Number(req.query.page ?? 1), 1);
-      const offset = (page - 1) * limit;
+      const offset = limit ? (page - 1) * limit : 0;
 
       const result = await this.listPatients.execute({ limit, offset, id_physio: idPhysioReal });
       

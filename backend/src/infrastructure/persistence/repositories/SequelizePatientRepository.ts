@@ -38,13 +38,13 @@ export class SequelizePatientRepository implements PatientRepository {
 
   // 🪄 MODIFICAMOS PARA RECIBIR EL OBJETO COMPLETO CON EL ID DEL FISIO
   async findAll(params: any): Promise<{ rows: Patient[]; count: number }> {
-    const limit = params.limit || 20;
-    const offset = params.offset || 0;
     const idPhysio = params.id_physio; // <-- CANDADO DE SEGURIDAD
 
+    // Sin limit se devuelven todos los pacientes del fisio, ordenados por nombre
     const result = await PatientModel.findAndCountAll({ 
-      limit, 
-      offset,
+      ...(params.limit ? { limit: params.limit, offset: params.offset || 0 } : {}),
+      order: [["first_name", "ASC"], ["last_name_paternal", "ASC"]],
+      distinct: true,
       where: {
         id_physio: idPhysio // 🪄 SOLO TRAE PACIENTES DE ESTE FISIO
       },

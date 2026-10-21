@@ -11,7 +11,7 @@ export interface PatientRepository {
   
   // 🪄 2. Cambiamos los parámetros sueltos por un objeto 'params' que ahora exige 
   // obligatoriamente el id_physio para garantizar el aislamiento de datos.
-  findAll(params: { limit: number; offset: number; id_physio: number }): Promise<{ rows: Patient[]; count: number }>;
+  findAll(params: { limit?: number; offset?: number; id_physio: number }): Promise<{ rows: Patient[]; count: number }>;
   
   update(id: number, data: UpdatePatientDTO): Promise<Patient | null>;
   

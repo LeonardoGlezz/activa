@@ -20,15 +20,15 @@
       
       <div class="mb-4">
         <h2 class="text-3xl font-bold text-color m-0 mb-2">Crea tu Cuenta Profesional</h2>
-        <p class="text-color-secondary m-0 text-sm">Ingresa tus credenciales y datos personales para registrarte como fisioterapeuta.</p>
+        <p class="text-color-secondary m-0 text-sm">Solo necesitas tus datos de contacto y tu número de cédula profesional.</p>
       </div>
 
       <form [formGroup]="perfilForm" (ngSubmit)="onSubmit()" class="p-fluid">
         
-        <h3 class="text-lg font-bold text-color mb-3 border-bottom-1 surface-border pb-2">Credenciales de Acceso</h3>
+        <h3 class="text-lg font-bold text-color mb-3 border-bottom-1 surface-border pb-2">Para entrar a Activa</h3>
         <div class="grid formgrid mb-3">
           <div class="col-12 md:col-6 mb-3">
-            <label class="text-color font-medium text-sm block mb-1">Correo Electrónico</label>
+            <label class="text-color font-medium text-sm block mb-1">Correo</label>
             <span class="p-input-icon-left w-full custom-input-icon">
               <i class="pi pi-envelope text-color-secondary"></i>
               <input pInputText type="email" formControlName="email" placeholder="ejemplo@correo.com" class="p-2 border-round-md w-full"
@@ -42,16 +42,16 @@
             <label class="text-color font-medium text-sm block mb-1">Contraseña</label>
             <span class="p-input-icon-left w-full custom-input-icon">
               <i class="pi pi-lock text-color-secondary z-2"></i>
-              <p-password formControlName="password" [toggleMask]="true" [feedback]="true" promptLabel="Ingresa una contraseña" weakLabel="Débil" mediumLabel="Media" strongLabel="Fuerte" placeholder="Mínimo 6 caracteres" styleClass="w-full" inputStyleClass="p-2 border-round-md w-full"
+              <p-password formControlName="password" [toggleMask]="true" [feedback]="true" promptLabel="Ingresa una contraseña" weakLabel="Débil" mediumLabel="Media" strongLabel="Fuerte" placeholder="Mínimo 8 caracteres" styleClass="w-full" inputStyleClass="p-2 border-round-md w-full"
                           [ngClass]="{'ng-invalid ng-dirty': perfilForm.get('password')?.invalid && perfilForm.get('password')?.touched}"></p-password>
             </span>
             <small class="p-error block mt-1 text-xs" *ngIf="perfilForm.get('password')?.invalid && perfilForm.get('password')?.touched">
-              La contraseña debe tener al menos 6 caracteres.
+              La contraseña debe tener al menos 8 caracteres.
             </small>
           </div>
         </div>
 
-        <h3 class="text-lg font-bold text-color mb-3 border-bottom-1 surface-border pb-2">Datos Personales</h3>
+        <h3 class="text-lg font-bold text-color mb-3 border-bottom-1 surface-border pb-2">Tus datos</h3>
         <div class="grid formgrid">
           
           <div class="col-12 md:col-6 mb-3">
@@ -62,7 +62,7 @@
                      [ngClass]="{'ng-invalid ng-dirty': perfilForm.get('nombres')?.invalid && perfilForm.get('nombres')?.touched}">
             </span>
             <small class="p-error block mt-1 text-xs" *ngIf="perfilForm.get('nombres')?.invalid && perfilForm.get('nombres')?.touched">
-              Solo se permiten letras (mínimo 3 caracteres).
+              Escribe tu nombre como aparece en tu cédula.
             </small>
           </div>
           
@@ -74,12 +74,12 @@
                      [ngClass]="{'ng-invalid ng-dirty': perfilForm.get('apellidos')?.invalid && perfilForm.get('apellidos')?.touched}">
             </span>
             <small class="p-error block mt-1 text-xs" *ngIf="perfilForm.get('apellidos')?.invalid && perfilForm.get('apellidos')?.touched">
-              Los apellidos son obligatorios (solo letras).
+              Escribe tus apellidos como aparecen en tu cédula.
             </small>
           </div>
 
           <div class="col-12 md:col-6 mb-3">
-            <label class="text-color font-medium text-sm block mb-1">Cédula Profesional</label>
+            <label class="text-color font-medium text-sm block mb-1">Número de cédula profesional</label>
             <span class="p-input-icon-left w-full custom-input-icon">
               <i class="pi pi-id-card text-color-secondary"></i>
               <input pInputText type="text" formControlName="cedula" (input)="permitirSoloNumeros($event, 'cedula')" [maxlength]="8" placeholder="Ej. 12345678" class="p-2 border-round-md w-full"
@@ -91,27 +91,25 @@
           </div>
 
           <div class="col-12 md:col-6 mb-3">
-            <label class="text-color font-medium text-sm block mb-1">CURP</label>
+            <label class="text-color font-medium text-sm block mb-1">Celular (WhatsApp)</label>
             <span class="p-input-icon-left w-full custom-input-icon">
-              <i class="pi pi-address-book text-color-secondary"></i>
-              <input pInputText type="text" formControlName="curp" (input)="formatearCurp($event)" [maxlength]="18" placeholder="Clave Única de Registro" class="p-2 border-round-md w-full"
-                     [ngClass]="{'ng-invalid ng-dirty': perfilForm.get('curp')?.invalid && perfilForm.get('curp')?.touched}">
+              <i class="pi pi-phone text-color-secondary"></i>
+              <input pInputText type="tel" formControlName="telefono" (input)="permitirSoloNumeros($event, 'telefono')" [maxlength]="10" placeholder="10 números, ej. 5512345678" class="p-2 border-round-md w-full"
+                     [ngClass]="{'ng-invalid ng-dirty': perfilForm.get('telefono')?.invalid && perfilForm.get('telefono')?.touched}">
             </span>
-            <small class="p-error block mt-1 text-xs" *ngIf="perfilForm.get('curp')?.invalid && perfilForm.get('curp')?.touched">
-              Formato de CURP inválido (18 caracteres).
+            <small class="p-error block mt-1 text-xs" *ngIf="perfilForm.get('telefono')?.invalid && perfilForm.get('telefono')?.touched">
+              Escribe los 10 números de tu celular.
             </small>
+            <small class="text-color-secondary block mt-1 text-xs">Tus pacientes podrán escribirte por WhatsApp. Puedes ocultarlo después en tu perfil.</small>
           </div>
 
-          <div class="col-12 md:col-6 mb-3">
-            <label class="text-color font-medium text-sm block mb-1">Fecha de Nacimiento</label>
-            <p-calendar formControlName="fechaNacimiento" [showIcon]="true" placeholder="dd/mm/aaaa" styleClass="w-full" inputStyleClass="p-2 border-round-md w-full"
-                        [ngClass]="{'ng-invalid ng-dirty': perfilForm.get('fechaNacimiento')?.invalid && perfilForm.get('fechaNacimiento')?.touched}"></p-calendar>
-            <small class="p-error block mt-1 text-xs" *ngIf="perfilForm.get('fechaNacimiento')?.errors?.['edadInvalida'] && perfilForm.get('fechaNacimiento')?.touched">
-              Debes ser mayor de 18 años.
-            </small>
-            <small class="p-error block mt-1 text-xs" *ngIf="perfilForm.get('fechaNacimiento')?.errors?.['required'] && perfilForm.get('fechaNacimiento')?.touched">
-              La fecha es obligatoria.
-            </small>
+          <div class="col-12 mb-2">
+            <div class="text-sm text-color-secondary line-height-3 p-3 border-round-md" style="background: rgba(13,139,151,0.08)">
+              <i class="pi pi-info-circle mr-1"></i>
+              No te pedimos documentos. Revisamos tu número de cédula en el
+              <a href="https://cedulaprofesional.sep.gob.mx" target="_blank" rel="noopener" class="text-activa-primary font-bold">Registro Nacional de Profesionistas de la SEP</a>
+              y te avisamos cuando tu cuenta esté lista. El nombre que escribas debe ser el mismo de tu cédula.
+            </div>
           </div>
         </div>
 

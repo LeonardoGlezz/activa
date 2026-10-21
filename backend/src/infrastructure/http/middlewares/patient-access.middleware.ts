@@ -86,6 +86,15 @@ export const requirePhysio = (req: AuthRequest, res: Response, next: NextFunctio
   next();
 };
 
+/** Solo pacientes (p. ej. para ver el contacto de su propio fisio) */
+export const requirePatient = (req: AuthRequest, res: Response, next: NextFunction): void => {
+  if (req.user?.role !== "patient") {
+    res.status(403).json({ success: false, message: "Solo para pacientes." });
+    return;
+  }
+  next();
+};
+
 /** Responde 404/403 según el resultado; si hay acceso, sigue */
 async function gateBy(req: AuthRequest, res: Response, next: NextFunction, row: any, notFound: string) {
   if (!row) {

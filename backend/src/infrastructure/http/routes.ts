@@ -1,15 +1,12 @@
 import { Router } from "express";
 import express from "express";
 import { authMiddleware } from "./middlewares/auth.middleware";
-import { uploadDocuments } from "./middlewares/upload.middleware";
 import { requireApproval } from "./middlewares/approved.middleware";
 import { requireActivePlan } from "./middlewares/active-plan.middleware";
 import { requireAdmin } from "./middlewares/admin.middleware";
-import { PhysiotherapistModel } from "../persistence/sequelize/client";
-import { uploadPatientMedicalPdf } from "./middlewares/upload-patient-medical.middleware";
 import { uploadExerciseMedia } from "./middlewares/upload-exercise-media.middleware";
 import { persistUploads } from "../storage/object-storage";
-import { requirePatientAccess, requireRoutineAccess, requirePhysio, requireAppointmentAccess, requireNotificationAccess, requireOwnPhysioOrAdmin } from "./middlewares/patient-access.middleware";
+import { requirePatientAccess, requireRoutineAccess, requirePhysio, requirePatient, requireAppointmentAccess, requireNotificationAccess, requireOwnPhysioOrAdmin } from "./middlewares/patient-access.middleware";
 
 export function buildRoutes(controllers: {
   patientController:       any;
@@ -19,13 +16,13 @@ export function buildRoutes(controllers: {
   routineController:       any;
   authController:          any;
   appointmentController:   any;
-  logbookController:       any;
   notificationController:  any;
   dashboardController:     any;
-  documentController:      any;
   subscriptionController:  any;
   adminController:         any;
   legalController:         any;
+  patientNoteController:   any;
+  physioContactController: any;
 }) {
   const router = Router();
 
@@ -58,52 +55,18 @@ export function buildRoutes(controllers: {
   router.put("/admin/patients/:id/password",    authMiddleware, requireAdmin, controllers.adminController.setPatientPassword);
 
   router.post("/physiotherapists",    authMiddleware, requireAdmin, controllers.physioController.create);
+  // Contacto del fisio: él decide si sus pacientes ven su WhatsApp
+  router.get("/physiotherapists/me/contact",   authMiddleware, requirePhysio, controllers.physioContactController.getMine);
+  router.put("/physiotherapists/me/contact",   authMiddleware, requirePhysio, controllers.physioContactController.updateMine);
+  router.get("/patient/my-physio",             authMiddleware, requirePatient, controllers.physioContactController.getForPatient);
   router.get("/physiotherapists/:id", authMiddleware, requireOwnPhysioOrAdmin, controllers.physioController.getById);
+  router.post("/auth/refresh",          authMiddleware, requirePhysio, controllers.authController.refresh);
   router.patch("/auth/update-email",    authMiddleware, controllers.authController.updateEmail);
   router.patch("/auth/update-password", authMiddleware, controllers.authController.updatePassword);
 
   // Aviso de privacidad y términos: estado y aceptación de la cuenta actual
   router.get("/legal/consent",  authMiddleware, controllers.legalController.getStatus);
   router.post("/legal/consent", authMiddleware, controllers.legalController.accept);
-
-  // Subida de documentos (fisio aún no aprobado, no necesita plan)
-  router.post(
-    "/physiotherapists/upload-documents",
-    authMiddleware,
-    uploadDocuments.fields([
-      { name: 'ineFront',   maxCount: 1 },
-      { name: 'cedulaPdf', maxCount: 1 }
-    ]),
-    persistUploads,
-    async (req: any, res: any) => {
-      try {
-        const idUsuario = req.user.id;
-        const fisio: any = await PhysiotherapistModel.findOne({ where: { id_user: idUsuario } });
-
-        if (!fisio) return res.status(404).json({ message: "Fisioterapeuta no encontrado." });
-
-        if (fisio.getDataValue('status') !== 'pending_profile') {
-          return res.status(400).json({
-            message: "Acción denegada. Tus documentos ya fueron recibidos o tu cuenta ya está validada."
-          });
-        }
-
-        if (!req.files || !req.files['ineFront'] || !req.files['cedulaPdf']) {
-          return res.status(400).json({ message: "Faltan documentos en la petición." });
-        }
-
-        await PhysiotherapistModel.update({
-          ine_doc_url:      req.files['ineFront'][0].filename,
-          license_doc_url:  req.files['cedulaPdf'][0].filename,
-          status:           'pending_approval'
-        }, { where: { id_user: idUsuario } });
-
-        res.status(200).json({ success: true, message: 'Documentos guardados exitosamente.' });
-      } catch (error: any) {
-        res.status(500).json({ message: error.message });
-      }
-    }
-  );
 
   // ============================================================
   // 💳 SUSCRIPCIONES (Stripe)
@@ -183,25 +146,18 @@ export function buildRoutes(controllers: {
   router.put("/appointments/:id",                authMiddleware, requireApproval, requireActivePlan, requireAppointmentAccess, controllers.appointmentController.update);
   router.get("/appointments",                    authMiddleware, requireApproval, requireActivePlan, controllers.appointmentController.getMyPhysioAppointments);
 
-  // Bitácora
-  router.post("/logbook",                           authMiddleware, requireApproval, requireActivePlan, controllers.logbookController.create);
-  router.get("/logbook/appointment/:appointmentId", authMiddleware, requireApproval, requireActivePlan, controllers.logbookController.getByAppointment);
+  // Notas de seguimiento (solo el fisio del paciente)
+  const noteAccess = [authMiddleware, requireApproval, requireActivePlan, requirePhysio];
+  router.get("/patients/:patientId/notes",         ...noteAccess, requirePatientAccess((req) => req.params.patientId), controllers.patientNoteController.list);
+  router.post("/patients/:patientId/notes",        ...noteAccess, requirePatientAccess((req) => req.params.patientId), controllers.patientNoteController.create);
+  router.post("/patients/:patientId/notes/import", ...noteAccess, requirePatientAccess((req) => req.params.patientId), controllers.patientNoteController.importMany);
+  router.put("/notes/:id",                         ...noteAccess, controllers.patientNoteController.update);
+  router.delete("/notes/:id",                      ...noteAccess, controllers.patientNoteController.remove);
 
   // Notificaciones
   router.post("/notifications",                   authMiddleware, requireApproval, requireActivePlan, controllers.notificationController.create);
   router.get("/notifications/patient/:patientId", authMiddleware, requireApproval, requireActivePlan, requirePatientAccess((req) => req.params.patientId), controllers.notificationController.getByPatient);
   router.patch("/notifications/:id/read",         authMiddleware, requireApproval, requireActivePlan, requireNotificationAccess, controllers.notificationController.markAsRead);
-
-  // Documentos médicos
-  router.get("/documents", authMiddleware, requireApproval, requireActivePlan, controllers.documentController.list);
-  router.post(
-    "/documents",
-    authMiddleware, requireApproval, requireActivePlan,
-    uploadPatientMedicalPdf.single("file"),
-    persistUploads,
-    controllers.documentController.create
-  );
-  router.delete("/documents/:id", authMiddleware, requireApproval, requireActivePlan, controllers.documentController.remove);
 
   return router;
 }
