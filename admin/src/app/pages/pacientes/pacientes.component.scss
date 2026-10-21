@@ -1,0 +1,12 @@
+.small { font-size: 0.85rem; }
+.summary { margin: 0 0 0.75rem; }
+.table a { color: #0E2940; font-weight: 600; text-decoration: none; }
+.patient-card {
+  display: flex; flex-direction: column; gap: 0.3rem; text-decoration: none; color: #0E2940; margin-bottom: 0.75rem;
+  .chip { margin-right: 0.3rem; }
+}
+.mobile-only { display: none; }
+@media (max-width: 700px) {
+  .desktop-only { display: none; }
+  .mobile-only { display: block; }
+}

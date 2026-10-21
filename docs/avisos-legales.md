@@ -25,8 +25,8 @@ Del **operador de Activa** (Leonardo; responsable de los datos de los fisioterap
 - [ ] Nombre completo o razón social
 - [ ] Domicilio
 - [ ] Correo de privacidad y correo de soporte
-- [x] Proveedor de nube: Railway (propuesto en el PR de despliegue)
-- [ ] Región de los servidores en Railway (aparece al crear el proyecto; casi siempre es Estados Unidos)
+- [x] Proveedor de nube: Render (aplicación) y TiDB Cloud (base de datos y archivos)
+- [ ] Región de los servidores: la de Render aparece en el servicio (Settings → Region) y la de TiDB en el cluster (el tuyo se creó en Tokio, Japón)
 - [ ] Ciudad y estado para la cláusula de jurisdicción
 - [ ] Si habrá cobro a fisioterapeutas: precio, reembolsos y facturación (o quitar la sección 9 de los términos)
 

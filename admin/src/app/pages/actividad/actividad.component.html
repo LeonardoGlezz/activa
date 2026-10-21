@@ -1,0 +1,41 @@
+<div class="page">
+  <div class="page-container">
+    <div class="page-header">
+      <div>
+        <h1>Actividad</h1>
+        <p>Lo que ha pasado en Activa: registros, pacientes nuevos, sesiones terminadas y citas.</p>
+      </div>
+    </div>
+
+    <div class="filters">
+      <select [(ngModel)]="tipo" aria-label="Tipo de actividad">
+        <option value="">Toda la actividad</option>
+        <option *ngFor="let t of tipos" [value]="t[0]">{{ t[1] }}</option>
+      </select>
+      <select [(ngModel)]="dias" (ngModelChange)="cargar()" aria-label="Periodo">
+        <option [ngValue]="7">Últimos 7 días</option>
+        <option [ngValue]="30">Últimos 30 días</option>
+        <option [ngValue]="90">Últimos 3 meses</option>
+      </select>
+    </div>
+
+    <div *ngIf="error" class="notice notice-error">
+      ❌ {{ error }}
+      <button type="button" class="btn btn-outline" (click)="cargar()">Reintentar</button>
+    </div>
+    <p *ngIf="cargando" class="empty">⏳ Cargando...</p>
+    <p *ngIf="!cargando && !error && filtrados.length === 0" class="empty">No hay actividad en este periodo.</p>
+
+    <section class="panel" *ngIf="!cargando && filtrados.length > 0">
+      <ul class="event-list">
+        <li *ngFor="let e of filtrados">
+          <span class="icon">{{ icon(e.type) }}</span>
+          <div>
+            <a [routerLink]="e.link">{{ e.text }}</a>
+            <div class="when">{{ when(e.date) }}</div>
+          </div>
+        </li>
+      </ul>
+    </section>
+  </div>
+</div>

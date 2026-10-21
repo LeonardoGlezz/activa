@@ -1,20 +1,64 @@
-<div class="fisios-wrapper">
-  <div class="fisios-container">
-    <div class="fisios-header">
-      <h1>Gestión de Fisioterapeutas</h1>
-      <p>Revisa los documentos de cada fisio y apruébalo para que pueda usar ACTIVA.</p>
+<div class="page">
+  <div class="page-container">
+    <div class="page-header">
+      <div>
+        <h1>Fisioterapeutas</h1>
+        <p>Da de alta fisios, revisa sus datos y documentos, y decide quién usa Activa.</p>
+      </div>
+      <button type="button" class="btn btn-primary" (click)="abrirAlta()" *ngIf="!mostrarAlta">+ Dar de alta un fisio</button>
+    </div>
+
+    <!-- Alta de un fisio nuevo -->
+    <section class="panel" *ngIf="mostrarAlta">
+      <h2>Dar de alta un fisioterapeuta</h2>
+      <p class="muted">Úsalo cuando tú ya conoces al fisio y verificaste sus datos. Queda con acceso de inmediato y no tiene que subir documentos.</p>
+      <form (ngSubmit)="guardarAlta()" class="form-grid" autocomplete="off">
+        <div class="field"><label for="a-nombre">Nombre(s) *</label><input id="a-nombre" name="firstName" [(ngModel)]="alta.firstName" required /></div>
+        <div class="field"><label for="a-ap">Apellido paterno *</label><input id="a-ap" name="lastNameP" [(ngModel)]="alta.lastNameP" required /></div>
+        <div class="field"><label for="a-am">Apellido materno</label><input id="a-am" name="lastNameM" [(ngModel)]="alta.lastNameM" /></div>
+        <div class="field"><label for="a-email">Correo *</label><input id="a-email" type="email" name="email" [(ngModel)]="alta.email" required /><small>Con este correo inicia sesión.</small></div>
+        <div class="field"><label for="a-cedula">Cédula profesional</label><input id="a-cedula" name="professionalLicense" [(ngModel)]="alta.professionalLicense" /></div>
+        <div class="field"><label for="a-curp">CURP</label><input id="a-curp" name="curp" maxlength="18" [(ngModel)]="alta.curp" /></div>
+        <div class="field"><label for="a-nac">Fecha de nacimiento</label><input id="a-nac" type="date" name="birthDate" [(ngModel)]="alta.birthDate" /></div>
+        <div class="field">
+          <label for="a-pass">Contraseña para su primer ingreso *</label>
+          <div class="inline">
+            <input id="a-pass" name="password" [(ngModel)]="alta.password" minlength="8" required />
+            <button type="button" class="btn btn-outline" (click)="generarPasswordAlta()">Otra</button>
+          </div>
+          <small>Se la compartes tú. Él la puede cambiar en su perfil.</small>
+        </div>
+        <div class="field full" *ngIf="errorAlta"><span class="error">❌ {{ errorAlta }}</span></div>
+        <div class="form-actions full">
+          <button type="submit" class="btn btn-approve" [disabled]="guardandoAlta">{{ guardandoAlta ? 'Guardando...' : 'Dar de alta' }}</button>
+          <button type="button" class="btn btn-reject" (click)="mostrarAlta = false">Cancelar</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Datos para compartir después del alta o de cambiar contraseña -->
+    <section class="panel credentials" *ngIf="credenciales">
+      <h2>Datos de acceso para {{ credenciales.name }}</h2>
+      <dl class="data-list">
+        <div><dt>Dirección</dt><dd>{{ fisioUrl }}</dd></div>
+        <div><dt>Correo</dt><dd>{{ credenciales.email }}</dd></div>
+        <div><dt>Contraseña</dt><dd class="mono">{{ credenciales.password }}</dd></div>
+      </dl>
+      <p class="muted">Compártelos por un medio privado (WhatsApp directo, en persona). No se vuelven a mostrar.</p>
+      <div class="form-actions">
+        <button type="button" class="btn btn-primary" (click)="copiarCredenciales()">{{ copiado ? '✅ Copiado' : 'Copiar mensaje' }}</button>
+        <button type="button" class="btn btn-outline" (click)="credenciales = null">Listo</button>
+      </div>
+    </section>
+
+    <div class="filters">
+      <input type="search" placeholder="Buscar por nombre, correo, cédula o CURP" [(ngModel)]="buscar" aria-label="Buscar fisioterapeuta" />
     </div>
 
     <div class="tabs" role="tablist">
-      <button
-        *ngFor="let tab of tabs"
-        type="button"
-        role="tab"
-        class="tab"
-        [class.active]="tab.status === active"
-        [attr.aria-selected]="tab.status === active"
-        (click)="seleccionar(tab.status)">
-        {{ tab.label }}
+      <button *ngFor="let tab of tabs" type="button" role="tab" class="tab"
+        [class.active]="tab.key === active" [attr.aria-selected]="tab.key === active" (click)="seleccionar(tab.key)">
+        {{ tab.label }} <span class="count">({{ count(tab.key) }})</span>
       </button>
     </div>
 
@@ -27,44 +71,96 @@
     <p *ngIf="cargando" class="empty">⏳ Cargando...</p>
 
     <p *ngIf="!cargando && !error && physios.length === 0" class="empty">
-      <ng-container [ngSwitch]="active">
-        <span *ngSwitchCase="'pending_approval'">No hay fisioterapeutas esperando validación.</span>
-        <span *ngSwitchCase="'approved'">Todavía no has aprobado a ningún fisioterapeuta.</span>
-        <span *ngSwitchCase="'rejected'">No hay fisioterapeutas rechazados.</span>
-        <span *ngSwitchDefault>Nadie está a medio registro.</span>
-      </ng-container>
+      <ng-container *ngIf="buscar; else vacio">Nadie coincide con “{{ buscar }}”.</ng-container>
+      <ng-template #vacio>
+        <ng-container [ngSwitch]="active">
+          <span *ngSwitchCase="'pending_approval'">No hay fisioterapeutas esperando validación.</span>
+          <span *ngSwitchCase="'approved'">Todavía nadie tiene acceso. Usa “Dar de alta un fisio”.</span>
+          <span *ngSwitchCase="'rejected'">No hay fisioterapeutas rechazados.</span>
+          <span *ngSwitchCase="'pending_profile'">Nadie está a medio registro.</span>
+          <span *ngSwitchDefault>Todavía no hay fisioterapeutas.</span>
+        </ng-container>
+      </ng-template>
     </p>
 
     <div class="cards" *ngIf="!cargando && physios.length > 0">
       <article class="card" *ngFor="let p of physios">
-        <div class="card-main">
-          <h2>{{ nombre(p) }}</h2>
-          <dl>
-            <div><dt>Correo</dt><dd>{{ p.email || '—' }}</dd></div>
-            <div><dt>Cédula profesional</dt><dd>{{ p.professional_license || '—' }}</dd></div>
-            <div *ngIf="p.curp"><dt>CURP</dt><dd>{{ p.curp }}</dd></div>
-            <div *ngIf="p.created_at"><dt>Registro</dt><dd>{{ p.created_at | date: 'd MMM y' }}</dd></div>
-          </dl>
-          <div class="docs" *ngIf="active !== 'pending_profile'">
-            <a *ngIf="documento(p.ine_doc_url) as url" [href]="url" target="_blank" rel="noopener" class="btn btn-outline">Ver INE</a>
-            <a *ngIf="documento(p.license_doc_url) as url" [href]="url" target="_blank" rel="noopener" class="btn btn-outline">Ver cédula (PDF)</a>
-            <span *ngIf="!p.ine_doc_url && !p.license_doc_url" class="muted">Sin documentos</span>
-          </div>
-        </div>
+        <ng-container *ngIf="editando !== p.id_physio; else formEdicion">
+          <div class="card-main">
+            <div class="card-title">
+              <h2>{{ nombre(p) }}</h2>
+              <span class="chip" [class.chip-success]="p.status === 'approved'" [class.chip-warning]="p.status === 'pending_approval'"
+                [class.chip-danger]="p.status === 'rejected'">{{ statusLabels[p.status] }}</span>
+            </div>
+            <dl class="data-list">
+              <div><dt>Correo</dt><dd>{{ p.email || '—' }}</dd></div>
+              <div>
+                <dt>Cédula profesional</dt>
+                <dd>{{ p.professional_license || '—' }}
+                  <a *ngIf="p.professional_license" [href]="sepUrl" target="_blank" rel="noopener" class="btn-link small">Verificar en la SEP ↗</a>
+                </dd>
+              </div>
+              <div><dt>CURP</dt><dd>{{ p.curp || '—' }}</dd></div>
+              <div *ngIf="p.birth_date"><dt>Nacimiento</dt><dd>{{ p.birth_date | date: 'd MMM y' }}</dd></div>
+              <div *ngIf="p.created_at"><dt>Registro</dt><dd>{{ p.created_at | date: 'd MMM y' }}</dd></div>
+              <div>
+                <dt>Pacientes</dt>
+                <dd>{{ p.patients ?? 0 }}
+                  <a *ngIf="p.patients" routerLink="/pacientes" [queryParams]="{ fisio: p.id_physio }" class="btn-link small">Ver pacientes</a>
+                </dd>
+              </div>
+            </dl>
+            <ul class="checks" *ngIf="p.status !== 'approved' && revisiones(p).length > 0">
+              <li *ngFor="let r of revisiones(p)">⚠️ {{ r }}</li>
+            </ul>
+            <div class="docs">
+              <a *ngIf="documento(p.ine_doc_url) as url" [href]="url" target="_blank" rel="noopener" class="btn btn-outline">Ver INE</a>
+              <a *ngIf="documento(p.license_doc_url) as url" [href]="url" target="_blank" rel="noopener" class="btn btn-outline">Ver cédula (PDF)</a>
+              <span *ngIf="!p.ine_doc_url && !p.license_doc_url" class="muted">Sin documentos subidos</span>
+            </div>
 
-        <div class="card-actions" *ngIf="active === 'pending_approval' || active === 'rejected'">
-          <button type="button" class="btn btn-approve" [disabled]="procesando === p.id_physio" (click)="cambiarEstado(p, 'approved')">
-            Aprobar
-          </button>
-          <button *ngIf="active === 'pending_approval'" type="button" class="btn btn-reject" [disabled]="procesando === p.id_physio" (click)="cambiarEstado(p, 'rejected')">
-            Rechazar
-          </button>
-        </div>
-        <div class="card-actions" *ngIf="active === 'approved'">
-          <button type="button" class="btn btn-reject" [disabled]="procesando === p.id_physio" (click)="cambiarEstado(p, 'rejected')">
-            Quitar acceso
-          </button>
-        </div>
+            <div class="password-box" *ngIf="cambiandoPassword === p.id_physio">
+              <label [for]="'pw-' + p.id_physio">Contraseña nueva</label>
+              <div class="inline">
+                <input [id]="'pw-' + p.id_physio" [(ngModel)]="passwordNueva" minlength="8" />
+                <button type="button" class="btn btn-approve" [disabled]="procesando === p.id_physio" (click)="guardarPassword(p)">Guardar</button>
+                <button type="button" class="btn btn-reject" (click)="cambiandoPassword = null">Cancelar</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-actions">
+            <button *ngIf="p.status !== 'approved'" type="button" class="btn btn-approve" [disabled]="procesando === p.id_physio" (click)="cambiarEstado(p, 'approved')">
+              {{ p.status === 'rejected' ? 'Devolver acceso' : 'Aprobar' }}
+            </button>
+            <button *ngIf="p.status === 'pending_approval' || p.status === 'pending_profile'" type="button" class="btn btn-reject" [disabled]="procesando === p.id_physio" (click)="cambiarEstado(p, 'rejected')">
+              Rechazar
+            </button>
+            <button type="button" class="btn btn-outline" (click)="editar(p)">Editar datos</button>
+            <button type="button" class="btn btn-outline" (click)="abrirPassword(p)">Cambiar contraseña</button>
+            <button *ngIf="p.status === 'approved'" type="button" class="btn btn-reject" [disabled]="procesando === p.id_physio" (click)="cambiarEstado(p, 'rejected')">
+              Quitar acceso
+            </button>
+          </div>
+        </ng-container>
+
+        <ng-template #formEdicion>
+          <form class="form-grid edit-form" (ngSubmit)="guardarEdicion(p)" autocomplete="off">
+            <h2 class="full">Editar datos de {{ nombre(p) }}</h2>
+            <div class="field"><label>Nombre(s) *</label><input name="firstName" [(ngModel)]="edicion.firstName" required /></div>
+            <div class="field"><label>Apellido paterno *</label><input name="lastNameP" [(ngModel)]="edicion.lastNameP" required /></div>
+            <div class="field"><label>Apellido materno</label><input name="lastNameM" [(ngModel)]="edicion.lastNameM" /></div>
+            <div class="field"><label>Correo *</label><input type="email" name="email" [(ngModel)]="edicion.email" required /></div>
+            <div class="field"><label>Cédula profesional</label><input name="professionalLicense" [(ngModel)]="edicion.professionalLicense" /></div>
+            <div class="field"><label>CURP</label><input name="curp" maxlength="18" [(ngModel)]="edicion.curp" /></div>
+            <div class="field"><label>Fecha de nacimiento</label><input type="date" name="birthDate" [(ngModel)]="edicion.birthDate" /></div>
+            <div class="field full" *ngIf="errorEdicion"><span class="error">❌ {{ errorEdicion }}</span></div>
+            <div class="form-actions full">
+              <button type="submit" class="btn btn-approve" [disabled]="procesando === p.id_physio">Guardar cambios</button>
+              <button type="button" class="btn btn-reject" (click)="editando = null">Cancelar</button>
+            </div>
+          </form>
+        </ng-template>
       </article>
     </div>
   </div>

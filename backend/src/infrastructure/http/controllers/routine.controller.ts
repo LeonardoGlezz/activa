@@ -294,7 +294,8 @@ export class RoutineController {
    */
   listTemplates = async (req: Request, res: Response): Promise<void> => {
     try {
-      const physiotherapistId = Number(req.query?.physiotherapistId);
+      // Cada fisio solo ve sus propias plantillas, diga lo que diga la URL
+      const physiotherapistId = Number((req as any).user?.id_physio ?? req.query?.physiotherapistId);
       if (!physiotherapistId) {
         res.status(400).json({ success: false, message: "Se requiere query physiotherapistId." });
         return;

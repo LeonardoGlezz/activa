@@ -54,6 +54,13 @@ export class AuthService {
     return this.isLoggedInSubject.value;
   }
 
+  /** Actualiza los datos guardados del admin (por ejemplo, después de cambiar su correo) */
+  updateCurrentUser(changes: Record<string, unknown>): void {
+    const user = { ...(this.currentUserSubject.value ?? {}), ...changes };
+    localStorage.setItem('adminUser', JSON.stringify(user));
+    this.currentUserSubject.next(user);
+  }
+
   getCurrentUser(): any {
     return this.currentUserSubject.value;
   }
