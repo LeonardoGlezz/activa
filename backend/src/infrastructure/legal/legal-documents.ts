@@ -15,21 +15,21 @@ export interface LegalDocument {
 const PRIVACY_PATIENT: LegalDocument = {
   id: "privacidad-pacientes",
   title: "Aviso de privacidad para pacientes",
-  version: "2026-10-20",
+  version: "2026-10-21",
   path: "/legal/aviso-privacidad-pacientes.html",
 };
 
 const PRIVACY_PHYSIO: LegalDocument = {
   id: "privacidad-fisioterapeutas",
   title: "Aviso de privacidad para fisioterapeutas",
-  version: "2026-10-20",
+  version: "2026-10-21",
   path: "/legal/aviso-privacidad-fisioterapeutas.html",
 };
 
 const TERMS: LegalDocument = {
   id: "terminos-de-uso",
   title: "Términos y reglas de uso",
-  version: "2026-10-20",
+  version: "2026-10-21",
   path: "/legal/terminos-de-uso.html",
 };
 
