@@ -5,5 +5,7 @@ export const environment = {
   version: 'prod.0.0.1',
   webservice: {
     baseUrl: '',
-  }
+  },
+  // El servidor gratuito guarda los archivos en la base: tope de 5 MB (videos → YouTube)
+  maxUploadMb: 5,
 };

@@ -3,5 +3,6 @@ export const environment = {
   version: 'dev.0.0.1',
   webservice: {
     baseUrl: 'http://localhost:3000',
-  }//conexion con back
+  },//conexion con back
+  maxUploadMb: 50,
 };

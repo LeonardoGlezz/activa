@@ -6,10 +6,11 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ExerciseUseCase } from '../../../core/exercises/application/exercise.use-case';
 import { Exercise } from '../../../core/exercises/domain/exercise.model';
 import { ExerciseMediaKind, getEmbedUrl, getMediaKind, resolveMediaUrl } from '../../../core/exercises/domain/exercise-media';
+import { environment } from '../../../../environments/environment';
 
 /** Enlace http(s) o archivo ya subido al backend */
 const MEDIA_URL_PATTERN = /^(https?:\/\/\S+|\/uploads\/exercise-media\/[\w.-]+)$/i;
-const MAX_UPLOAD_MB = 50;
+const MAX_UPLOAD_MB = environment.maxUploadMb;
 
 @Component({
   selector: 'app-agregar-ejercicio',
@@ -82,7 +83,7 @@ export class AgregarEjercicio implements OnInit {
     if (!file) return;
 
     if (file.size > MAX_UPLOAD_MB * 1024 * 1024) {
-      this.errorMessage = `El archivo pesa más de ${MAX_UPLOAD_MB} MB. Recorta el video o grábalo en menor calidad.`;
+      this.errorMessage = `El archivo pesa más de ${MAX_UPLOAD_MB} MB. Para videos usa un enlace de YouTube (no listado), o recorta el archivo.`;
       return;
     }
 

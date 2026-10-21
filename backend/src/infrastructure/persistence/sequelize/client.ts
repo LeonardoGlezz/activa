@@ -216,6 +216,16 @@ export const LegalConsentModel = sequelize.define("LegalConsent", {
   indexes: [{ unique: true, fields: ["role", "subject_id", "document", "version"] }]
 });
 
+// --- ARCHIVOS SUBIDOS (cuando se guardan en la base, ver storage/object-storage.ts) ---
+// file_path es la misma ruta pública: uploads/exercise-media/x.gif
+export const StoredFileModel = sequelize.define("StoredFile", {
+  file_path: { type: DataTypes.STRING(255), primaryKey: true },
+  mime_type: { type: DataTypes.STRING(100), allowNull: false },
+  size: { type: DataTypes.INTEGER, allowNull: false },
+  content: { type: DataTypes.BLOB("long"), allowNull: false },
+  created_at: { type: DataTypes.DATE, defaultValue: DataTypes.NOW }
+}, { tableName: "stored_file" });
+
 // ============================================================
 // 3. ASOCIACIONES
 // ============================================================
