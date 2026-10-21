@@ -87,7 +87,7 @@ export class PatientListComponent implements OnInit {
             birth_year: anioNac,
             height: p.height,
             weight: p.weight,
-            avatar: `https://ui-avatars.com/api/?name=${nombre}+${apellidoP}&background=0D8B97&color=fff&rounded=true`
+            initials: `${String(nombre).charAt(0)}${String(apellidoP).charAt(0)}`.toUpperCase()
           };
         });
 

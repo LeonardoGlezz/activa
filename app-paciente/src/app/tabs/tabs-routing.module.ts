@@ -12,10 +12,6 @@ const routes: Routes = [
         loadChildren: () => import('../your-progress/your-progress.module').then(m => m.Tab4PageModule)
       },
       {
-        path: 'confirmed-appointment',
-        loadChildren: () => import('../confirmed-appointment/confirmed-appointment.module').then(m => m.ConfirmedAppointmentPageModule)
-      },
-      {
         path: 'detalle-rutina',
         loadChildren: () => import('../detalle-rutina/detalle-rutina.module').then(m => m.DetalleRutinaPageModule)
       },

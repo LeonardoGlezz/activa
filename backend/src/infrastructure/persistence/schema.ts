@@ -75,6 +75,12 @@ const ADDED_MODEL_COLUMNS: Record<string, Record<string, any>> = {
     license_verified_at: { type: DataTypes.DATE, allowNull: true },
     license_verified_by: { type: DataTypes.STRING, allowNull: true },
   },
+  patient: {
+    phone: { type: DataTypes.STRING(20), allowNull: true },
+  },
+  appointment: {
+    reminder_sent_at: { type: DataTypes.DATE, allowNull: true },
+  },
 };
 
 export async function ensureSchema(): Promise<void> {
@@ -93,6 +99,16 @@ export async function ensureSchema(): Promise<void> {
         console.log(`   + columna ${table}.${name}`);
       }
     }
+  }
+
+  // Estado "No asistió" en citas creadas antes de que existiera
+  const appointment = await qi.describeTable("appointment");
+  if (!String(appointment.status?.type ?? "").includes("no_show")) {
+    await qi.changeColumn("appointment", "status", {
+      type: DataTypes.ENUM("pending", "confirmed", "cancelled", "completed", "no_show"),
+      defaultValue: "pending",
+    });
+    console.log("   + estado de cita no_show");
   }
 
   await purgeSensitiveData();

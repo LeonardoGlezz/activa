@@ -8,6 +8,7 @@ export interface Patient {
   height?: number;
   weight?: number;
   email?: string;
+  phone?: string; // Celular para recordatorios por WhatsApp
   password?: string; // Solo al crear: contraseña inicial para la app del paciente
   physiotherapist_id: number; // Requisito de la BD
 }

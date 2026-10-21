@@ -12,6 +12,8 @@ import { MessageService } from 'primeng/api';
 // 🪄 1. IMPORTAMOS TU CASO DE USO
 import { AppointmentUseCase } from '../../../../../core/appointment/application/appointment.use-case';
 
+import { appointmentStatusLabel, isClosedStatus } from '../../../../../core/appointment/appointment-status';
+
 @Component({
   selector: 'app-appointments',
   standalone: true,
@@ -80,7 +82,7 @@ export class AppointmentsComponent implements OnInit {
             patient: nombreAbreviado,
             title: serviceName,
             type: colorBase, 
-            status: apiApp.status || 'Pendiente'
+            status: appointmentStatusLabel(apiApp.status)
           };
 
           // 🪄 AGRUPACIÓN POR FECHA PARA EL CALENDARIO (Usa la fecha cruda YYYY-MM-DD como llave)
@@ -90,14 +92,14 @@ export class AppointmentsComponent implements OnInit {
           this.appointmentsDB[apiApp.date].push(citaCalendario);
 
           // 🪄 FILTRO PARA LA LISTA LATERAL (Próximas)
-          if (rawDateObj >= ahora && apiApp.status !== 'cancelled' && apiApp.status !== 'completed') {
+          if (rawDateObj >= ahora && !isClosedStatus(apiApp.status)) {
             proximasTemp.push({
               id: apiApp.id_appointment || apiApp.id, // <-- Faltaba el ID aquí para el enlace
               _rawDate: rawDateObj,
               time: horaLimpia,
               ampm: ampm,
               patient: nombreAbreviado,
-              status: apiApp.status === 'pending' ? 'Pendiente' : apiApp.status,
+              status: appointmentStatusLabel(apiApp.status),
               dot: `bg-${colorBase}-500` 
             });
           }

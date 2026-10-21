@@ -90,6 +90,7 @@ import { CreateRoutineTemplateUseCase } from "./application/use-cases/CreateRout
 import { CreateRoutineTemplateDirectUseCase } from "./application/use-cases/CreateRoutineTemplateDirect.uc";
 import { ListRoutineTemplatesUseCase } from "./application/use-cases/ListRoutineTemplates.uc";
 import { GetRoutineTemplateByIdUseCase } from "./application/use-cases/GetRoutineTemplateById.uc";
+import { SendAppointmentRemindersUseCase } from "./application/use-cases/SendAppointmentReminders.uc";
 import { DeleteRoutineUseCase } from "./application/use-cases/DeleteRoutine.uc";
 import { ListPatientTrackingUseCase } from "./application/use-cases/ListPatientTracking.uc";
 
@@ -364,6 +365,13 @@ async function bootstrap() {
 
     const port = Number(process.env.PORT) || 3000;
     app.use(errorHandler);
+    // Recordatorios de cita un día antes (en la app y, si hay SMTP, por correo)
+    const reminders = new SendAppointmentRemindersUseCase();
+    const runReminders = () =>
+      reminders.execute().catch((error) => console.error("Error al enviar recordatorios de cita:", error));
+    setInterval(runReminders, 15 * 60 * 1000);
+    setTimeout(runReminders, 30 * 1000);
+
     app.listen(port, '0.0.0.0', () => {
       console.log("--------------------------------------------------");
       console.log(`📡 API DE ACTIVA ESCUCHANDO`);

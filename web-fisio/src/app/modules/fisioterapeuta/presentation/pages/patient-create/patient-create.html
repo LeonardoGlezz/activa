@@ -45,11 +45,20 @@
             </div>
 
             <div class="field col-12 md:col-6 mb-4">
-              <label class="block font-bold text-color-secondary mb-2 text-sm">Correo Electrónico (Único)</label>
+              <label class="block font-bold text-color-secondary mb-2 text-sm">Correo</label>
               <span class="p-input-icon-left w-full">
                 <i class="pi pi-envelope text-color-secondary"></i>
                 <input type="email" pInputText [(ngModel)]="nuevoPaciente.email"
                   class="w-full border-round-lg py-2 shadow-none" placeholder="correo@ejemplo.com">
+              </span>
+            </div>
+
+            <div class="field col-12 md:col-6 mb-4">
+              <label class="block font-bold text-color-secondary mb-2 text-sm">Celular (opcional, para recordatorios por WhatsApp)</label>
+              <span class="p-input-icon-left w-full">
+                <i class="pi pi-phone text-color-secondary"></i>
+                <input type="tel" pInputText maxlength="14" [(ngModel)]="nuevoPaciente.phone"
+                  class="w-full border-round-lg py-2 shadow-none" placeholder="10 números">
               </span>
             </div>
 
@@ -63,7 +72,7 @@
             </div>
 
             <div class="field col-12 md:col-6 mb-4">
-              <label class="block font-bold text-color-secondary mb-2 text-sm">Año de Nacimiento</label>
+              <label class="block font-bold text-color-secondary mb-2 text-sm">Año de nacimiento</label>
               <input type="text" pInputText pKeyFilter="int" maxlength="4" [ngModel]="nuevoPaciente.birth_year"
                 (ngModelChange)="nuevoPaciente.birth_year = $any($event)"
                 class="w-full border-round-lg py-2 shadow-none" placeholder="Ej. 1995">
@@ -76,7 +85,7 @@
             </div>
 
             <div class="field col-12 md:col-4 mb-4">
-              <label class="block font-bold text-color-secondary mb-2 text-sm">Estatura (Metros)</label>
+              <label class="block font-bold text-color-secondary mb-2 text-sm">Estatura (ej. 1.70)</label>
               <p-inputNumber [(ngModel)]="nuevoPaciente.height" mode="decimal" locale="en-US" [minFractionDigits]="2"
                 [maxFractionDigits]="2" [min]="0.40" [max]="2.50" styleClass="w-full"
                 inputStyleClass="w-full border-round-lg py-2 shadow-none" placeholder="Ej. 1.75">

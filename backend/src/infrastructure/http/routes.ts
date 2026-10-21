@@ -141,9 +141,9 @@ export function buildRoutes(controllers: {
   router.delete("/routines/:id",                     authMiddleware, requireApproval, requireActivePlan, requirePhysio, requireRoutineAccess, controllers.routineController.remove);
 
   // Citas
-  router.post("/appointments",                   authMiddleware, requireApproval, requireActivePlan, controllers.appointmentController.create);
+  router.post("/appointments",                   authMiddleware, requireApproval, requireActivePlan, requirePhysio, requirePatientAccess((req) => req.body?.id_patient), controllers.appointmentController.create);
   router.get("/appointments/patient/:patientId", authMiddleware, requireApproval, requireActivePlan, requirePatientAccess((req) => req.params.patientId), controllers.appointmentController.getByPatient);
-  router.put("/appointments/:id",                authMiddleware, requireApproval, requireActivePlan, requireAppointmentAccess, controllers.appointmentController.update);
+  router.put("/appointments/:id",                authMiddleware, requireApproval, requireActivePlan, requirePhysio, requireAppointmentAccess, controllers.appointmentController.update);
   router.get("/appointments",                    authMiddleware, requireApproval, requireActivePlan, controllers.appointmentController.getMyPhysioAppointments);
 
   // Notas de seguimiento (solo el fisio del paciente)

@@ -8,6 +8,8 @@ import { TabViewModule } from 'primeng/tabview';
 
 import { AppointmentUseCase } from '../../../../../core/appointment/application/appointment.use-case';
 
+import { appointmentStatusLabel, isClosedStatus } from '../../../../../core/appointment/appointment-status';
+
 @Component({
   selector: 'app-appointment-list',
   standalone: true,
@@ -53,7 +55,7 @@ export class AppointmentListComponent implements OnInit {
           const rawDateObj = new Date(`${apiApp.date}T${apiApp.start_time || '00:00:00'}`);
 
           // 🪄 DETECTAMOS SI LA CITA YA CADUCÓ O FUE CANCELADA
-          const estaCerrada = apiApp.status === 'cancelled' || apiApp.status === 'completed';
+          const estaCerrada = isClosedStatus(apiApp.status);
 
           return {
             id: apiApp.id_appointment || apiApp.id,
@@ -62,7 +64,7 @@ export class AppointmentListComponent implements OnInit {
             patient: nombreCompleto,
             service: serviceName,
             type: this.asignarColor(serviceName),
-            status: apiApp.status || 'Pendiente',
+            status: appointmentStatusLabel(apiApp.status),
             _rawDate: rawDateObj,
             isPast: (rawDateObj < ahora) || estaCerrada // Guardamos esta bandera
           };

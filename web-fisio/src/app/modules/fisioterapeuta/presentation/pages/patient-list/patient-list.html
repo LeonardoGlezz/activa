@@ -4,7 +4,7 @@
   
   <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center mb-4 gap-4">
     <div>
-      <h1 class="text-3xl font-bold text-color m-0 mb-2">Agenda de Pacientes</h1>
+      <h1 class="text-3xl font-bold text-color m-0 mb-2">Mis pacientes</h1>
       <p class="text-color-secondary m-0">Gestiona citas y datos administrativos básicos.</p>
     </div>
     <div class="flex gap-3">
@@ -39,7 +39,7 @@
         
         <div class="flex gap-3 mb-4 align-items-center">
           <div class="relative flex-shrink-0">
-            <img [src]="patient.avatar" class="border-circle w-4rem h-4rem object-cover shadow-1">
+            <div class="border-circle w-4rem h-4rem shadow-1 flex align-items-center justify-content-center font-bold text-xl text-white flex-shrink-0" style="background:#0D8B97" aria-hidden="true">{{ patient.initials }}</div>
           </div>
           <div class="flex flex-column justify-content-center flex-1 overflow-hidden">
             <span class="font-bold text-lg text-color white-space-nowrap overflow-hidden text-overflow-ellipsis">{{patient.name}}</span>

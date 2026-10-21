@@ -3,9 +3,8 @@ import { Router } from '@angular/router';
 import { Storage } from '@ionic/storage-angular';
 import { ToastController } from '@ionic/angular';
 import { RoutineApiService } from '../core/infrastructure/api/routine-api.service';
-import { PhysiotherapistApiService, Physiotherapist } from '../core/infrastructure/api/physiotherapist-api.service';
+import { PhysiotherapistApiService, MyPhysio } from '../core/infrastructure/api/physiotherapist-api.service';
 import { PatientRepository } from '../../core/domain/repositories/patient.repository';
-import { environment } from '../../environments/environment';
 import { LegalApiService } from '../core/infrastructure/api/legal-api.service';
 
 @Component({
@@ -18,9 +17,8 @@ export class ProfilePage implements OnInit {
   userName      = 'Cargando...';
   patient: any  = null;
   currentYear   = new Date().getFullYear();
-  physio: Physiotherapist | null = null;
+  physio: MyPhysio | null = null;
   pacienteDesde = '—';
-  clinicName    = (environment as any).clinicName ?? 'ACTIVA Health Center';
   readonly privacyUrl = LegalApiService.privacyUrl;
   readonly termsUrl   = LegalApiService.termsUrl;
 
@@ -59,11 +57,6 @@ export class ProfilePage implements OnInit {
         this.patient = p;
         this.userName = [p.firstName, p.lastNameP, p.lastNameM].filter(Boolean).join(' ') || 'Paciente';
         this.calcularStats(p);
-
-        const physioId = p.physiotherapistId ?? p.idphysio;
-        if (physioId) {
-          this.physioApi.getById(physioId).subscribe((ph) => (this.physio = ph));
-        }
       },
       error: () => {
         // Fallback al objeto en storage si falla el back
@@ -76,6 +69,8 @@ export class ProfilePage implements OnInit {
         }
       }
     });
+
+    this.physioApi.getMine().subscribe((ph) => (this.physio = ph));
 
     // Rutina para "Paciente desde"
     this.routineApi.getRoutines(id).subscribe((routines) => {
@@ -125,6 +120,7 @@ export class ProfilePage implements OnInit {
     await this.storage.remove('currentPatient');
     await this.storage.remove('currentRoutineId');
     this.legal.clearSession();
+    this.physioApi.clear();
     this.router.navigate(['/login']);
   }
 

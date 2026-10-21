@@ -25,6 +25,7 @@ type BankExercise = Exercise & {
 };
 
 
+import { EXERCISE_PLACEHOLDER } from '../../core/placeholder';
 @Component({
   selector: 'app-banco-ejercicios',
   standalone: true,
@@ -81,7 +82,7 @@ export class BancoEjerciciosComponent implements OnInit {
     name: '',
     tag: 'General',
   };
-  placeholderImg = 'https://placehold.co/600x400/0d9488/ffffff?text=ACTIVA+Fisio';
+  placeholderImg = EXERCISE_PLACEHOLDER;
 
   constructor(
     private exerciseUseCase: ExerciseUseCase,

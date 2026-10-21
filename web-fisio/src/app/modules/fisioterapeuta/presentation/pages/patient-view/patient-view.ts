@@ -19,8 +19,13 @@ import { PatientUseCase } from '../../../../../core/patient/application/patient.
 import { AppointmentUseCase } from '../../../../../core/appointment/application/appointment.use-case';
 import { ExerciseUseCase } from '../../../../../core/exercises/application/exercise.use-case';
 import { environment } from '../../../../../../environments/environment';
+import {
+  APPOINTMENT_STATUS_OPTIONS, appointmentService, appointmentStatusLabel, appointmentStatusTone,
+  isClosedStatus, whatsappReminderUrl
+} from '../../../../../core/appointment/appointment-status';
 import { resolveMediaUrl } from '../../../../../core/exercises/domain/exercise-media';
 
+import { EXERCISE_PLACEHOLDER } from '../../../../../core/placeholder';
 @Component({
   selector: 'app-patient-view',
   standalone: true,
@@ -48,10 +53,10 @@ export class PatientViewComponent implements OnInit {
   editingAppointment: any = {};
 
   serviceOptions = [
-    { label: 'Valoración Inicial', value: 'Valoración Inicial' },
-    { label: 'Terapia Fisica', value: 'Terapia Fisica' },
-    { label: 'Masaje Descontracturante', value: 'Masaje Descontracturante' },
-    { label: 'Rehabilitación Post_Operatoria', value: 'Rehabilitación Post_Operatoria' },
+    { label: 'Valoración inicial', value: 'Valoración inicial' },
+    { label: 'Terapia física', value: 'Terapia física' },
+    { label: 'Masaje descontracturante', value: 'Masaje descontracturante' },
+    { label: 'Rehabilitación posoperatoria', value: 'Rehabilitación posoperatoria' },
   ];
 
   durationOptions = [
@@ -97,7 +102,7 @@ export class PatientViewComponent implements OnInit {
   templateSourceLabel = '';
   showExercisePreviewModal = false;
   previewExercise: any = null;
-  placeholderImg = 'https://placehold.co/1200x800/0d9488/ffffff?text=ACTIVA+Fisio';
+  placeholderImg = EXERCISE_PLACEHOLDER;
   pendingOpenRoutineFromRoute = false;
   pendingTemplateId: number | null = null;
   private initialRoutineSnapshot = '';
@@ -110,7 +115,11 @@ export class PatientViewComponent implements OnInit {
   // ===== EDITAR PACIENTE =====
   showEditPatientModal = false;
   editingPatient: any = {};
-  regexLetras: RegExp = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
+  regexLetras: RegExp = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ' -]+$/;
+  readonly statusOptions = APPOINTMENT_STATUS_OPTIONS;
+  readonly statusLabel = appointmentStatusLabel;
+  readonly statusTone = appointmentStatusTone;
+  readonly isClosed = isClosedStatus;
 
   constructor(
     private route: ActivatedRoute,
@@ -192,11 +201,13 @@ export class PatientViewComponent implements OnInit {
       last_name_p: apP,
       last_name_m: apM,
       email: resolvedEmail,
+      phone: p.phone || '',
+      gender: p.gender || '',
       birth_year: (p.birth_date || p.birthYear || '').toString().substring(0, 4),
       height: p.height,
       weight: p.weight,
       id_physio: p.id_physio || p.physiotherapist?.id_physio || null,
-      avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(nombre + '+' + apP)}&background=0D8B97&color=fff&rounded=true`
+      initials: `${nombre.charAt(0)}${apP.charAt(0)}`.toUpperCase() || '?'
     };
   }
 
@@ -357,6 +368,7 @@ export class PatientViewComponent implements OnInit {
       lastNameP: this.editingPatient.last_name_p,
       lastNameM: this.editingPatient.last_name_m || undefined,
       email: this.editingPatient.email,
+      phone: String(this.editingPatient.phone || '').replace(/\D/g, ''),
       birthYear: Number(this.editingPatient.birth_year),
       height: Number(this.editingPatient.height),
       weight: Number(this.editingPatient.weight),
@@ -369,6 +381,7 @@ export class PatientViewComponent implements OnInit {
           last_name_p: this.editingPatient.last_name_p,
           last_name_m: this.editingPatient.last_name_m,
           email: this.editingPatient.email,
+          phone: String(this.editingPatient.phone || '').replace(/\D/g, ''),
           birth_year: this.editingPatient.birth_year,
           height: this.editingPatient.height,
           weight: this.editingPatient.weight,
@@ -395,8 +408,61 @@ export class PatientViewComponent implements OnInit {
   }
 
   openEditAppointment(apt: any): void {
-    this.editingAppointment = { ...apt };
+    this.editingAppointment = {
+      id: apt.id_appointment || apt.id,
+      date: String(apt.date || '').slice(0, 10),
+      start: String(apt.start_time || '').slice(0, 5),
+      end: String(apt.end_time || '').slice(0, 5),
+      status: apt.status || 'pending',
+      notes: apt.notes || '',
+    };
     this.showEditAppointmentModal = true;
+  }
+
+  serviceOf(apt: any): string {
+    return appointmentService(apt.notes);
+  }
+
+  /** Notas sin la línea "Servicio: ..." que ya se muestra como título */
+  notesOf(apt: any): string {
+    return String(apt.notes || '').replace(/^Servicio:.*(\n|$)/, '').replace(/^\s*Notas:\s*/, '').trim();
+  }
+
+  /** Ya empezó la cita: ahora tiene sentido marcar si asistió */
+  hasStarted(apt: any): boolean {
+    const start = new Date(`${String(apt.date).slice(0, 10)}T${apt.start_time || '00:00:00'}`);
+    return start.getTime() <= Date.now();
+  }
+
+  reminderUrl(apt: any): string | null {
+    return whatsappReminderUrl(this.patient?.phone, this.patient?.first_name, apt.date, apt.start_time);
+  }
+
+  setAppointmentStatus(apt: any, status: string): void {
+    const label = appointmentStatusLabel(status);
+    const send = () => this.appointmentUseCase.executeUpdate(apt.id_appointment || apt.id, { status }).subscribe({
+      next: () => {
+        this.messageService.add({ severity: 'success', summary: 'Cita actualizada', detail: `Quedó como "${label}".` });
+        this.loadAppointments();
+      },
+      error: (err: any) => {
+        this.messageService.add({ severity: 'error', summary: 'No se guardó', detail: err.error?.message || 'Intenta de nuevo.' });
+      }
+    });
+    if (status !== 'cancelled') {
+      send();
+      return;
+    }
+    this.confirmationService.confirm({
+      header: 'Cancelar cita',
+      message: '¿Cancelar esta cita? El paciente verá el aviso en su app.',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Sí, cancelar',
+      rejectLabel: 'No',
+      acceptButtonStyleClass: 'p-button-danger',
+      rejectButtonStyleClass: 'p-button-text',
+      accept: send,
+    });
   }
 
   saveNewAppointment(): void {
@@ -435,7 +501,13 @@ export class PatientViewComponent implements OnInit {
   }
 
   saveEditAppointment(): void {
-    this.appointmentUseCase.executeUpdate(this.editingAppointment.id_appointment || this.editingAppointment.id, this.editingAppointment).subscribe({
+    const e = this.editingAppointment;
+    if (!e.date || !e.start || !e.end) {
+      this.messageService.add({ severity: 'warn', summary: 'Faltan datos', detail: 'Fecha, hora de inicio y hora de fin son obligatorias.' });
+      return;
+    }
+    const payload = { date: e.date, start_time: `${e.start}:00`, end_time: `${e.end}:00`, status: e.status, notes: e.notes };
+    this.appointmentUseCase.executeUpdate(e.id, payload).subscribe({
       next: () => {
         this.messageService.add({ severity: 'success', summary: 'Actualizada', detail: 'Cita modificada correctamente.' });
         this.showEditAppointmentModal = false;
@@ -1054,16 +1126,6 @@ export class PatientViewComponent implements OnInit {
   // ===================================================
   // HELPERS
   // ===================================================
-  getStatusClass(status: string): string {
-    const map: any = {
-      'programada': 'status-scheduled',
-      'completada': 'status-completed',
-      'cancelada': 'status-cancelled',
-      'pendiente': 'status-scheduled',
-    };
-    return map[status?.toLowerCase()] || 'status-scheduled';
-  }
-
   formatDate(dateStr: string): string {
     if (!dateStr) return '—';
     try {

@@ -15,7 +15,7 @@ export class SequelizeAppointmentRepository implements AppointmentRepository {
   }
 
   async findByPatient(id_patient: number): Promise<any[]> {
-    const appts = await AppointmentModel.findAll({ where: { id_patient } });
+    const appts = await AppointmentModel.findAll({ where: { id_patient }, order: [["date", "ASC"], ["start_time", "ASC"]] });
     return appts.map(a => a.toJSON());
   }
 
@@ -28,7 +28,8 @@ export class SequelizeAppointmentRepository implements AppointmentRepository {
         include: [
           {
             model: UserModel,
-            as: 'User'        
+            as: 'User',
+            attributes: ['email'] // nunca mandar el hash de la contraseña al navegador
           }
         ]
       }

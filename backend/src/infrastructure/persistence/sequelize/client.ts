@@ -83,6 +83,8 @@ export const PatientModel = sequelize.define("Patient", {
   gender: { type: DataTypes.ENUM("M", "F", "Other") },
   height: { type: DataTypes.DECIMAL(5, 2) },
   weight: { type: DataTypes.DECIMAL(5, 2) },
+  // Celular del paciente: para que el fisio le mande recordatorios por WhatsApp
+  phone: { type: DataTypes.STRING(20), allowNull: true },
   created_at: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
   id_user: { type: DataTypes.INTEGER, allowNull: false, unique: true },
   id_physio: { type: DataTypes.INTEGER, allowNull: false }
@@ -103,8 +105,10 @@ export const AppointmentModel = sequelize.define("Appointment", {
   date: { type: DataTypes.DATEONLY, allowNull: false },
   start_time: { type: DataTypes.TIME, allowNull: false },
   end_time: { type: DataTypes.TIME, allowNull: false },
-  status: { type: DataTypes.ENUM("pending", "confirmed", "cancelled", "completed"), defaultValue: "pending" },
+  status: { type: DataTypes.ENUM("pending", "confirmed", "cancelled", "completed", "no_show"), defaultValue: "pending" },
   notes: { type: DataTypes.TEXT, allowNull: true },
+  // Cuándo se avisó al paciente un día antes (ver SendAppointmentReminders)
+  reminder_sent_at: { type: DataTypes.DATE, allowNull: true },
   created_at: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
   id_patient: { type: DataTypes.INTEGER, allowNull: false },
   id_physio: { type: DataTypes.INTEGER, allowNull: false }
